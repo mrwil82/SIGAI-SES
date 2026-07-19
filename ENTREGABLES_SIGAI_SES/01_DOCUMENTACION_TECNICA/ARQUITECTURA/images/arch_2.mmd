@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant U as Usuario / Administrador
+    participant F as Interfaz del Sistema
+    participant B as Servidor de Aplicaciones
+    participant D as Base de Datos
+
+    U->>F: Carga Archivo Excel
+    F->>B: Envía datos para procesamiento
+    B->>B: Valida Formato y Estructura
+    B->>D: Guarda o Actualiza Información
+    D-->>B: Confirmación de Guardado
+    B-->>F: Respuesta Exitosa (Resumen de Procesos)
+    F->>U: Notifica éxito y actualiza Tableros

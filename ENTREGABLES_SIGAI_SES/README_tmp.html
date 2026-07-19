@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>README.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<p align="center">
+  <img src="https://img.shields.io/badge/Proyecto-SIGAI--SES-0055A4?style=for-the-badge&logo=git" alt="Proyecto">
+  <img src="https://img.shields.io/badge/Estado-Release%20Candidate-success?style=for-the-badge&logo=github" alt="Estado">
+  <img src="https://img.shields.io/badge/Versi%C3%B3n-v1.0.0-blue?style=for-the-badge&logo=semver" alt="Version">
+  <img src="https://img.shields.io/badge/Julio-2026-FF6B35?style=for-the-badge&logo=calendar" alt="Fecha">
+  <img src="https://img.shields.io/badge/Confidencial-Securitas%20Colombia-red?style=for-the-badge&logo=lock" alt="Confidencial">
+</p>
+<h1 align="center">
+  📁 ENTREGABLES SIGAI-SES
+</h1>
+<p align="center">
+  <b>Sistema Integral de Gestión de Activos e Inventario</b><br>
+  <i>Seguridad Electrónica Securitas — Colombia S.A.</i>
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/React-18.2-61DAFB?logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?logo=typescript" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss" alt="Tailwind">
+  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql" alt="MySQL">
+  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker" alt="Docker">
+</p>
+<hr>
+<blockquote>
+<p>[!IMPORTANT]
+Este directorio contiene la <strong>documentación completa</strong> del proyecto <strong>SIGAI-SES</strong> (Sistema Integral de Gestión de Activos e Inventario — Seguridad Electrónica Securitas), desarrollado para <strong>ENEL Colombia</strong>.</p>
+</blockquote>
+<hr>
+<h2 id="-información-del-proyecto">📋 Información del Proyecto</h2>
+<table>
+<thead>
+<tr>
+<th>🏷️ Campo</th>
+<th>📄 Detalle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Proyecto</strong></td>
+<td>SIGAI-SES — Sistema Integral de Gestión de Activos e Inventario</td>
+</tr>
+<tr>
+<td><strong>Empresa</strong></td>
+<td>Securitas Colombia S.A. — Unidad de Seguridad Electrónica (SES)</td>
+</tr>
+<tr>
+<td><strong>Cliente</strong></td>
+<td>ENEL Colombia (Subestaciones eléctricas de Cundinamarca)</td>
+</tr>
+<tr>
+<td><strong>Autor</strong></td>
+<td>👤 Wilson Ortiz — Pasante SENA (Análisis y Desarrollo de Software)</td>
+</tr>
+<tr>
+<td><strong>Destinatario</strong></td>
+<td>👔 Elkin David Velásquez Hernández — Gerente de Mantenimiento SES</td>
+</tr>
+<tr>
+<td><strong>Versión Actual</strong></td>
+<td>🏷️ <code>v1.0.0</code> — Release Candidate</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>📅 Julio 2026</td>
+</tr>
+<tr>
+<td><strong>Stack</strong></td>
+<td>⚡ FastAPI + React + Vite + MySQL + Tailwind CSS</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="️-estructura-del-repositorio">🗂️ Estructura del Repositorio</h2>
+<details>
+<summary><b>📂 Click para expandir la estructura completa</b></summary>
+<pre class="hljs"><code><div>ENTREGABLES_SIGAI_SES/
+├── 01_DOCUMENTACION_TECNICA/         # 👨‍💻 Documentación para el equipo de desarrollo y TI
+│   ├── 00_README_TECNICO.md           # 🔧 Resumen tecnológico del proyecto
+│   ├── 00_TOC.md                     # 📑 Tabla de contenidos técnicos
+│   ├── 02_GUIA_INSTALACION_BACKEND   # 🖥️ Instalación del backend (FastAPI + MySQL)
+│   ├── 03_GUIA_INSTALACION_FRONTEND  # 🌐 Instalación del frontend (React + Vite)
+│   ├── 04_DICCIONARIO_DE_DATOS       # 🗄️ 18 tablas documentadas con campos y relaciones
+│   ├── 05_GUIA_DESPLIEGUE_PRODUCCION # ☁️ Despliegue cloud (GitHub + Railway + Vercel + TiDB)
+│   ├── ARQUITECTURA/
+│   │   ├── 01_ARQUITECTURA_SISTEMA   # 🏗️ Arquitectura por capas y componentes
+│   │   └── 02_DIAGRAMAS_FLUJO       # 🔄 Diagramas de procesos del negocio
+│   ├── API_SPEC/
+│   │   └── openapi.yaml              # 📡 Especificación OpenAPI 3.0.3 (60+ endpoints)
+│   ├── FAQ/
+│   │   └── 01_FAQ_TECNICA           # ❓ 30+ preguntas técnicas frecuentes
+│   ├── MANUALES/
+│   │   ├── 01_MANUAL_TECNICO         # 📘 Manual técnico detallado del sistema
+│   │   └── images/                   # 🖼️ Diagramas ER, arquitectura, flujos
+│   ├── 06_GUIA_ON_PREMISE            # 🏢 Despliegue en servidor corporativo local
+│   ├── 07_PROCEDIMIENTOS_BACKUP      # 💾 Respaldo, restauración y DRP
+│   ├── 08_CATALOGO_ERRORES_API       # ⚠️ Códigos de error HTTP y mensajes
+│   ├── 09_GUIA_MIGRACION_DATOS       # 📤 Migración desde Excel/Legacy a SIGAI-SES
+│   ├── 10_PLAN_CAPACITACION          # 🎓 Plan de capacitación para usuarios finales
+│   ├── 11_GESTION_ALERTAS            # 🔔 Diseño detallado del motor de alertas y reglas
+│   └── datos_migracion/              # 📊 Archivos Excel legacy para migración (3 archivos)
+│
+├── 02_DOCUMENTACION_GESTION/         # 📊 Documentación para la gestión del proyecto
+│   ├── 01_ESPECIFICACION_REQUISITOS  # 📋 13 RF, 5 RNF, Roadmap 12 semanas
+│   ├── 02_ESTADO_FINAL_PROYECTO      # ✅ Estado v1.0.0, auditoría, deuda técnica
+│   ├── 00_PROPUESTA_TECNICA          # 📋 Propuesta técnica original v2.0 (documento fundacional)
+│   └── 03_ACTA_DE_ENTREGA.pdf        # 📝 Acta de entrega formal firmada (PDF)
+│
+├── 03_DOCUMENTACION_USUARIO/         # 👥 Documentación para usuarios del sistema
+│   ├── 01_HISTORIAS_USUARIO          # 📖 24 historias de usuario con criterios de aceptación
+│   ├── FAQ/
+│   │   └── 01_FAQ_USUARIO           # ❓ 16 preguntas frecuentes para usuarios finales
+│   └── MANUALES/
+│       ├── 01_MANUAL_USUARIO_TECNICO # 🔧 Manual paso a paso para técnicos de campo
+│       └── 02_MANUAL_ADMINISTRADOR   # 🛡️ Manual para administradores del sistema
+│
+├── 04_CALIDAD_Y_LEGAL/               # ⚖️ Documentación de calidad y aspectos legales
+│   ├── 01_PLAN_DE_PRUEBAS           # 🧪 Plan de pruebas (unitarias, integración, E2E, rendimiento, seguridad)
+│   ├── 02_INFORME_SEGURIDAD         # 🔒 Informe de seguridad OWASP Top 10 y vulnerabilidades
+│   ├── 03_AVISO_DE_PRIVACIDAD       # 📜 Aviso de privacidad (Ley 1581 de 2012 Colombia)
+│   └── POLITICAS_DE_CALIDAD         # 🏅 Políticas de calidad del proyecto
+│
+├── CHANGELOG.md                      # 📆 Historial de versiones del proyecto
+├── ACCESO_CLIENTE.md                 # 🔑 Credenciales de prueba para el cliente
+├── GUIA_ENTREGA_PROFESIONAL.md       # 📦 Guía para formatear y entregar documentación
+└── README.md                         # 👈 Este archivo
+</div></code></pre>
+</details>
+<hr>
+<h2 id="-resumen-de-documentos-por-categoría">📊 Resumen de Documentos por Categoría</h2>
+<table>
+<thead>
+<tr>
+<th>🗂️ Categoría</th>
+<th>📄 Archivos</th>
+<th>📏 Total Páginas</th>
+<th>🎯 Contenido Principal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Documentación Técnica</strong></td>
+<td>17 documentos</td>
+<td>~85 páginas</td>
+<td>Instalación, API, BD, despliegue, manual técnico, guías operativas, alertas</td>
+</tr>
+<tr>
+<td><strong>Gestión</strong></td>
+<td>4 documentos</td>
+<td>~9 páginas</td>
+<td>Propuesta técnica, requisitos, estado, acta de entrega formal</td>
+</tr>
+<tr>
+<td><strong>Usuario</strong></td>
+<td>5 documentos</td>
+<td>~25 páginas</td>
+<td>24 HU, manuales técnico/admin, FAQ</td>
+</tr>
+<tr>
+<td><strong>Calidad y Legal</strong></td>
+<td>4 documentos</td>
+<td>~16 páginas</td>
+<td>Pruebas, seguridad OWASP, privacidad, calidad</td>
+</tr>
+<tr>
+<td><strong>Especificación API</strong></td>
+<td>1 (YAML)</td>
+<td>1397 líneas</td>
+<td>60+ endpoints REST documentados</td>
+</tr>
+<tr>
+<td><strong>Diagramas</strong></td>
+<td>6 Mermaid + 7 PNG</td>
+<td>~100 líneas</td>
+<td>Arquitectura, flujos, ER</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="️-stack-tecnológico">🛠️ Stack Tecnológico</h2>
+<h3 id="️-backend-fastapi">🖥️ Backend (FastAPI)</h3>
+<table>
+<thead>
+<tr>
+<th>🏷️ Tecnología</th>
+<th>🔖 Versión</th>
+<th>🎯 Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="16"> <strong>Python</strong></td>
+<td><code>3.12+</code></td>
+<td>Lenguaje base</td>
+</tr>
+<tr>
+<td>⚡ <strong>FastAPI</strong></td>
+<td><code>0.136.1</code></td>
+<td>Framework web asíncrono</td>
+</tr>
+<tr>
+<td>🗄️ <strong>SQLAlchemy</strong></td>
+<td><code>2.0.49</code></td>
+<td>ORM asíncrono (aiomysql)</td>
+</tr>
+<tr>
+<td>🐬 <strong>MySQL/MariaDB</strong></td>
+<td><code>8.0+</code></td>
+<td>Base de datos relacional</td>
+</tr>
+<tr>
+<td>🔄 <strong>Alembic</strong></td>
+<td><code>1.18.4</code></td>
+<td>Migraciones de BD</td>
+</tr>
+<tr>
+<td>🔐 <strong>python-jose</strong></td>
+<td><code>3.5.0</code></td>
+<td>Tokens JWT (HS256)</td>
+</tr>
+<tr>
+<td>🔑 <strong>passlib[bcrypt]</strong></td>
+<td><code>1.7.4</code></td>
+<td>Hashing de contraseñas</td>
+</tr>
+<tr>
+<td>📊 <strong>Pandas</strong></td>
+<td><code>3.0.3</code></td>
+<td>Procesamiento de Excel</td>
+</tr>
+<tr>
+<td>📄 <strong>ReportLab</strong></td>
+<td><code>4.5.1</code></td>
+<td>Generación de PDF</td>
+</tr>
+<tr>
+<td>📑 <strong>XlsxWriter</strong></td>
+<td><code>3.2.9</code></td>
+<td>Exportación Excel con streaming</td>
+</tr>
+<tr>
+<td>🐢 <strong>SlowAPI</strong></td>
+<td><code>0.1.9</code></td>
+<td>Rate limiting (10 req/min en login)</td>
+</tr>
+<tr>
+<td>🐳 <strong>Docker</strong></td>
+<td>—</td>
+<td>Contenerización multi-etapa</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-frontend-react--typescript">🌐 Frontend (React + TypeScript)</h3>
+<table>
+<thead>
+<tr>
+<th>🏷️ Tecnología</th>
+<th>🔖 Versión</th>
+<th>🎯 Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>⚛️ <strong>React</strong></td>
+<td><code>18.2</code></td>
+<td>Framework de interfaz de usuario</td>
+</tr>
+<tr>
+<td>📘 <strong>TypeScript</strong></td>
+<td><code>5.2</code></td>
+<td>Tipado estático</td>
+</tr>
+<tr>
+<td>⚡ <strong>Vite</strong></td>
+<td><code>5.2</code></td>
+<td>Bundler y dev server</td>
+</tr>
+<tr>
+<td>🎨 <strong>Tailwind CSS</strong></td>
+<td><code>3.4</code></td>
+<td>Estilos utilitarios</td>
+</tr>
+<tr>
+<td>🔄 <strong>TanStack React Query</strong></td>
+<td><code>5.101</code></td>
+<td>Fetching de datos con caché</td>
+</tr>
+<tr>
+<td>🌍 <strong>Axios</strong></td>
+<td><code>1.6.8</code></td>
+<td>HTTP client con interceptores JWT</td>
+</tr>
+<tr>
+<td>🧭 <strong>React Router DOM</strong></td>
+<td><code>6.22</code></td>
+<td>Ruteo SPA (11 rutas)</td>
+</tr>
+<tr>
+<td>📈 <strong>Recharts</strong></td>
+<td><code>2.12</code></td>
+<td>Gráficos (PieChart, BarChart)</td>
+</tr>
+<tr>
+<td>🎯 <strong>Lucide React</strong></td>
+<td><code>0.363</code></td>
+<td>Iconos</td>
+</tr>
+<tr>
+<td>✍️ <strong>react-signature-canvas</strong></td>
+<td><code>1.1</code></td>
+<td>Firmas digitales en actas</td>
+</tr>
+<tr>
+<td>📗 <strong>xlsx</strong></td>
+<td><code>0.18.5</code></td>
+<td>Exportación a Excel</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-módulos-del-sistema">🧩 Módulos del Sistema</h2>
+<details>
+<summary><b>🔐 1. Seguridad y Acceso</b></summary>
+<ul>
+<li>✅ Autenticación OAuth2 + JWT (access/refresh tokens)</li>
+<li>👥 RBAC con 3 roles: <code>ADMIN</code>, <code>TECNICO</code>, <code>TECNICO_LABORATORIO</code></li>
+<li>🚧 Aislamiento de datos por regional</li>
+<li>📝 Auditoría completa de acciones (<code>CREATE</code>/<code>UPDATE</code>/<code>DELETE</code>/<code>LOGIN</code>)</li>
+<li>🔒 Sesiones revocables (tabla <code>sesiones_usuario</code>)</li>
+</ul>
+</details>
+<details>
+<summary><b>📦 2. Inventario y Catálogo</b></summary>
+<ul>
+<li>📋 Catálogo maestro de items con categorías, subcategorías y códigos SAP/CECO</li>
+<li>🔢 Activos serializados con trazabilidad individual</li>
+<li>📦 Stock bulk para consumibles con alertas de mínimo</li>
+<li>📍 Historial de ubicaciones por activo</li>
+<li>🪖 Asignación de EPP con fechas de vencimiento</li>
+</ul>
+</details>
+<details>
+<summary><b>🔄 3. Operaciones y Movimientos (Kardex Digital)</b></summary>
+<ul>
+<li>📜 Registro inmutable de entradas, salidas, traslados y devoluciones</li>
+<li>✍️ Actas de entrega digitales con firma táctil y PDF</li>
+<li>🔄 Desmontes con triaje (<code>BUENO</code>, <code>RECUPERABLE</code>, <code>DESECHO</code>)</li>
+<li>🔗 Integridad transaccional (movimiento siempre genera kardex)</li>
+</ul>
+</details>
+<details>
+<summary><b>🛡️ 4. Garantías</b></summary>
+<ul>
+<li>🔄 Flujo completo de 5 estados: <code>Registrado → Enviado → Recibido → Resuelto → Entregado</code></li>
+<li>🔢 Numeración automática <code>GSES-XXX</code></li>
+<li>⏰ Alertas de estancamiento (15+ días sin avance)</li>
+<li>🔗 Vinculación directa con serial del activo y proveedor</li>
+</ul>
+</details>
+<details>
+<summary><b>🔔 5. Alertas</b></summary>
+<ul>
+<li>🤖 Motor de reglas automático (APScheduler cada 15 min)</li>
+<li>📋 4 reglas predefinidas: <code>stock_bajo</code>, <code>vencimiento</code>, <code>sin_movimiento</code>, <code>sobrestock</code></li>
+<li>📊 Estados: <code>activa</code>, <code>reconocida</code>, <code>resuelta</code>, <code>ignorada</code></li>
+<li>🧠 Cooldown inteligente para evitar duplicados</li>
+<li>📈 SLA con escalamiento automático</li>
+</ul>
+</details>
+<details>
+<summary><b>📤 6. Importación Inteligente</b></summary>
+<ul>
+<li>🔎 Auto-detección de tipo de archivo Excel</li>
+<li>🔄 Upsert (crea o actualiza según exista)</li>
+<li>📐 Normalización de datos y validación de columnas</li>
+<li>💾 Transaccional: todo o nada</li>
+<li>📂 Soporte para inventario, clientes y garantías</li>
+</ul>
+</details>
+<details>
+<summary><b>📊 7. Reportes y Analíticas</b></summary>
+<ul>
+<li>📑 Exportación a Excel (XlsxWriter con streaming para +30k registros)</li>
+<li>📄 Exportación a PDF (ReportLab con diseño corporativo)</li>
+<li>📈 Dashboard con KPIs (activos totales, en garantía, stock crítico, eficiencia lab)</li>
+<li>🔍 Búsqueda global en items, activos, clientes y proyectos</li>
+</ul>
+</details>
+<hr>
+<h2 id="-resumen-cuantitativo-del-proyecto">📈 Resumen Cuantitativo del Proyecto</h2>
+<table>
+<thead>
+<tr>
+<th>📊 Métrica</th>
+<th>🔢 Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>📄 Total de archivos de documentación</td>
+<td><code>30 documentos</code></td>
+</tr>
+<tr>
+<td>📝 Total líneas de documentación</td>
+<td><code>~4,200 líneas</code></td>
+</tr>
+<tr>
+<td>🗄️ Tablas de base de datos</td>
+<td><code>18</code></td>
+</tr>
+<tr>
+<td>🌐 Endpoints de API</td>
+<td><code>60+</code></td>
+</tr>
+<tr>
+<td>📖 Historias de usuario</td>
+<td><code>24</code></td>
+</tr>
+<tr>
+<td>✅ Requisitos funcionales</td>
+<td><code>13</code></td>
+</tr>
+<tr>
+<td>👤 Roles de usuario</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td>🖼️ Diagramas (MMD + PNG)</td>
+<td><code>13</code></td>
+</tr>
+<tr>
+<td>📊 Archivos Excel de datos reales</td>
+<td><code>3</code> (147 garantías, 17 clientes, 34 herramientas)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-enlaces-rápidos">🔗 Enlaces Rápidos</h2>
+<h3 id="-documentación-técnica">📘 Documentación Técnica</h3>
+<table>
+<thead>
+<tr>
+<th>📄 Documento</th>
+<th>📝 Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/00_README_TECNICO.md">📘 README TÉCNICO</a></td>
+<td>Resumen tecnológico del proyecto</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/02_GUIA_INSTALACION_BACKEND.md">🖥️ GUÍA INSTALACIÓN BACKEND</a></td>
+<td>Instalación del backend FastAPI</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/03_GUIA_INSTALACION_FRONTEND.md">🌐 GUÍA INSTALACIÓN FRONTEND</a></td>
+<td>Instalación del frontend React</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/04_DICCIONARIO_DE_DATOS.md">🗄️ DICCIONARIO DE DATOS</a></td>
+<td>Diccionario de datos (18 tablas)</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/05_GUIA_DESPLIEGUE_PRODUCCION.md">☁️ GUÍA DESPLIEGUE</a></td>
+<td>Despliegue en Railway + Vercel + TiDB</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/06_GUIA_ON_PREMISE.md">🏢 GUÍA ON-PREMISE</a></td>
+<td>Despliegue en servidor corporativo local</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/11_GESTION_ALERTAS.md">🔔 GESTIÓN DE ALERTAS</a></td>
+<td>Diseño del motor de alertas y reglas</td>
+</tr>
+<tr>
+<td><a href="./01_DOCUMENTACION_TECNICA/API_SPEC/openapi.yaml">📡 API SPEC</a></td>
+<td>Especificación OpenAPI de la API REST</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-documentación-de-gestión">📊 Documentación de Gestión</h3>
+<table>
+<thead>
+<tr>
+<th>📄 Documento</th>
+<th>📝 Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./02_DOCUMENTACION_GESTION/00_PROPUESTA_TECNICA.md">📋 PROPUESTA TÉCNICA</a></td>
+<td>Propuesta técnica original v2.0</td>
+</tr>
+<tr>
+<td><a href="./02_DOCUMENTACION_GESTION/01_ESPECIFICACION_REQUISITOS.md">📋 ESPECIFICACIÓN REQUISITOS</a></td>
+<td>Requisitos funcionales y roadmap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-documentación-de-usuario">👥 Documentación de Usuario</h3>
+<table>
+<thead>
+<tr>
+<th>📄 Documento</th>
+<th>📝 Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./03_DOCUMENTACION_USUARIO/MANUALES/01_MANUAL_USUARIO_TECNICO.md">🔧 MANUAL USUARIO TÉCNICO</a></td>
+<td>Manual para técnicos de campo</td>
+</tr>
+<tr>
+<td><a href="./03_DOCUMENTACION_USUARIO/MANUALES/02_MANUAL_ADMINISTRADOR.md">🛡️ MANUAL ADMINISTRADOR</a></td>
+<td>Manual para administradores</td>
+</tr>
+<tr>
+<td><a href="./03_DOCUMENTACION_USUARIO/01_HISTORIAS_USUARIO.md">📖 HISTORIAS DE USUARIO</a></td>
+<td>24 historias de usuario</td>
+</tr>
+</tbody>
+</table>
+<h3 id="️-documentación-de-calidad-y-legal">⚖️ Documentación de Calidad y Legal</h3>
+<table>
+<thead>
+<tr>
+<th>📄 Documento</th>
+<th>📝 Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./04_CALIDAD_Y_LEGAL/01_PLAN_DE_PRUEBAS.md">🧪 PLAN DE PRUEBAS</a></td>
+<td>Plan de pruebas completo</td>
+</tr>
+<tr>
+<td><a href="./04_CALIDAD_Y_LEGAL/02_INFORME_SEGURIDAD.md">🔒 INFORME SEGURIDAD</a></td>
+<td>Informe de seguridad OWASP Top 10</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<blockquote>
+<p>[!TIP]
+💡 <strong>Consejo:</strong> Usa el archivo <a href="./GUIA_ENTREGA_PROFESIONAL.md"><code>GUIA_ENTREGA_PROFESIONAL.md</code></a> para convertir toda esta documentación a PDF profesional con Pandoc + LaTeX.</p>
+</blockquote>
+<hr>
+<p align="center">
+  <img src="https://img.shields.io/badge/Desarrollado%20para-Securitas%20Colombia%20S.A.-0055A4?style=for-the-badge" alt="Desarrollado para Securitas">
+  <img src="https://img.shields.io/badge/Unidad-Seguridad%20Electr%C3%B3nica%20(SES)-00A3E0?style=for-the-badge" alt="SES">
+</p>
+<p align="center">
+  <i>Wilson Ortiz — Pasante SENA • Julio 2026</i>
+</p>
+
+</body>
+</html>

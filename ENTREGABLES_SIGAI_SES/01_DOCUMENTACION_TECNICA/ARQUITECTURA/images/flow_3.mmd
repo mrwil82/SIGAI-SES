@@ -1,0 +1,10 @@
+flowchart TD
+    Start([Salida de Equipo]) --> UpdateStock[Actualizar Cantidad Disponible]
+    UpdateStock --> Check{¿Cantidad <= Mínimo?}
+    Check -- No --> End([Fin del Proceso])
+    Check -- Sí --> CreateAlert[Generar Alerta de Abastecimiento]
+    CreateAlert --> Notify[Notificar en Tablero de Control]
+    Notify --> AdminAction{Acción del Responsable}
+    AdminAction -- Reconocer --> StateRecon[Estado: En Revisión]
+    AdminAction -- Cargar Inventario --> StateResu[Estado: Resuelta]
+    StateResu --> End

@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> INICIADO: Reporte de Falla detectado
+    INICIADO --> EN_LABORATORIO: Activo recibido en Taller/Laboratorio
+    EN_LABORATORIO --> ENVIADO_PROVEEDOR: Requiere reparación externa
+    ENVIADO_PROVEEDOR --> RECIBIDO_PROVEEDOR: Equipo retornado por proveedor
+    RECIBIDO_PROVEEDOR --> ENTREGADO_CLIENTE: Instalación y entrega final
+    ENTREGADO_CLIENTE --> [*]
+
+    ENVIADO_PROVEEDOR --> ALERTA_ESTANCADA: Más de 15 días sin respuesta
+    ALERTA_ESTANCADA --> RECIBIDO_PROVEEDOR: Gestión de seguimiento realizada

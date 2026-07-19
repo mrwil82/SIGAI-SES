@@ -1,0 +1,29 @@
+graph LR
+    subgraph Actores
+        Admin((Administrador))
+        Coord((Técnico))
+        Tec((Técnico Lab))
+    end
+
+    subgraph Funciones_del_Sistema
+        UC1[Gestión de Usuarios]
+        UC2[Carga Masiva de Excel]
+        UC3[Bitácora de Auditoría]
+        UC4[Control de Existencias]
+        UC5[Atención de Alertas]
+        UC6[Generación de Informes]
+        UC7[Registro de Garantías]
+        UC8[Consulta de Inventario]
+    end
+
+    Admin --> UC1
+    Admin --> UC2
+    Admin --> UC3
+    
+    Coord --> UC4
+    Coord --> UC5
+    Coord --> UC6
+    
+    Tec --> UC7
+    Tec --> UC8
+    Tec --> UC6

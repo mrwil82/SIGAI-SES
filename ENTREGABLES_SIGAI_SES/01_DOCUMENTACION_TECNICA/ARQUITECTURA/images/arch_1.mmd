@@ -1,0 +1,27 @@
+graph TD
+    subgraph Interfaz_Usuario["Interfaz de Usuario (React + Vite)"]
+        UI[Pantallas del Sistema]
+        Context[Gestión de Estado Interno]
+        Services[Servicios de Conexión]
+    end
+
+    subgraph Servidor_Aplicaciones["Servidor de Aplicaciones (FastAPI)"]
+        Router[Puntos de Acceso / Rutas]
+        Logic[Lógica de Negocio / Procesos]
+        Auth[Seguridad y Autenticación]
+        Reports[Generador de Reportes e Informes]
+    end
+
+    subgraph Capa_Datos["Capa de Datos"]
+        DB[(Base de Datos MySQL)]
+        Excel[Archivos Excel Securitas]
+    end
+
+    UI --> Services
+    Services --> Router
+    Router --> Auth
+    Auth --> Logic
+    Logic --> DB
+    Logic --> Reports
+    Excel -- "Carga Masiva de Datos" --> Logic
+    Reports -- "Descarga de Archivos" --> UI

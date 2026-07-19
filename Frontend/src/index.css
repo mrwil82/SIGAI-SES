@@ -1,0 +1,119 @@
+/* FORCE REFRESH: SIGAI-SES CSS */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes toast-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+:root {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Backgrounds */
+  --bg0:     #0A0F0D;
+  --bg1:     #101820;
+  --bg2:     #141F1A;
+  --bg3:     #1A2830;
+  --bg4:     #1E3038;
+  --bginput: #0C1614;
+
+  /* Brand Emerald */
+  --emerald:        #00C26A;
+  --emerald-bright: #00E87A;
+  --emerald-glow:   #00FF88;
+  --emerald-muted:  #0D3D26;
+  --emerald-deep:   #071F14;
+
+  /* Charts */
+  --chart-green:  #00C26A;
+  --chart-blue:   #4A9EFF;
+  --chart-orange: #FF8C42;
+  --chart-purple: #9B6DFF;
+  --chart-teal:   #00D4CC;
+
+  /* Semantics */
+  --gold:   #F5A623;
+  --danger: #FF4D4D;
+  --cyan:   #00D4CC;
+
+  /* Text */
+  --t1: #E8F5EC;
+  --t2: #9AB8A4;
+  --t3: #5A7A65;
+}
+
+body {
+  margin: 0;
+  background-color: #0A0F0D;
+  color: #E8F5EC;
+  min-height: 100vh;
+}
+
+@layer components {
+  .neo-raised {
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .neo-inset {
+    box-shadow: inset 3px 3px 8px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-card {
+    backdrop-filter: blur(12px);
+    background-color: rgba(20, 31, 26, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,194,106,0.2) transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 194, 106, 0.2);
+    border-radius: 99px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 194, 106, 0.5);
+  }
+
+  /* Scrollbar Minimalista Global */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    border: 1px solid transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}

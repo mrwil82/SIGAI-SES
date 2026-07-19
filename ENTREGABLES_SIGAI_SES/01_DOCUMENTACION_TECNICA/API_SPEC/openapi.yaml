@@ -1,0 +1,1397 @@
+openapi: 3.0.3
+info:
+  title: SIGAI-SES API
+  version: "1.0.0"
+  description: >
+    API RESTful del Sistema Integral de Gestión de Activos e Inventario
+    para Seguridad Electrónica Securitas Colombia.
+  contact:
+    name: Equipo de Desarrollo SIGAI-SES
+    email: soporte@ses-securitas.com.co
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Desarrollo local
+  - url: https://api.ses.example.com/v1
+    description: Producción
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenido de /auth/login
+
+  schemas:
+    # ==================== AUTH ====================
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    User:
+      type: object
+      properties:
+        id_usuario:
+          type: integer
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        rol:
+          type: string
+          enum: [ADMIN, TECNICO, TECNICO_LABORATORIO]
+        id_regional:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    UserCreate:
+      type: object
+      required: [nombre, email, password, rol]
+      properties:
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        rol:
+          type: string
+          enum: [ADMIN, TECNICO, TECNICO_LABORATORIO]
+        id_regional:
+          type: integer
+          nullable: true
+        cedula:
+          type: string
+        codigo_empleado:
+          type: string
+
+    # ==================== ITEMS ====================
+    Item:
+      type: object
+      properties:
+        id_item:
+          type: integer
+        categoria:
+          type: string
+          enum: [MONITOREO, MANTENIMIENTO, INSTALACION, SOLUCIONES, EPP, CONSUMIBLE, HERRAMIENTA_LAB, REPUESTO]
+        nombre_equipo:
+          type: string
+        marca:
+          type: string
+          nullable: true
+        referencia:
+          type: string
+        codigo_item_interno:
+          type: string
+        stock_minimo:
+          type: integer
+        costo_unitario:
+          type: number
+          format: decimal
+        moneda:
+          type: string
+          enum: [COP, USD, EUR]
+        created_at:
+          type: string
+          format: date-time
+    ItemCreate:
+      type: object
+      required: [categoria, nombre_equipo]
+      properties:
+        categoria:
+          type: string
+        nombre_equipo:
+          type: string
+        marca:
+          type: string
+        referencia:
+          type: string
+        codigo_item_interno:
+          type: string
+        stock_minimo:
+          type: integer
+          default: 5
+        compra_maxima:
+          type: integer
+          default: 20
+        costo_unitario:
+          type: number
+          default: 0.00
+        moneda:
+          type: string
+          default: COP
+        cantidad_inicial:
+          type: number
+          description: Stock inicial para crear el registro bulk
+
+    # ==================== ACTIVOS ====================
+    Activo:
+      type: object
+      properties:
+        id_activo:
+          type: integer
+        id_item:
+          type: integer
+        serial:
+          type: string
+        estado_actual:
+          type: string
+          enum: [DISPONIBLE, INSTALADO, EN_GARANTIA, REPARADO, LABORATORIO, DESMONTE, BAJA, OBSOLETO]
+        condicion_fisica:
+          type: string
+          enum: [NUEVO, USADO_BUENO, PARA_REPARAR, SULFATADO, SIN_CONTRAPESOS, DANADO]
+        ubicacion_fisica:
+          type: string
+        area_asignada:
+          type: string
+        responsable_sitio:
+          type: string
+        activo_fijo_securitas:
+          type: string
+        calificacion_tecnica:
+          type: string
+          enum: [BUENO, RECUPERABLE, DESECHO]
+        updated_at:
+          type: string
+          format: date-time
+    ActivoCreate:
+      type: object
+      required: [id_item, serial]
+      properties:
+        id_item:
+          type: integer
+        serial:
+          type: string
+        estado_actual:
+          type: string
+          default: DISPONIBLE
+        condicion_fisica:
+          type: string
+          default: NUEVO
+        ubicacion_fisica:
+          type: string
+        area_asignada:
+          type: string
+        responsable_sitio:
+          type: string
+        id_proyecto_actual:
+          type: integer
+        id_proveedor_compra:
+          type: integer
+        numero_factura_compra:
+          type: string
+        fecha_compra:
+          type: string
+          format: date
+        activo_fijo_securitas:
+          type: string
+        observaciones:
+          type: string
+    DesmonteBulkCreate:
+      type: object
+      required: [id_item, seriales]
+      properties:
+        id_item:
+          type: integer
+        id_proyecto:
+          type: integer
+        id_cliente:
+          type: integer
+        seriales:
+          type: array
+          items:
+            type: string
+
+    # ==================== CLIENTES ====================
+    Cliente:
+      type: object
+      properties:
+        id_cliente:
+          type: integer
+        nombre:
+          type: string
+        nit:
+          type: string
+        contacto:
+          type: string
+        email_contacto:
+          type: string
+        telefono:
+          type: string
+        ciudad:
+          type: string
+        tipo_cliente:
+          type: string
+          enum: [CORPORATIVO, INTERNO, GENERAL]
+        created_at:
+          type: string
+          format: date-time
+
+    # ==================== PROYECTOS ====================
+    Proyecto:
+      type: object
+      properties:
+        id_proyecto:
+          type: integer
+        id_cliente:
+          type: integer
+        nombre_proyecto:
+          type: string
+        centro_costos:
+          type: string
+        ubicacion:
+          type: string
+        estado:
+          type: string
+          enum: [ACTIVO, FINALIZADO, PAUSADO]
+        fecha_inicio:
+          type: string
+          format: date
+        fecha_fin_estimada:
+          type: string
+          format: date
+
+    # ==================== PROVEEDORES ====================
+    Proveedor:
+      type: object
+      properties:
+        id_proveedor:
+          type: integer
+        nombre:
+          type: string
+        nit:
+          type: string
+        contacto:
+          type: string
+        telefono:
+          type: string
+        email:
+          type: string
+        ciudad:
+          type: string
+        categoria:
+          type: string
+          enum: [FABRICANTE, DISTRIBUIDOR, SERVICIO_TECNICO, LOGISTICA]
+
+    # ==================== GARANTIAS ====================
+    Garantia:
+      type: object
+      properties:
+        id_garantia:
+          type: integer
+        id_activo:
+          type: integer
+        id_proveedor:
+          type: integer
+        numero_caso_interno:
+          type: string
+        rma_proveedor:
+          type: string
+        estado_proceso:
+          type: string
+          enum: [REGISTRADO, ENVIADO_PROVEEDOR, RECIBIDO_PROVEEDOR, RESUELTO_REEMPLAZADO, ENTREGADO_CLIENTE]
+        falla_reportada:
+          type: string
+        tipo_resolucion:
+          type: string
+          enum: [REPARADO, REEMPLAZADO, SIN_COBERTURA, PENDIENTE]
+
+    # ==================== MOVIMIENTOS ====================
+    Movimiento:
+      type: object
+      properties:
+        id_movimiento:
+          type: integer
+        id_usuario:
+          type: integer
+        id_item:
+          type: integer
+        id_activo:
+          type: integer
+        tipo_movimiento:
+          type: string
+          enum: [ENTRADA_COMPRA, SALIDA_INSTALACION, TRASLADO, DEVOLUCION, BAJA_DANO, AJUSTE, INGRESO_DESMONTE]
+        cantidad:
+          type: number
+        origen:
+          type: string
+        destino:
+          type: string
+        fecha_movimiento:
+          type: string
+          format: date-time
+
+    # ==================== ACTAS ENTREGA ====================
+    ActaEntrega:
+      type: object
+      properties:
+        id_acta:
+          type: integer
+        numero_acta:
+          type: string
+        id_usuario_tecnico:
+          type: integer
+        id_usuario_representante:
+          type: integer
+        id_proyecto:
+          type: integer
+        tipo_acta:
+          type: string
+          enum: [ENTREGA_EPP, ENTREGA_HERRAMIENTA, DESPACHO_PROYECTO, DEVOLUCION, INGRESO_DESMONTE]
+        estado_acta:
+          type: string
+          enum: [BORRADOR, FIRMADA, ANULADA]
+        fecha_entrega:
+          type: string
+          format: date-time
+        url_pdf:
+          type: string
+
+    # ==================== ALERTAS ====================
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        tipo:
+          type: string
+        prioridad:
+          type: string
+          enum: [critica, alta, media, baja]
+        estado:
+          type: string
+          enum: [activa, reconocida, resuelta, ignorada]
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        item_nombre:
+          type: string
+        valor_actual:
+          type: number
+        valor_umbral:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    # ==================== AUDITORIA ====================
+    AuditLog:
+      type: object
+      properties:
+        id_log:
+          type: integer
+        id_usuario:
+          type: integer
+        tabla_afectada:
+          type: string
+        accion:
+          type: string
+          enum: [CREATE, UPDATE, DELETE, LOGIN]
+        id_registro:
+          type: integer
+        valor_anterior:
+          type: string
+        valor_nuevo:
+          type: string
+        fecha_accion:
+          type: string
+          format: date-time
+
+    # ==================== ERRORES ====================
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==================== HEALTH ====================
+  /health:
+    get:
+      summary: Verificar estado del servidor
+      tags: [System]
+      security: []
+      responses:
+        "200":
+          description: Servidor funcionando
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheck"
+
+  # ==================== AUTH ====================
+  /auth/login:
+    post:
+      summary: Iniciar sesion
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required: [username, password]
+      responses:
+        "200":
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        "401":
+          description: Credenciales invalidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/refresh:
+    post:
+      summary: Renovar access token
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        "200":
+          description: Token renovado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+
+  /auth/me:
+    get:
+      summary: Obtener usuario autenticado
+      tags: [Auth]
+      responses:
+        "200":
+          description: Datos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # ==================== USERS ====================
+  /users:
+    get:
+      summary: Listar usuarios (ADMIN)
+      tags: [Users]
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: Crear usuario (ADMIN)
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        "201":
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id_user}:
+    put:
+      summary: Actualizar usuario
+      tags: [Users]
+      parameters:
+        - name: id_user
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        "200":
+          description: Usuario actualizado
+    delete:
+      summary: Eliminar usuario (ADMIN)
+      tags: [Users]
+      parameters:
+        - name: id_user
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Usuario eliminado
+
+  /users/audit:
+    get:
+      summary: Ver logs de auditoria
+      tags: [Users]
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Logs de auditoria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+
+  # ==================== INVENTORY ====================
+  /inventory/items:
+    get:
+      summary: Listar items del catalogo
+      tags: [Inventory]
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Lista de items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+    post:
+      summary: Crear nuevo item
+      tags: [Inventory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreate"
+      responses:
+        "201":
+          description: Item creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+
+  /inventory/items/{id_item}:
+    get:
+      summary: Obtener item por ID
+      tags: [Inventory]
+      parameters:
+        - name: id_item
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Datos del item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+    put:
+      summary: Actualizar item
+      tags: [Inventory]
+      parameters:
+        - name: id_item
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemCreate"
+      responses:
+        "200":
+          description: Item actualizado
+    delete:
+      summary: Eliminar item (soft delete)
+      tags: [Inventory]
+      parameters:
+        - name: id_item
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Item eliminado
+
+  /inventory/items/desmonte-bulk:
+    post:
+      summary: Registrar desmontes masivos
+      tags: [Inventory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DesmonteBulkCreate"
+      responses:
+        "201":
+          description: Desmontes registrados
+
+  /inventory/activos:
+    get:
+      summary: Listar activos
+      tags: [Inventory]
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            type: string
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Lista de activos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activo"
+    post:
+      summary: Crear activo
+      tags: [Inventory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivoCreate"
+      responses:
+        "201":
+          description: Activo creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activo"
+
+  /inventory/activos/{serial}:
+    get:
+      summary: Obtener activo por serial
+      tags: [Inventory]
+      parameters:
+        - name: serial
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Datos del activo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activo"
+
+  /inventory/activos/{id_activo}:
+    put:
+      summary: Actualizar activo
+      tags: [Inventory]
+      parameters:
+        - name: id_activo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Activo actualizado
+    delete:
+      summary: Eliminar activo
+      tags: [Inventory]
+      parameters:
+        - name: id_activo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Activo eliminado
+
+  /inventory/activos/{id_activo}/triaje:
+    patch:
+      summary: Actualizar calificacion tecnica (triaje)
+      tags: [Inventory]
+      parameters:
+        - name: id_activo
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                calificacion_tecnica:
+                  type: string
+                  enum: [BUENO, RECUPERABLE, DESECHO]
+                observaciones:
+                  type: string
+      responses:
+        "200":
+          description: Triaje actualizado
+
+  /inventory/activos/{id_activo}/historial:
+    get:
+      summary: Historial de ubicaciones del activo
+      tags: [Inventory]
+      parameters:
+        - name: id_activo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Historial de ubicaciones
+
+  /inventory/epp:
+    get:
+      summary: Listar asignaciones EPP
+      tags: [Inventory]
+      responses:
+        "200":
+          description: Lista de asignaciones EPP
+    post:
+      summary: Crear asignacion EPP
+      tags: [Inventory]
+      responses:
+        "201":
+          description: Asignacion EPP creada
+
+  # ==================== BUSINESS ====================
+  /business/clientes:
+    get:
+      summary: Listar clientes
+      tags: [Business]
+      responses:
+        "200":
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cliente"
+    post:
+      summary: Crear cliente
+      tags: [Business]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                nit:
+                  type: string
+                contacto:
+                  type: string
+                email_contacto:
+                  type: string
+                telefono:
+                  type: string
+                ciudad:
+                  type: string
+                tipo_cliente:
+                  type: string
+                  default: CORPORATIVO
+      responses:
+        "201":
+          description: Cliente creado
+
+  /business/clientes/{id_cliente}:
+    put:
+      summary: Actualizar cliente
+      tags: [Business]
+      parameters:
+        - name: id_cliente
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cliente actualizado
+    delete:
+      summary: Eliminar cliente
+      tags: [Business]
+      parameters:
+        - name: id_cliente
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Cliente eliminado
+
+  /business/proyectos:
+    get:
+      summary: Listar proyectos
+      tags: [Business]
+      responses:
+        "200":
+          description: Lista de proyectos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Proyecto"
+    post:
+      summary: Crear proyecto
+      tags: [Business]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_cliente:
+                  type: integer
+                nombre_proyecto:
+                  type: string
+                centro_costos:
+                  type: string
+                ubicacion:
+                  type: string
+                estado:
+                  type: string
+                  default: ACTIVO
+                fecha_inicio:
+                  type: string
+                  format: date
+                fecha_fin_estimada:
+                  type: string
+                  format: date
+      responses:
+        "201":
+          description: Proyecto creado
+
+  /business/proyectos/{id_proyecto}:
+    put:
+      summary: Actualizar proyecto
+      tags: [Business]
+      parameters:
+        - name: id_proyecto
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Proyecto actualizado
+    delete:
+      summary: Eliminar proyecto
+      tags: [Business]
+      parameters:
+        - name: id_proyecto
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Proyecto eliminado
+
+  /business/proveedores:
+    get:
+      summary: Listar proveedores
+      tags: [Business]
+      responses:
+        "200":
+          description: Lista de proveedores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Proveedor"
+    post:
+      summary: Crear proveedor
+      tags: [Business]
+      responses:
+        "201":
+          description: Proveedor creado
+
+  /business/proveedores/{id_proveedor}:
+    put:
+      summary: Actualizar proveedor
+      tags: [Business]
+      responses:
+        "200":
+          description: Proveedor actualizado
+    delete:
+      summary: Eliminar proveedor
+      tags: [Business]
+      responses:
+        "204":
+          description: Proveedor eliminado
+
+  /business/garantias:
+    get:
+      summary: Listar garantias
+      tags: [Business]
+      responses:
+        "200":
+          description: Lista de garantias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Garantia"
+    post:
+      summary: Crear caso de garantia
+      tags: [Business]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_activo:
+                  type: integer
+                id_proveedor:
+                  type: integer
+                falla_reportada:
+                  type: string
+                numero_caso_interno:
+                  type: string
+      responses:
+        "201":
+          description: Garantia creada
+
+  /business/garantias/{id_garantia}:
+    put:
+      summary: Actualizar garantia
+      tags: [Business]
+      responses:
+        "200":
+          description: Garantia actualizada
+    delete:
+      summary: Eliminar garantia
+      tags: [Business]
+      responses:
+        "204":
+          description: Garantia eliminada
+
+  /business/movimientos:
+    get:
+      summary: Listar movimientos de inventario
+      tags: [Business]
+      responses:
+        "200":
+          description: Lista de movimientos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movimiento"
+    post:
+      summary: Crear movimiento de inventario
+      tags: [Business]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_usuario:
+                  type: integer
+                id_item:
+                  type: integer
+                id_activo:
+                  type: integer
+                tipo_movimiento:
+                  type: string
+                cantidad:
+                  type: number
+                origen:
+                  type: string
+                destino:
+                  type: string
+      responses:
+        "201":
+          description: Movimiento creado
+
+  /business/actas:
+    get:
+      summary: Listar actas de entrega
+      tags: [Business]
+      responses:
+        "200":
+          description: Lista de actas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActaEntrega"
+    post:
+      summary: Crear acta de entrega
+      tags: [Business]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_usuario_tecnico:
+                  type: integer
+                id_usuario_representante:
+                  type: integer
+                id_proyecto:
+                  type: integer
+                tipo_acta:
+                  type: string
+                observaciones:
+                  type: string
+                detalles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id_item:
+                        type: integer
+                      id_activo:
+                        type: integer
+                      cantidad:
+                        type: number
+                      notas_estado:
+                        type: string
+      responses:
+        "201":
+          description: Acta creada
+
+  /business/actas/{id_acta}:
+    get:
+      summary: Obtener acta por ID
+      tags: [Business]
+      responses:
+        "200":
+          description: Datos del acta
+    put:
+      summary: Actualizar acta
+      tags: [Business]
+      responses:
+        "200":
+          description: Acta actualizada
+    delete:
+      summary: Eliminar acta
+      tags: [Business]
+      responses:
+        "204":
+          description: Acta eliminada
+
+  /business/actas/{id_acta}/generate:
+    post:
+      summary: Generar PDF de acta existente
+      tags: [Business]
+      responses:
+        "200":
+          description: PDF generado
+
+  /business/actas/generate:
+    post:
+      summary: Generar PDF desde datos inline
+      tags: [Business]
+      responses:
+        "200":
+          description: PDF generado
+
+  # ==================== ANALYTICS ====================
+  /analytics/summary:
+    get:
+      summary: Obtener estadisticas del dashboard
+      tags: [Analytics]
+      responses:
+        "200":
+          description: Resumen de metricas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_items:
+                    type: integer
+                  total_activos:
+                    type: integer
+                  alertas_activas:
+                    type: integer
+                  garantias_pendientes:
+                    type: integer
+                  usuarios_activos:
+                    type: integer
+
+  /analytics/search:
+    get:
+      summary: Busqueda global rapida
+      tags: [Analytics]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+      responses:
+        "200":
+          description: Resultados de busqueda
+
+  # ==================== REPORTS ====================
+  /reports/export/{module}:
+    get:
+      summary: Exportar modulo a Excel o PDF
+      tags: [Reports]
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [inventory, alerts, clientes, users, guarantees]
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [excel, pdf]
+            default: excel
+      responses:
+        "200":
+          description: Archivo descargable
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  # ==================== ALERTS ====================
+  /alerts:
+    get:
+      summary: Listar alertas
+      tags: [Alerts]
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [activa, reconocida, resuelta, ignorada]
+        - name: prioridad
+          in: query
+          schema:
+            type: string
+            enum: [critica, alta, media, baja]
+        - name: tipo
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de alertas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+    post:
+      summary: Crear alerta manual
+      tags: [Alerts]
+      responses:
+        "201":
+          description: Alerta creada
+
+  /alerts/summary:
+    get:
+      summary: Resumen de alertas para dashboard
+      tags: [Alerts]
+      responses:
+        "200":
+          description: Conteo de alertas por tipo/prioridad
+
+  /alerts/{id}:
+    delete:
+      summary: Eliminar alerta
+      tags: [Alerts]
+      responses:
+        "204":
+          description: Alerta eliminada
+
+  /alerts/{id}/estado:
+    patch:
+      summary: Actualizar estado de alerta
+      tags: [Alerts]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum: [activa, reconocida, resuelta, ignorada]
+      responses:
+        "200":
+          description: Estado actualizado
+
+  # ==================== REGIONALES ====================
+  /regionales:
+    get:
+      summary: Listar regionales
+      tags: [Regionales]
+      security: []
+      responses:
+        "200":
+          description: Lista de regionales
+
+  # ==================== IMPORT ====================
+  /import/excel:
+    post:
+      summary: Importar archivo Excel
+      tags: [Import]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                tipo:
+                  type: string
+                  enum: [laboratorio, clientes, garantias]
+      responses:
+        "200":
+          description: Resumen de importacion
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  creados:
+                    type: integer
+                  actualizados:
+                    type: integer
+                  errores:
+                    type: array
+                    items:
+                      type: string

@@ -1,0 +1,144 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+Backend/.env
+Frontend/.env
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache/
+.hypothesis/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# --- Frontend (Node/React/Vite) ---
+node_modules/
+Frontend/node_modules/
+Frontend/dist/
+Frontend/dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.local
+Frontend/.env.local
+Frontend/.env.development.local
+Frontend/.env.test.local
+Frontend/.env.production.local
+
+# --- IDEs / Editors ---
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.vscode-test/
+*.code-workspace
+
+# --- OS Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# --- Database ---
+Backend/Base_de_datos/*.sql
+!Backend/Base_de_datos/sigai_ses_db.sql
+
+# --- Misc ---
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+Backend/migrations/__pycache__/
+Backend/app/__pycache__/
+
+# --- Logs & Backups ---
+logs/
+backups/
+*.bak
+*.backup
+*.sql.gz
+*.sql.bz2
+*.sql.zip
+
+# --- Backend Specific ---
+Backend/logs/
+Backend/app/static/avatars/*
+!Backend/app/static/avatars/.gitkeep
+Backend/app/static/Securitas-logo-light.png
+Backend/__pycache__/
+Backend/app/**/__pycache__/
+Backend/.pytest_cache/
+Backend/*.egg-info/
+
+# --- Docker ---
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# --- SSL/Certificates ---
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+
+# --- Environment configs ---
+.env.production
+.env.staging
+.env.local
+.env.*.local

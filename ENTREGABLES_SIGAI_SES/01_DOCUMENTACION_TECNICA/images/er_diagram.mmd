@@ -1,0 +1,264 @@
+erDiagram
+    USUARIO ||--o{ BITACORA_AUDITORIA : genera
+    USUARIO ||--o{ ASIGNACION_EPP : gestiona
+    USUARIO ||--o{ SESION_USUARIO : posee
+    USUARIO }|--|| REGIONAL : pertenece
+    ITEM ||--o{ ACTIVO : contiene
+    ITEM ||--|| CONTROL_EXISTENCIAS : monitorea
+    ITEM ||--o{ MOVIMIENTO_INVENTARIO : registra
+    ACTIVO ||--o{ GARANTIA : tiene
+    ACTIVO ||--o{ HISTORIAL_UBICACION : registra
+    ACTIVO ||--o{ ASIGNACION_EPP : vinculado
+    ACTIVO ||--o{ MOVIMIENTO_INVENTARIO : afecta
+    ACTIVO }|--|| ITEM : clasifica
+    ACTIVO }|--o{ PROYECTO : asignado
+    ACTIVO }|--o{ CLIENTE : instalado
+    CLIENTE ||--o{ PROYECTO : posee
+    PROYECTO ||--o{ ACTA_ENTREGA : documenta
+    ACTA_ENTREGA ||--o{ DETALLE_ACTA : contiene
+    DETALLE_ACTA }|--|| ITEM : referencia
+    DETALLE_ACTA }|--o{ ACTIVO : incluye
+    GARANTIA }|--|| ACTIVO : cubre
+    GARANTIA }|--o{ PROVEEDOR : atiende
+    PROVEEDOR ||--o{ ACTIVO : suministra
+    ALERTA }|--|| ITEM : monitorea
+    ALERTA }|--o{ USUARIO : asignado_a
+
+    USUARIO {
+        int id_usuario PK
+        string nombre
+        string email UK
+        string password_hash
+        enum rol
+        int id_regional FK
+        string cedula UK
+        string codigo_empleado UK
+        boolean is_active
+        timestamp created_at
+    }
+
+    REGIONAL {
+        int id_regional PK
+        string nombre
+        string ciudad
+    }
+
+    SESION_USUARIO {
+        int id_sesion PK
+        int id_usuario FK
+        string token_hash
+        string ip_origen
+        string user_agent
+        timestamp created_at
+        timestamp expires_at
+        boolean revocado
+    }
+
+    ITEM {
+        int id_item PK
+        enum categoria
+        string sub_categoria
+        string nombre_equipo
+        string marca
+        string referencia UK
+        string codigo_item_interno UK
+        string unidad_medida
+        int stock_minimo
+        int compra_maxima
+        decimal costo_unitario
+        enum moneda
+        timestamp created_at
+        timestamp deleted_at
+    }
+
+    ACTIVO {
+        int id_activo PK
+        int id_item FK
+        string serial UK
+        enum estado_actual
+        enum condicion_fisica
+        string area_asignada
+        string responsable_sitio
+        string ubicacion_fisica
+        int id_proyecto_actual FK
+        int id_cliente_actual FK
+        int id_proveedor_compra FK
+        string numero_factura_compra
+        date fecha_compra
+        string activo_fijo_securitas
+        string credenciales_tecnicas
+        text observaciones
+        timestamp fecha_ingreso_laboratorio
+        timestamp fecha_triaje
+        enum calificacion_tecnica
+        timestamp updated_at
+    }
+
+    GARANTIA {
+        int id_garantia PK
+        int id_activo FK
+        int id_proveedor FK
+        int id_acta_devolucion FK
+        string numero_caso_interno UK
+        string rma_proveedor
+        string numero_factura_compra
+        date fecha_envio
+        date fecha_limite_estimada
+        date fecha_recibido_reparado
+        string credenciales_equipo
+        string area_origen
+        date fecha_inicio_garantia
+        int meses_garantia
+        enum tipo_resolucion
+        text falla_reportada
+        text comentarios_proceso
+        enum estado_proceso
+    }
+
+    MOVIMIENTO_INVENTARIO {
+        int id_movimiento PK
+        int id_usuario FK
+        int id_activo FK
+        int id_item FK
+        int id_acta FK
+        enum tipo_movimiento
+        decimal cantidad
+        string origen
+        string destino
+        timestamp fecha_movimiento
+        text notas
+    }
+
+    HISTORIAL_UBICACION {
+        int id_historial PK
+        int id_activo FK
+        string ubicacion_desde
+        timestamp fecha_desde
+        timestamp fecha_hasta
+        int id_usuario FK
+    }
+
+    CONTROL_EXISTENCIAS {
+        int id_item PK
+        decimal cantidad_actual
+        boolean punto_recompra_alerta
+    }
+
+    ASIGNACION_EPP {
+        int id_asignacion PK
+        int id_activo FK
+        int id_usuario FK
+        string talla
+        date fecha_entrega
+        date fecha_vencimiento
+        int id_acta FK
+        enum estado
+    }
+
+    CLIENTE {
+        int id_cliente PK
+        string nombre
+        string nit UK
+        string contacto
+        string email_contacto
+        string telefono
+        string direccion
+        string ciudad
+        string departamento
+        enum tipo_cliente
+        string ceco_asociado
+        timestamp created_at
+        timestamp deleted_at
+    }
+
+    PROYECTO {
+        int id_proyecto PK
+        int id_cliente FK
+        string nombre_proyecto
+        string centro_costos
+        string ubicacion
+        enum estado
+        date fecha_inicio
+        date fecha_fin_estimada
+        date fecha_cierre_real
+        text descripcion
+        timestamp created_at
+    }
+
+    PROVEEDOR {
+        int id_proveedor PK
+        string nombre
+        string nit UK
+        string contacto
+        string telefono
+        string email
+        string direccion
+        string ciudad
+        int dias_credito
+        enum categoria
+        timestamp created_at
+        timestamp deleted_at
+    }
+
+    ACTA_ENTREGA {
+        int id_acta PK
+        string numero_acta UK
+        int id_usuario_tecnico FK
+        int id_usuario_representante FK
+        int id_proyecto FK
+        enum tipo_acta
+        enum estado_acta
+        timestamp fecha_entrega
+        string url_pdf
+        text firma_tecnico_blob
+        text observaciones
+    }
+
+    DETALLE_ACTA {
+        int id_detalle PK
+        int id_acta FK
+        int id_item FK
+        int id_activo FK
+        decimal cantidad
+        string notas_estado
+    }
+
+    BITACORA_AUDITORIA {
+        int id_log PK
+        int id_usuario FK
+        string tabla_afectada
+        enum accion
+        int id_registro
+        text valor_anterior
+        text valor_nuevo
+        timestamp fecha_accion
+    }
+
+    ALERTA {
+        int id PK
+        timestamp created_at
+        timestamp updated_at
+        timestamp resolved_at
+        string tipo
+        enum prioridad
+        enum estado
+        string titulo
+        text descripcion
+        int item_id FK
+        string item_nombre
+        decimal valor_actual
+        decimal valor_umbral
+        string unidad
+        int asignado_a FK
+    }
+
+    REGLA_ALERTA {
+        int id PK
+        string nombre
+        string tipo
+        boolean activa
+        enum prioridad
+        text condicion
+        text descripcion
+        int cooldown_h
+    }
