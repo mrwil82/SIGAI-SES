@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: sigai-ses-api
+    runtime: python
+    repo: https://github.com/mrwil82/SIGAI-SES
+    plan: free
+    region: oregon
+    buildCommand: pip install -r Backend/requirements.txt
+    startCommand: cd Backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_SYNC
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "480"
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://*.onrender.com,http://localhost:8000,http://localhost:5173
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Administrador SIGAI
+      - key: ADMIN_CEDULA
+        value: "0000000000"
+      - key: ADMIN_CODIGO
+        value: ADM001
