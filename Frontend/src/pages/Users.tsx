@@ -202,7 +202,7 @@ const UsersPage: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">Gestión de Usuarios</h1>
           <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Control de acceso y roles del sistema (RBAC)</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <ExportMenu module="users" />
           <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} />

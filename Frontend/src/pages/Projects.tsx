@@ -9,7 +9,8 @@ import {
   Edit2, 
   Trash2, 
   ChevronRight,
-  Target
+  Target,
+  Download
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +36,7 @@ import { SearchableSelect } from '../components/SearchableSelect';
 import { ConfirmModal } from '../components/Fusion';
 import { useToast } from '../lib/toast';
 import { getProyectos, createProyecto, getClientes, deleteProyecto, updateProyecto } from '../services/business';
+import { downloadTemplate } from '../services/inventory';
 import { logger } from '../lib/logger';
 
 const Projects: React.FC = () => {
@@ -155,8 +157,12 @@ const Projects: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight">Gestión de Proyectos</h1>
           <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Locaciones de instalación y centros de costo</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <ExportMenu module="projects" />
+          <Button variant="neo" className="flex items-center gap-2" onClick={() => downloadTemplate("proyectos")}>
+            <Download size={14} />
+            Plantilla
+          </Button>
           <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} />
             Nuevo Proyecto
@@ -208,7 +214,7 @@ const Projects: React.FC = () => {
                       <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-blue border border-white/5 shadow-neo shrink-0">
                         <Briefcase size={18} />
                       </div>
-                      <div className="font-bold text-xs md:text-sm text-content-primary truncate max-w-[200px]">{proj.nombre_proyecto}</div>
+                      <div className="font-bold text-xs md:text-sm text-content-primary truncate max-w-[150px] sm:max-w-[250px] lg:max-w-none">{proj.nombre_proyecto}</div>
                     </div>
                   </TD>
                   <TD className="hidden md:table-cell">

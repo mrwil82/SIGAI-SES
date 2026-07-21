@@ -9,8 +9,8 @@ class Alert(Base):
     updated_at = Column(DateTime, onupdate=func.now())
     resolved_at = Column(DateTime, nullable=True)
     tipo = Column(String(50), nullable=False)
-    prioridad = Column(Enum('critica','alta','media','baja'), nullable=False)
-    estado = Column(Enum('activa','reconocida','resuelta','ignorada'), default='activa')
+    prioridad = Column(Enum('critica','alta','media','baja', name="alerta_prioridad"), nullable=False)
+    estado = Column(Enum('activa','reconocida','resuelta','ignorada', name="alerta_estado"), default='activa')
     titulo = Column(String(200), nullable=False)
     descripcion = Column(Text, nullable=True)
     item_id = Column(Integer, ForeignKey("items.id_item"), nullable=False)
@@ -27,7 +27,7 @@ class AlertRule(Base):
     nombre = Column(String(100), nullable=False)
     tipo = Column(String(50), nullable=False)
     activa = Column(Boolean, default=True)
-    prioridad = Column(Enum('critica','alta','media','baja'), nullable=False)
+    prioridad = Column(Enum('critica','alta','media','baja', name="regla_prioridad"), nullable=False)
     
     # Guardaremos JSON como texto
     

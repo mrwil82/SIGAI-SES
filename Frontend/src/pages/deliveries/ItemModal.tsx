@@ -149,8 +149,8 @@ const ItemModal: React.FC<ItemModalProps> = ({
           </div>
         </div>
 
-        <div className="overflow-y-auto flex-1">
-          <table className="w-full border-collapse">
+        <div className="overflow-x-auto overflow-y-auto flex-1">
+          <table className="w-full border-collapse" style={{ minWidth: 600 }}>
             <thead>
               <tr>
                 <th className="w-10 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm"></th>

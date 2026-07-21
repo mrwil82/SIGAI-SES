@@ -4,20 +4,47 @@ from sqlalchemy import func, or_
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from urllib.parse import quote
-from app.models import Item, Activo, Garantia, StockBulk, Cliente, Proyecto, Usuario
+from app.models import Item, Activo, Garantia, StockBulk, Cliente, Proyecto, Usuario, MovimientoInventario
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 
-async def get_dashboard_stats(db: AsyncSession):
+async def get_dashboard_stats(db: AsyncSession, time_range: str = "hoy"):
     
-    # Conteo total de activos por estado
+    now = datetime.now()
+    if time_range == "hoy":
+        threshold = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif time_range == "semana":
+        threshold = now - timedelta(days=7)
+    elif time_range == "mes":
+        threshold = now - timedelta(days=30)
+    else:
+        threshold = now - timedelta(days=365)
+    
+    # Activos con actividad en el período (filtrados por updated_at)
     
     res_status = await db.execute(
         select(Activo.estado_actual, func.count(Activo.id_activo))
+        .where(Activo.updated_at >= threshold)
         .group_by(Activo.estado_actual)
     )
     activos_status = {row[0]: row[1] for row in res_status.all()}
+    
+    # Nuevos ingresos a laboratorio en el período
+    
+    res_nuevos = await db.execute(
+        select(func.count(Activo.id_activo))
+        .where(Activo.fecha_ingreso_laboratorio >= threshold)
+    )
+    nuevos_ingresos = res_nuevos.scalar() or 0
+    
+    # Movimientos de inventario en el período
+    
+    res_mov = await db.execute(
+        select(func.count(MovimientoInventario.id_movimiento))
+        .where(MovimientoInventario.fecha_movimiento >= threshold)
+    )
+    movimientos_periodo = res_mov.scalar() or 0
     
     # Garantías críticas (más de 15 días abiertas)
     
@@ -40,6 +67,8 @@ async def get_dashboard_stats(db: AsyncSession):
 
     return {
         "activos_por_estado": activos_status,
+        "nuevos_ingresos": nuevos_ingresos,
+        "movimientos_periodo": movimientos_periodo,
         "garantias_criticas": garantias_criticas,
         "items_stock_bajo": stock_bajo
     }

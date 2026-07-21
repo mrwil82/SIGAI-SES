@@ -1,5 +1,14 @@
+import sys
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+from pathlib import Path
+
+
+def _get_env_path() -> str:
+    if getattr(sys, 'frozen', False):
+        return str(Path(sys.executable).parent / '.env')
+    return '.env'
 
 
 class Settings(BaseSettings):
@@ -16,7 +25,7 @@ class Settings(BaseSettings):
     # CORS: lista de orígenes permitidos, separado por comas (ej: http://localhost:5173,http://mi.frontend.com)
     CORS_ALLOWED_ORIGINS: Optional[str] = None
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=_get_env_path(), extra="ignore")
 
 
 settings = Settings()

@@ -27,8 +27,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem('refreshToken'));
+  const [token, setToken] = useState<string | null>(sessionStorage.getItem('token'));
+  const [refreshToken, setRefreshToken] = useState<string | null>(sessionStorage.getItem('refreshToken'));
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchUser = async () => {
@@ -61,15 +61,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const login = (newToken: string, newRefreshToken: string) => {
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('refreshToken', newRefreshToken);
+    sessionStorage.setItem('token', newToken);
+    sessionStorage.setItem('refreshToken', newRefreshToken);
     setToken(newToken);
     setRefreshToken(newRefreshToken);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('refreshToken');
     setToken(null);
     setRefreshToken(null);
     setUser(null);

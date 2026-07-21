@@ -29,7 +29,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -46,11 +46,11 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = sessionStorage.getItem('refreshToken');
 
       if (!refreshToken) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('refreshToken');
         window.location.href = '/login';
         return Promise.reject(error);
       }
@@ -79,8 +79,8 @@ api.interceptors.response.use(
         );
 
         const { access_token, refresh_token: newRefreshToken } = response.data;
-        localStorage.setItem('token', access_token);
-        localStorage.setItem('refreshToken', newRefreshToken);
+        sessionStorage.setItem('token', access_token);
+        sessionStorage.setItem('refreshToken', newRefreshToken);
 
         api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -89,8 +89,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('refreshToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {

@@ -8,8 +8,11 @@ router = APIRouter()
 # Endpoint para obtener estadísticas del dashboard
 
 @router.get("/summary")
-async def get_summary(db: AsyncSession = Depends(get_db)):
-    return await crud_analytics.get_dashboard_stats(db)
+async def get_summary(
+    time_range: str = Query("hoy", regex="^(hoy|semana|mes)$"),
+    db: AsyncSession = Depends(get_db)
+):
+    return await crud_analytics.get_dashboard_stats(db, time_range=time_range)
 
 @router.get("/search")
 async def quick_search(

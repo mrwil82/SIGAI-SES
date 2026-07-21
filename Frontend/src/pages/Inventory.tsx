@@ -36,6 +36,7 @@ import {
   updateInventoryItem,
   deleteInventoryItem,
   importInventory,
+  downloadTemplate,
 } from "../services/inventory";
 import { ExportMenu } from "../components/ExportMenu";
 import { useInventory } from "../hooks/useInventory";
@@ -230,24 +231,21 @@ const Inventory: React.FC = () => {
             Administra tu catálogo de equipos, herramientas y consumibles
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <Button
-            variant="neo"
-            className="flex items-center gap-2"
-            onClick={() => setIsImportModalOpen(true)}
-          >
-            <Download size={16} className="rotate-180" />
-            Carga Excel / CSV
-          </Button>
-          <ExportMenu module="inventory" />
-          <Button
-            className="flex items-center gap-2"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <Plus size={16} />
-            Nuevo Registro
-          </Button>
-        </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <ExportMenu module="inventory" />
+            <Button variant="neo" className="flex items-center gap-2" onClick={() => downloadTemplate("inventario_laboratorio")}>
+              <Download size={14} />
+              Plantilla
+            </Button>
+            <Button variant="neo" className="flex items-center gap-2" onClick={() => setIsImportModalOpen(true)}>
+              <Download size={16} className="rotate-180" />
+              Carga Excel
+            </Button>
+            <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
+              <Plus size={16} />
+              Nuevo Registro
+            </Button>
+          </div>
       </div>
 
       {alert && (
@@ -638,6 +636,17 @@ const Inventory: React.FC = () => {
                 </p>
               </div>
             </label>
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="neo" className="flex-1 text-[10px] py-2" onClick={() => downloadTemplate("inventario_laboratorio")}>
+              <Download size={14} className="mr-1" />
+              Plantilla Laboratorio
+            </Button>
+            <Button variant="neo" className="flex-1 text-[10px] py-2" onClick={() => downloadTemplate("inventario_clientes")}>
+              <Download size={14} className="mr-1" />
+              Plantilla Clientes
+            </Button>
           </div>
 
           <div className="space-y-3">

@@ -63,24 +63,42 @@ if not os.path.exists(python_exe):
 run(f'"{python_exe}" -m PyInstaller backend.spec --clean --noconfirm', BACKEND_DIR)
 
 # ── Resultado ──
-exe_path = os.path.join(BACKEND_DIR, "dist", "backend.exe")
+exe_name = "SIGAI-SES.exe"
+exe_path = os.path.join(BACKEND_DIR, "dist", exe_name)
 if os.path.exists(exe_path):
     print(f"\n{'='*60}")
-    print(f"  ✅ TODO LISTO: {exe_path}")
+    print(f"  ✅ BACKEND COMPILADO: {exe_path}")
     print(f"  Tamaño: {os.path.getsize(exe_path) / 1024 / 1024:.1f} MB")
     print(f"{'='*60}")
-    print()
-    print("  Para ejecutar:")
-    print(f"    {exe_path}")
-    print()
-    print("  Luego abre en el navegador:")
-    print("    http://localhost:8000")
-    print()
 else:
-    # Buscar en subcarpeta
-    alt = os.path.join(BACKEND_DIR, "dist", "backend", "backend.exe")
+    alt = os.path.join(BACKEND_DIR, "dist", "backend", exe_name)
     if os.path.exists(alt):
-        print(f"\n✅ TODO LISTO: {alt}")
+        exe_path = alt
+        print(f"\n✅ BACKEND COMPILADO: {exe_path}")
     else:
-        print("\n⚠️  No se encontró backend.exe en dist/")
+        print(f"\n⚠️  No se encontró {exe_name} en dist/")
         print("   Revisa la carpeta Backend/dist/ para el ejecutable.")
+        sys.exit(1)
+
+# ── Paso 4: Generar instalador con Inno Setup (si está instalado) ──
+step("4/4: Generando instalador con Inno Setup...")
+for ver in ["Inno Setup 7", "Inno Setup 6", "Inno Setup 5"]:
+    iscc = os.path.join(os.environ.get("PROGRAMFILES(x86)", "C:\\Program Files (x86)"), ver, "ISCC.exe")
+    if os.path.exists(iscc):
+        break
+    iscc = os.path.join(os.environ.get("PROGRAMFILES", "C:\\Program Files"), ver, "ISCC.exe")
+    if os.path.exists(iscc):
+        break
+
+if os.path.exists(iscc):
+    run(f'"{iscc}" installer.iss', ROOT)
+    installer = os.path.join(ROOT, "dist_installer", "SIGAI-SES-Setup-1.0.0.exe")
+    if os.path.exists(installer):
+        print(f"\n{'='*60}")
+        print(f"  ✅ INSTALADOR LISTO: {installer}")
+        print(f"{'='*60}")
+else:
+    print("\n⚠️  Inno Setup no instalado. Saltando generacion del instalador.")
+    print("   Descarga Inno Setup desde: https://jrsoftware.org/isdl.php")
+    print(f"\n  El .exe portable esta en: {exe_path}")
+    print("  Para ejecutarlo directamente, haz doble clic en el archivo.")

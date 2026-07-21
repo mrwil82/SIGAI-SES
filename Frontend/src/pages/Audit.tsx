@@ -41,7 +41,7 @@ const AuditDetails: React.FC<{ data: string | null }> = ({ data }) => {
         {entries.map(([key, val]) => (
           <div key={key} className="flex gap-1">
             <span className="text-emerald-primary font-bold">{key}:</span>
-            <span className="text-content-secondary truncate max-w-[150px]">{String(val)}</span>
+            <span className="text-content-secondary truncate max-w-[120px] md:max-w-[200px] lg:max-w-[350px]">{String(val)}</span>
           </div>
         ))}
       </div>
@@ -104,7 +104,9 @@ const Audit: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">Registro de Auditoría</h1>
           <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Historial completo de acciones y cambios en el sistema</p>
         </div>
-        <ExportMenu module="audit" />
+        <div className="flex items-center gap-2">
+          <ExportMenu module="audit" />
+        </div>
       </div>
 
       <Card className="mb-8">

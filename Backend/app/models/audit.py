@@ -8,7 +8,7 @@ class AuditLog(Base):
     id_log = Column(Integer, primary_key=True, index=True)
     id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"))
     tabla_afectada = Column(String(50), nullable=False)
-    accion = Column(Enum("CREATE", "UPDATE", "DELETE", "LOGIN"), nullable=False)
+    accion = Column(Enum("CREATE", "UPDATE", "DELETE", "LOGIN", name="audit_accion"), nullable=False)
     id_registro = Column(Integer) 
     valor_anterior = Column(Text, nullable=True) 
     valor_nuevo = Column(Text, nullable=True)     

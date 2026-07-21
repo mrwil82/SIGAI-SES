@@ -12,6 +12,7 @@ from typing import Optional, Dict, Any, List
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.models.inventory import Item, Activo, StockBulk
+from app.models.business import Cliente, Proyecto
 from app.models.guarantees import Garantia
 
 router = APIRouter()
@@ -327,6 +328,21 @@ async def _procesar_inventario_laboratorio(
     return {"items": items_creados, "activos": activos_creados}
 
 
+async def _crear_cliente_si_no_existe(db: AsyncSession, nombre: str) -> Optional[int]:
+    if not nombre:
+        return None
+    nombre = nombre.strip()
+    result = await db.execute(select(Cliente).where(Cliente.nombre == nombre))
+    existing = result.scalars().first()
+    if existing:
+        return existing.id_cliente
+    cliente = Cliente(nombre=nombre, tipo_cliente="CORPORATIVO")
+    db.add(cliente)
+    await db.flush()
+    await db.refresh(cliente)
+    logger.info(f"  Cliente creado: {nombre}")
+    return cliente.id_cliente
+
 async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
     """
     Procesa Formato_Inventario_Clientes_*.xlsx
@@ -339,6 +355,8 @@ async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
         "Inventario Consolidado",
     ]
     items_creados = 0
+    clientes_creados = 0
+    clientes_vistos = set()
 
     for sheet_name in xl.sheet_names:
         if sheet_name not in HOJAS_DATOS:
@@ -370,6 +388,7 @@ async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
         compra_col = find_col(["COMPRA MÁXIMA", "COMPRA MAXIMA"])
         cliente_col = find_col(["CORPORATIVO"])
         sistema_col = find_col(["SISTEMA"])
+        ceco_col = find_col(["CECO COMPRA", "SECO COMPRA", "CECO"])
 
         if not item_col:
             logger.warning(f"Hoja '{sheet_name}' sin columna ITEM, omitida.")
@@ -379,6 +398,14 @@ async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
             nombre = _clean(row.get(item_col))
             if not nombre or nombre.upper() in ("ITEM", "NAN"):
                 continue
+
+            # Crear cliente si es nuevo
+            cliente_nombre = _clean(row.get(cliente_col)) if cliente_col else None
+            if cliente_nombre and cliente_nombre not in clientes_vistos:
+                clientes_vistos.add(cliente_nombre)
+                cid = await _crear_cliente_si_no_existe(db, cliente_nombre)
+                if cid:
+                    clientes_creados += 1
 
             codigo = _clean(row.get(codigo_col)) if codigo_col else None
             if codigo:
@@ -423,7 +450,7 @@ async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
         await db.flush()
         logger.info(f"Hoja '{sheet_name}': procesada.")
 
-    return {"items": items_creados}
+    return {"items": items_creados, "clientes": clientes_creados}
 
 
 async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
@@ -432,6 +459,10 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
     """
     garantias_creadas = 0
     items_stock_creados = 0
+    clientes_creados = 0
+    proyectos_creados = 0
+    clientes_cache = {}
+    proyectos_cache = {}
 
     # Hoja GARANTIAS
     if "GARANTIAS" in xl.sheet_names:
@@ -461,17 +492,57 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
         rma_col = find_col(df, "RMA")
         factura_col = find_col(df, "NUMERO DE FACTURA")
         envio_col = find_col(df, "FECHA DE ENVIO")
-        recibido_col = find_col(df, "FECHA DE  RECIBIDO", "FECHA RECIBIDO")
+        recibido_col = find_col(df, "FECHA DE  RECIBIDO", "FECHA RECIBIDO", "RECIBIDO DE EQUIPO")
         estado_col = find_col(df, "ESTADO DEL CASO")
         comentario_col = find_col(df, "COMENTARIOS DEL PROCESO")
-        credencial_col = find_col(df, "CREDENCIALES", "IP/CLAVES")
+        credencial_col = find_col(df, "CREDENCIALES", "IP/CLAVES", "CONTRASEÑAS", "OBSERVACIONES")
         area_col = find_col(df, "AREA", "ÁREA")
         meses_col = find_col(df, "MESES")
+        cliente_col = find_col(df, "CLIENTE")
+        proyecto_col = find_col(df, "PROYECTO")
 
         for _, row in df.iterrows():
             caso = _clean(row.get(caso_col)) if caso_col else None
             if not caso or caso.upper() in ("NUMERO DE CASO", "NAN"):
                 continue
+
+            # Crear Cliente si no existe
+            cliente_nombre = _clean(row.get(cliente_col)) if cliente_col else None
+            id_cliente = None
+            if cliente_nombre and cliente_nombre not in clientes_cache:
+                cid = await _crear_cliente_si_no_existe(db, cliente_nombre)
+                if cid:
+                    clientes_cache[cliente_nombre] = cid
+                    clientes_creados += 1
+            id_cliente = clientes_cache.get(cliente_nombre)
+
+            # Crear Proyecto si no existe
+            proyecto_nombre = _clean(row.get(proyecto_col)) if proyecto_col else None
+            id_proyecto = None
+            if proyecto_nombre:
+                cache_key = f"{cliente_nombre}|{proyecto_nombre}"
+                if cache_key not in proyectos_cache:
+                    result = await db.execute(
+                        select(Proyecto).where(
+                            Proyecto.nombre_proyecto == proyecto_nombre,
+                            Proyecto.id_cliente == id_cliente,
+                        )
+                    )
+                    existing_p = result.scalars().first()
+                    if existing_p:
+                        proyectos_cache[cache_key] = existing_p.id_proyecto
+                    else:
+                        p = Proyecto(
+                            nombre_proyecto=proyecto_nombre,
+                            id_cliente=id_cliente,
+                            estado="ACTIVO",
+                        )
+                        db.add(p)
+                        await db.flush()
+                        await db.refresh(p)
+                        proyectos_cache[cache_key] = p.id_proyecto
+                        proyectos_creados += 1
+                id_proyecto = proyectos_cache.get(cache_key)
 
             serial = _clean(row.get(serial_col)) if serial_col else None
             if not serial:
@@ -502,6 +573,8 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
                     condicion_fisica="PARA_REPARAR",
                     area_asignada="LABORATORIO",
                     observaciones=f"Creado desde garantía {caso}",
+                    id_cliente_actual=id_cliente,
+                    id_proyecto_actual=id_proyecto,
                 )
                 db.add(activo)
                 await db.flush()
@@ -589,7 +662,7 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
         await db.flush()
         logger.info(f"Hoja '{sheet_name}': procesada.")
 
-    return {"garantias": garantias_creadas, "items_stock": items_stock_creados}
+    return {"garantias": garantias_creadas, "items_stock": items_stock_creados, "clientes": clientes_creados, "proyectos": proyectos_creados}
 
 
 # ============================================================
@@ -618,6 +691,149 @@ def _detectar_tipo(filename: str) -> str | None:
     if "asignacion" in name or "garantia" in name or "numero_de_caso" in name:
         return "asignacion_numero"
     return None
+
+
+@router.get("/templates/{module}")
+async def descargar_plantilla(module: str):
+    """
+    Descarga una plantilla Excel (.xlsx) para carga masiva de datos.
+    Modulos: inventario_laboratorio, inventario_clientes, garantias, clientes, proveedores, desmontes, proyectos
+    """
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from fastapi.responses import FileResponse
+    import tempfile
+
+    TEMPLATES = {
+        "inventario_laboratorio": {
+            "filename": "Plantilla_Inventario_Laboratorio.xlsx",
+            "sheets": {
+                "INVENTARIO HERRAMIENTA": [
+                    "MARCA", "DESCRIPCION DEL EQUIPO", "MODELO", "CANTIDAD", "UBICACIÓN", "ESTADO"
+                ],
+                "ESTANTES ACTUALIZADO": [
+                    "CODIGO", "MARCA", "DESCRIPCION DEL EQUIPO", "MODELO", "CANTIDAD", "UBICACIÓN", "ACTIVO FIJO", "ESTADO", "OBSERVACIONES"
+                ],
+                "STOCK ELKIN": [
+                    "CODIGO", "MARCA", "DESCRIPCION DEL EQUIPO", "MODELO", "CANTIDAD", "UBICACIÓN", "ACTIVO FIJO", "ESTADO"
+                ],
+                "ALSEA": [
+                    "MARCA", "DESCRIPCION DEL EQUIPO", "MODELO", "CANTIDAD", "UBICACIÓN", "ACTIVO FIJO", "ESTADO", "TIENDA"
+                ],
+            }
+        },
+        "inventario_clientes": {
+            "filename": "Plantilla_Inventario_Clientes.xlsx",
+            "sheets": {
+                "Inventario Consolidado": [
+                    "SES", "Comercial", "Sistema", "Corporativo", "SECURITAS", "Ceco Compra",
+                    "Codigo", "Item", "Marca", "Referencia", "Cantidad en Almacén", "Stock",
+                    "Punto de recompra"
+                ],
+            }
+        },
+        "garantias": {
+            "filename": "Plantilla_Garantias.xlsx",
+            "sheets": {
+                "GARANTIAS": [
+                    "NUMERO DE CASO", "FECHA DE SOLICTUD", "CLIENTE", "PROYECTO",
+                    "DESCRIPCIÓN DE EQUIPO", "REFERENCIA DE EQUIPO", "SERIAL",
+                    "FALLA", "OBSERVACIÓNES DE EQUIPO (IP, CONTRASEÑAS)",
+                    "APLICA GARANTA", "PROVEEDOR", "NUMERO DE FACTURA",
+                    "RMA DEL PROVEEDOR", "FECHA DE ENVIO A PROVEDOR",
+                    "COMENTARIOS DEL PROCESO", "ESTADO DEL EQUIPO",
+                    "FECHA DE RECIBIDO DE EQUIPO", "OBSERVACION FINAL DEL PROCESO",
+                    "AREA", "ESTADO DEL CASO"
+                ],
+                "STOCK MONITOREO": [
+                    "NUMERO DE CASO", "DESCRIPCIÓN DE EQUIPO", "REFERENCIA DE EQUIPO", "PROYECTO NUEVO"
+                ],
+                "STOCK MANTENIMIENTO": [
+                    "NUMERO DE CASO", "DESCRIPCIÓN DE EQUIPO", "REFERENCIA DE EQUIPO", "PROYECTO NUEVO", "ENTREGADO A"
+                ],
+                "STOCK INSTALACION": [
+                    "NUMERO DE CASO", "DESCRIPCIÓN DE EQUIPO", "REFERENCIA DE EQUIPO", "PROYECTO NUEVO", "ENTREGADO A"
+                ],
+                "STOCK SOLUCIONES": [
+                    "NUMERO DE CASO", "DESCRIPCIÓN DE EQUIPO", "REFERENCIA DE EQUIPO", "PROYECTO NUEVO"
+                ],
+            }
+        },
+        "clientes": {
+            "filename": "Plantilla_Clientes.xlsx",
+            "sheets": {
+                "CLIENTES": [
+                    "NOMBRE", "NIT", "CONTACTO", "EMAIL", "TELEFONO",
+                    "DIRECCION", "CIUDAD", "DEPARTAMENTO", "TIPO_CLIENTE", "CECO"
+                ]
+            }
+        },
+        "proveedores": {
+            "filename": "Plantilla_Proveedores.xlsx",
+            "sheets": {
+                "PROVEEDORES": [
+                    "NOMBRE", "NIT", "CONTACTO", "TELEFONO", "EMAIL",
+                    "DIRECCION", "CIUDAD", "DIAS_CREDITO", "CATEGORIA"
+                ]
+            }
+        },
+        "desmontes": {
+            "filename": "Plantilla_Desmontes.xlsx",
+            "sheets": {
+                "DESMONTES": [
+                    "MARCA", "DESCRIPCION DEL EQUIPO", "MODELO", "CANTIDAD",
+                    "UBICACIÓN", "SERIAL", "ACTIVO FIJO", "ESTADO", "OBSERVACIONES",
+                    "CLIENTE", "PROYECTO"
+                ]
+            }
+        },
+        "proyectos": {
+            "filename": "Plantilla_Proyectos.xlsx",
+            "sheets": {
+                "PROYECTOS": [
+                    "NOMBRE_PROYECTO", "DESCRIPCION", "CLIENTE",
+                    "FECHA_INICIO", "FECHA_FIN_ESTIMADA", "ESTADO",
+                    "DIRECCION", "CIUDAD", "RESPONSABLE"
+                ]
+            }
+        },
+    }
+
+    if module not in TEMPLATES:
+        raise HTTPException(status_code=404, detail=f"Plantilla '{module}' no disponible. Opciones: {', '.join(TEMPLATES.keys())}")
+
+    tpl = TEMPLATES[module]
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)
+
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    thin_border = Border(
+        left=Side(style="thin"), right=Side(style="thin"),
+        top=Side(style="thin"), bottom=Side(style="thin")
+    )
+
+    for sheet_name, columns in tpl["sheets"].items():
+        ws = wb.create_sheet(title=sheet_name)
+        for col_idx, col_name in enumerate(columns, 1):
+            cell = ws.cell(row=1, column=col_idx, value=col_name)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = thin_border
+            ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = max(len(col_name) + 4, 18)
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+    wb.save(tmp.name)
+    tmp.close()
+
+    return FileResponse(
+        tmp.name,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=tpl["filename"],
+        headers={"Content-Disposition": f'attachment; filename="{tpl["filename"]}"'}
+    )
 
 
 @router.post("/excel")
@@ -660,6 +876,11 @@ async def import_excel(
             resultado = await procesador(xl, db)
 
         await db.commit()
+        try:
+            from app.crud.crud_alerts import evaluar_alertas
+            await evaluar_alertas(db)
+        except Exception:
+            pass
         return {
             "mensaje": "Importación completada exitosamente.",
             "archivo": file.filename,

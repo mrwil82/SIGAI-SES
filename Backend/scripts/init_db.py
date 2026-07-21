@@ -15,6 +15,7 @@ import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from app.core.config import settings
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import select, text
 from app.models import Base
@@ -27,10 +28,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "mysql+aiomysql://sigai:sigai_password@localhost:3306/sigai_ses"
-)
+DATABASE_URL = settings.DATABASE_URL
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@securitas.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
@@ -103,7 +101,7 @@ async def init_database():
     logger.info("SIGAI-SES - Inicializacion de Base de Datos")
     logger.info("=" * 60)
 
-    engine = create_async_engine(DATABASE_URL, echo=False)
+    engine = create_async_engine(DATABASE_URL, echo=False, connect_args={"ssl": "require"})
 
     try:
         if not await wait_for_db(engine):

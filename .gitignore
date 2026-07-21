@@ -137,6 +137,24 @@ docker-compose.prod.yml
 *.pfx
 *.jks
 
+# --- Built frontend assets in backend static ---
+Backend/app/static/web/
+
+# --- PDFs & generated docs ---
+*.pdf
+ENTREGABLES_SIGAI_SES/
+Eisvogel-3.5.1/
+
+# --- Scripts & tools ---
+generar_pdfs.ps1
+installer.iss
+*.spec
+
+# --- Debug / dev scripts ---
+Backend/scripts/debug_*.py
+Backend/scripts/check_data.py
+Backend/scripts/import_all_excel.py
+
 # --- Environment configs ---
 .env.production
 .env.staging

@@ -18,10 +18,10 @@ class Garantia(Base):
     area_origen = Column(String(100))
     fecha_inicio_garantia = Column(DateTime)
     meses_garantia = Column(Integer)
-    tipo_resolucion = Column(Enum('REPARADO','REEMPLAZADO','SIN_COBERTURA','PENDIENTE'), default='PENDIENTE')
+    tipo_resolucion = Column(Enum('REPARADO','REEMPLAZADO','SIN_COBERTURA','PENDIENTE', name="tipo_resolucion"), default='PENDIENTE')
     falla_reportada = Column(Text)
     comentarios_proceso = Column(Text)
-    estado_proceso = Column(Enum("REGISTRADO", "ENVIADO_PROVEEDOR", "RECIBIDO_PROVEEDOR", "RESUELTO_REEMPLAZADO", "ENTREGADO_CLIENTE"), default="REGISTRADO")
+    estado_proceso = Column(Enum("REGISTRADO", "ENVIADO_PROVEEDOR", "RECIBIDO_PROVEEDOR", "RESUELTO_REEMPLAZADO", "ENTREGADO_CLIENTE", name="estado_proceso_garantia"), default="REGISTRADO")
     
     activo = relationship("app.models.inventory.Activo")
     proveedor = relationship("app.models.business.Proveedor")

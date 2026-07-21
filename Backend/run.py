@@ -4,7 +4,36 @@ import sys
 import webbrowser
 import threading
 import subprocess
+import io
 from pathlib import Path
+
+
+ENV_CONTENT = """# SIGAI-SES Backend - Variables de Entorno
+DATABASE_URL=postgresql+asyncpg://postgres.ifzbrwmprefcjrvyscys:Sigaises2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres
+DATABASE_URL_SYNC=postgresql://postgres.ifzbrwmprefcjrvyscys:Sigaises2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres
+SECRET_KEY=clave_secreta_super_segura_123
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=480
+CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:8000,http://localhost:5173,http://127.0.0.1,http://127.0.0.1:8000,http://127.0.0.1:5173
+ADMIN_EMAIL=admin@securitas.com
+ADMIN_PASSWORD=Admin123!
+ADMIN_NAME=Administrador SIGAI
+ADMIN_CEDULA=0000000000
+ADMIN_CODIGO=ADM001
+"""
+
+
+def get_app_dir():
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).parent
+    return Path(__file__).parent
+
+
+def ensure_env():
+    app_dir = get_app_dir()
+    env_path = app_dir / '.env'
+    if not env_path.exists():
+        env_path.write_text(ENV_CONTENT, encoding='utf-8')
 
 
 def get_exe_path():
@@ -47,6 +76,17 @@ def open_browser():
 
 
 if __name__ == "__main__":
+    app_dir = get_app_dir()
+    os.chdir(app_dir)
+    sys.path.insert(0, str(app_dir))
+
+    ensure_env()
+
+    if sys.stderr is None:
+        sys.stderr = io.TextIOWrapper(io.BytesIO(), encoding='utf-8')
+    if sys.stdout is None:
+        sys.stdout = io.TextIOWrapper(io.BytesIO(), encoding='utf-8')
+
     port = int(os.environ.get("PORT", "8000"))
 
     create_desktop_shortcut()

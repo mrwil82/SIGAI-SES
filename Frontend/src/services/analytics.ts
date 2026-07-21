@@ -1,7 +1,7 @@
 import api from './api';
 
-export const getDashboardStats = async () => {
-  const response = await api.get('/analytics/summary');
+export const getDashboardStats = async (timeRange: string = 'hoy') => {
+  const response = await api.get(`/analytics/summary?time_range=${timeRange}`);
   return response.data;
 };
 

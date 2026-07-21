@@ -10,7 +10,8 @@ import {
   Edit2,
   Trash2,
   Phone,
-  Briefcase
+  Briefcase,
+  Download
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -34,6 +35,7 @@ import {
 } from '../components/Fusion';
 import { useToast } from '../lib/toast';
 import { getClientes, createCliente, updateCliente, deleteCliente } from '../services/business';
+import { downloadTemplate } from '../services/inventory';
 import { logger } from '../lib/logger';
 
 const Clients: React.FC = () => {
@@ -142,8 +144,12 @@ const Clients: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight">Directorio de Clientes</h1>
           <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Gestión de cuentas corporativas e internas</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <ExportMenu module="clientes" />
+          <Button variant="neo" className="flex items-center gap-2" onClick={() => downloadTemplate("clientes")}>
+            <Download size={14} />
+            Plantilla
+          </Button>
           <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} />
             Nuevo Cliente

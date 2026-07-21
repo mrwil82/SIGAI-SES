@@ -45,7 +45,7 @@ const Alerts: React.FC = () => {
       // Fetch alerts first; users list is optional (may require ADMIN). Use Promise.allSettled so a 403 on users doesn't block alerts.
       const results = await Promise.allSettled([
         api.get('/alerts/', { params: { estado, page: currentPage, page_size: pageSize } }),
-        getUsers(1, 1000)
+        getUsers(1, 500)
       ]);
 
       const alertsResult = results[0];
@@ -161,17 +161,20 @@ const Alerts: React.FC = () => {
           <h1 className="text-2xl font-bold">Panel de Alertas</h1>
           <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Gestión y control de incidencias en tiempo real</p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="neo" className="flex items-center gap-2" onClick={() => setIsCreateModalOpen(true)}>
-            <Plus size={16}/> Nueva Alerta
-          </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <ExportMenu module="alerts" />
           <NeoSelect value={estado} onChange={(e: any) => { setEstado(e.target.value); setCurrentPage(1); }} className="w-full sm:w-40">
             <option value="activa">Activas</option>
             <option value="reconocida">Reconocidas</option>
             <option value="resuelta">Resueltas</option>
             <option value="ignorada">Ignoradas</option>
           </NeoSelect>
-          <ExportMenu module="alerts" />
+          <Button variant="neo" className="flex items-center gap-2" onClick={() => setIsCreateModalOpen(true)}>
+            <Plus size={16}/> Nueva Alerta
+          </Button>
+          <Button variant="neo" className="flex items-center gap-2" onClick={async () => { try { await api.post('/alerts/evaluar'); toast.success('Alertas evaluadas'); fetchData(); } catch { toast.error('Error al evaluar alertas'); } }}>
+            <AlertTriangle size={14}/> Evaluar
+          </Button>
         </div>
       </div>
 

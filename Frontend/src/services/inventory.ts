@@ -68,3 +68,17 @@ export const importInventory = async (file: File, idProyecto?: number, idCliente
   });
   return response.data;
 };
+
+export const downloadTemplate = async (module: string) => {
+  const response = await api.get(`/import/templates/${module}`, {
+    responseType: 'blob'
+  });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `Plantilla_${module}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};

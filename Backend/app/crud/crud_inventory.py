@@ -315,6 +315,18 @@ async def delete_activo(db: AsyncSession, activo_id: int, current_user_id: int):
         await create_audit_log(db, current_user_id, "activos", "DELETE", activo_id, nuevo={"status": "deleted"})
     return db_activo
 
+async def get_activo_by_id(db: AsyncSession, activo_id: int):
+    result = await db.execute(
+        select(Activo)
+        .options(
+            joinedload(Activo.item).joinedload(Item.stock_bulk),
+            joinedload(Activo.proyecto),
+            joinedload(Activo.cliente_actual)
+        )
+        .filter(Activo.id_activo == activo_id)
+    )
+    return result.scalars().first()
+
 async def get_activo_by_serial(db: AsyncSession, serial: str):
     result = await db.execute(
         select(Activo)

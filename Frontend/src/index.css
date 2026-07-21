@@ -10,57 +10,163 @@
   to   { transform: scaleX(0); }
 }
 
-:root {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  
-  /* Backgrounds */
-  --bg0:     #0A0F0D;
-  --bg1:     #101820;
-  --bg2:     #141F1A;
-  --bg3:     #1A2830;
-  --bg4:     #1E3038;
-  --bginput: #0C1614;
+/* ===== TEMA VERDE (default) ===== */
+:root,
+[data-theme="green"] {
+  --bg0: 10 15 13;
+  --bg1: 16 24 32;
+  --bg2: 20 31 26;
+  --bg3: 26 40 48;
+  --bg4: 30 48 56;
+  --bginput: 12 22 20;
 
-  /* Brand Emerald */
-  --emerald:        #00C26A;
-  --emerald-bright: #00E87A;
-  --emerald-glow:   #00FF88;
-  --emerald-muted:  #0D3D26;
-  --emerald-deep:   #071F14;
+  --emerald-primary: 0 194 106;
+  --emerald-bright: 0 232 122;
+  --emerald-glow: 0 255 136;
+  --emerald-muted: 13 61 38;
+  --emerald-deep: 7 31 20;
 
-  /* Charts */
-  --chart-green:  #00C26A;
-  --chart-blue:   #4A9EFF;
-  --chart-orange: #FF8C42;
-  --chart-purple: #9B6DFF;
-  --chart-teal:   #00D4CC;
+  --chart-green: 0 194 106;
+  --chart-blue: 74 158 255;
+  --chart-orange: 255 140 66;
+  --chart-purple: 155 109 255;
+  --chart-teal: 0 212 204;
 
-  /* Semantics */
-  --gold:   #F5A623;
-  --danger: #FF4D4D;
-  --cyan:   #00D4CC;
+  --gold: 245 166 35;
+  --danger: 255 77 77;
+  --cyan: 0 212 204;
 
-  /* Text */
-  --t1: #E8F5EC;
-  --t2: #9AB8A4;
-  --t3: #5A7A65;
+  --content-primary: 232 245 236;
+  --content-secondary: 154 184 164;
+  --content-muted: 90 122 101;
+
+  --shadow-neo: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.03);
+  --shadow-neo-inset: inset 3px 3px 8px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.03);
+  --shadow-glow-sm: 0 0 12px rgba(0,194,106,0.3);
+}
+
+/* ===== TEMA AZUL COBALTO (más negro) ===== */
+[data-theme="blue"] {
+  --bg0: 5 7 14;
+  --bg1: 8 12 26;
+  --bg2: 12 18 38;
+  --bg3: 16 26 50;
+  --bg4: 20 34 62;
+  --bginput: 6 10 20;
+
+  --emerald-primary: 55 135 250;
+  --emerald-bright: 85 165 255;
+  --emerald-glow: 120 185 255;
+  --emerald-muted: 16 40 80;
+  --emerald-deep: 8 20 45;
+
+  --chart-green: 55 135 250;
+  --chart-blue: 85 165 255;
+  --chart-orange: 255 140 66;
+  --chart-purple: 155 109 255;
+  --chart-teal: 0 200 195;
+
+  --gold: 245 166 35;
+  --danger: 255 77 77;
+  --cyan: 0 200 195;
+
+  --content-primary: 210 225 245;
+  --content-secondary: 130 155 195;
+  --content-muted: 80 105 145;
+
+  --shadow-neo: 4px 4px 12px rgba(0,0,0,0.6), -2px -2px 8px rgba(255,255,255,0.03);
+  --shadow-neo-inset: inset 3px 3px 8px rgba(0,0,0,0.6), inset -1px -1px 4px rgba(255,255,255,0.03);
+  --shadow-glow-sm: 0 0 12px rgba(55,135,250,0.3);
+}
+
+/* ===== TEMA BLANCO HUESO ===== */
+[data-theme="bone"] {
+  --bg0: 28 26 22;
+  --bg1: 38 34 28;
+  --bg2: 46 42 34;
+  --bg3: 56 50 42;
+  --bg4: 66 60 50;
+  --bginput: 32 30 24;
+
+  --emerald-primary: 185 170 140;
+  --emerald-bright: 205 190 160;
+  --emerald-glow: 225 210 180;
+  --emerald-muted: 65 58 46;
+  --emerald-deep: 38 34 26;
+
+  --chart-green: 185 170 140;
+  --chart-blue: 170 180 195;
+  --chart-orange: 215 170 110;
+  --chart-purple: 185 170 205;
+  --chart-teal: 165 190 180;
+
+  --gold: 210 185 140;
+  --danger: 215 90 80;
+  --cyan: 165 190 180;
+
+  --content-primary: 245 240 232;
+  --content-secondary: 200 190 175;
+  --content-muted: 150 140 125;
+
+  --shadow-neo: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.04);
+  --shadow-neo-inset: inset 3px 3px 8px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.04);
+  --shadow-glow-sm: 0 0 12px rgba(185,170,140,0.3);
+}
+
+/* ===== TEMA ARENA CREMA ===== */
+[data-theme="sand"] {
+  --bg0: 34 30 24;
+  --bg1: 44 38 30;
+  --bg2: 52 46 36;
+  --bg3: 62 54 44;
+  --bg4: 72 64 52;
+  --bginput: 38 34 26;
+
+  --emerald-primary: 205 180 140;
+  --emerald-bright: 220 198 162;
+  --emerald-glow: 238 218 186;
+  --emerald-muted: 70 58 44;
+  --emerald-deep: 42 34 24;
+
+  --chart-green: 205 180 140;
+  --chart-blue: 175 185 200;
+  --chart-orange: 225 175 115;
+  --chart-purple: 195 175 210;
+  --chart-teal: 170 195 185;
+
+  --gold: 220 190 145;
+  --danger: 225 95 85;
+  --cyan: 170 195 185;
+
+  --content-primary: 248 242 234;
+  --content-secondary: 205 192 175;
+  --content-muted: 155 142 125;
+
+  --shadow-neo: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.04);
+  --shadow-neo-inset: inset 3px 3px 8px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.04);
+  --shadow-glow-sm: 0 0 12px rgba(205,180,140,0.3);
 }
 
 body {
   margin: 0;
-  background-color: #0A0F0D;
-  color: #E8F5EC;
+  background-color: rgb(var(--bg0));
+  color: rgb(var(--content-primary));
   min-height: 100vh;
+}
+
+select option {
+  background-color: #ffffff;
+  color: #111111;
 }
 
 @layer components {
   .neo-raised {
-    box-shadow: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.03);
+    box-shadow: var(--shadow-neo);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
+
   .neo-inset {
-    box-shadow: inset 3px 3px 8px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.03);
+    box-shadow: var(--shadow-neo-inset);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 

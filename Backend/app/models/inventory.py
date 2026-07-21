@@ -6,7 +6,7 @@ from app.db.session import Base
 class Item(Base):
     __tablename__ = "items"
     id_item = Column(Integer, primary_key=True, index=True)
-    categoria = Column(Enum("MONITOREO", "MANTENIMIENTO", "INSTALACION", "SOLUCIONES", "EPP", "CONSUMIBLE", "HERRAMIENTA_LAB", "REPUESTO"), nullable=False)
+    categoria = Column(Enum("MONITOREO", "MANTENIMIENTO", "INSTALACION", "SOLUCIONES", "EPP", "CONSUMIBLE", "HERRAMIENTA_LAB", "REPUESTO", name="item_categoria"), nullable=False)
     sub_categoria = Column(String(100))
     nombre_equipo = Column(String(255), nullable=False)
     marca = Column(String(100))
@@ -16,7 +16,7 @@ class Item(Base):
     stock_minimo = Column(Integer, default=5)
     compra_maxima = Column(Integer, default=20)
     costo_unitario = Column(DECIMAL(12, 2), default=0.00)
-    moneda = Column(Enum("COP", "USD", "EUR"), server_default="COP")
+    moneda = Column(Enum("COP", "USD", "EUR", name="moneda"), server_default="COP")
     created_at = Column(TIMESTAMP, server_default=func.now())
     deleted_at = Column(TIMESTAMP, nullable=True)
     
@@ -27,8 +27,8 @@ class Activo(Base):
     id_activo = Column(Integer, primary_key=True, index=True)
     id_item = Column(Integer, ForeignKey("items.id_item"))
     serial = Column(String(100), unique=True, nullable=False)
-    estado_actual = Column(Enum("DISPONIBLE", "INSTALADO", "EN_GARANTIA", "REPARADO", "LABORATORIO", "DESMONTE", "BAJA", "OBSOLETO"), default="DISPONIBLE")
-    condicion_fisica = Column(Enum("NUEVO", "USADO_BUENO", "PARA_REPARAR", "SULFATADO", "SIN_CONTRAPESOS", "DAÑADO"), default="NUEVO")
+    estado_actual = Column(Enum("DISPONIBLE", "INSTALADO", "EN_GARANTIA", "REPARADO", "LABORATORIO", "DESMONTE", "BAJA", "OBSOLETO", name="estado_activo"), default="DISPONIBLE")
+    condicion_fisica = Column(Enum("NUEVO", "USADO_BUENO", "PARA_REPARAR", "SULFATADO", "SIN_CONTRAPESOS", "DAÑADO", name="condicion_fisica"), default="NUEVO")
     area_asignada = Column(String(100))
     responsable_sitio = Column(String(100))
     ubicacion_fisica = Column(String(255))
@@ -42,7 +42,7 @@ class Activo(Base):
     observaciones = Column(Text)
     fecha_ingreso_laboratorio = Column(TIMESTAMP, nullable=True)
     fecha_triaje = Column(TIMESTAMP, nullable=True)
-    calificacion_tecnica = Column(Enum("BUENO", "RECUPERABLE", "DESECHO"), default="BUENO")
+    calificacion_tecnica = Column(Enum("BUENO", "RECUPERABLE", "DESECHO", name="calificacion_tecnica"), default="BUENO")
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     
     item = relationship("Item")
@@ -66,7 +66,7 @@ class MovimientoInventario(Base):
     id_activo = Column(Integer, ForeignKey("activos.id_activo"), nullable=True)
     id_item = Column(Integer, ForeignKey("items.id_item"))
     id_acta = Column(Integer, ForeignKey("actas_entrega.id_acta"), nullable=True)
-    tipo_movimiento = Column(Enum("ENTRADA_COMPRA", "SALIDA_INSTALACION", "TRASLADO", "DEVOLUCION", "BAJA_DAÑO", "AJUSTE", "INGRESO_DESMONTE"), nullable=False)
+    tipo_movimiento = Column(Enum("ENTRADA_COMPRA", "SALIDA_INSTALACION", "TRASLADO", "DEVOLUCION", "BAJA_DAÑO", "AJUSTE", "INGRESO_DESMONTE", name="tipo_movimiento"), nullable=False)
     cantidad = Column(DECIMAL(12, 2), default=1.00)
     origen = Column(String(100))
     destino = Column(String(100))
@@ -99,7 +99,7 @@ class EPPAssignacion(Base):
     fecha_entrega = Column(Date, nullable=False)
     fecha_vencimiento = Column(Date)
     id_acta = Column(Integer, ForeignKey("actas_entrega.id_acta"))
-    estado = Column(Enum("ACTIVO", "DEVUELTO", "VENCIDO", "PERDIDO"), server_default="ACTIVO")
+    estado = Column(Enum("ACTIVO", "DEVUELTO", "VENCIDO", "PERDIDO", name="epp_estado"), server_default="ACTIVO")
     
     activo = relationship("Activo")
     usuario = relationship("app.models.user.Usuario")

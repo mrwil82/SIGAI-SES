@@ -12,3 +12,13 @@ export const actualizarTriajeActivo = async (id_activo: number, payload: { calif
   });
   return data;
 };
+
+export const getActivoById = async (id_activo: number) => {
+  const { data } = await api.get(`/inventory/activos/id/${id_activo}`);
+  return data;
+};
+
+export const deleteActivo = async (id_activo: number) => {
+  const { data } = await api.delete(`/inventory/activos/${id_activo}`);
+  return data;
+};

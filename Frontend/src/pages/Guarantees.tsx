@@ -10,7 +10,8 @@ import {
   Edit2,
   Trash2,
   ExternalLink,
-  ClipboardList
+  ClipboardList,
+  Download
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +37,7 @@ import {
 import { SearchableSelect } from '../components/SearchableSelect';
 import { useToast } from '../lib/toast';
 import { getGarantias, createGarantia, getProveedores, updateGarantia, deleteGarantia } from '../services/business';
-import { getActivos } from '../services/inventory';
+import { getActivos, downloadTemplate } from '../services/inventory';
 import { logger } from '../lib/logger';
 
 const Guarantees: React.FC = () => {
@@ -178,8 +179,12 @@ const Guarantees: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight">Gestión de Garantías</h1>
           <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Seguimiento de procesos de retorno y soporte técnico</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <ExportMenu module="guarantees" />
+          <Button variant="neo" className="flex items-center gap-2" onClick={() => downloadTemplate("garantias")}>
+            <Download size={14} />
+            Plantilla
+          </Button>
           <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} />
             Nueva Garantía
@@ -233,14 +238,14 @@ const Guarantees: React.FC = () => {
                       <div className="font-bold text-xs md:text-sm text-content-primary font-mono">{garantia.numero_caso_interno}</div>
                       <div className="text-[9px] md:text-[10px] text-content-muted flex items-center gap-1.5">
                         <ClipboardList size={10} className="text-chart-teal shrink-0" />
-                        <span className="truncate max-w-[80px] md:max-w-none">RMA: {garantia.rma_proveedor || 'PEND'}</span>
+                        <span className="truncate max-w-[80px] sm:max-w-none">RMA: {garantia.rma_proveedor || 'PEND'}</span>
                       </div>
                       <div className="sm:hidden text-[9px] text-emerald-primary font-mono">S/N: {garantia.activo?.serial}</div>
                     </div>
                   </TD>
                   <TD className="hidden sm:table-cell">
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-content-primary truncate max-w-[150px] md:max-w-[200px]">{garantia.activo?.item?.nombre_equipo}</span>
+                      <span className="text-xs font-bold text-content-primary truncate max-w-[120px] md:max-w-[180px] lg:max-w-[250px]">{garantia.activo?.item?.nombre_equipo}</span>
                       <span className="text-[10px] text-emerald-primary font-mono mt-0.5">S/N: {garantia.activo?.serial}</span>
                     </div>
                   </TD>

@@ -23,6 +23,7 @@ from app.api.endpoints import (
     auth, users, inventory, business, analytics, 
     reports, alerts, regionales, import_data, monitoring
 )
+import sys
 import logging
 import logging.config
 import os
@@ -34,6 +35,44 @@ from app.core.logger import set_request_id, set_user_id
 
 LOG_DIR = os.getenv("LOG_DIR", "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
+
+_has_console = sys.stderr is not None
+
+_handlers = {
+    "file": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": os.path.join(LOG_DIR, "app.log"),
+        "maxBytes": 10485760,
+        "backupCount": 5,
+        "formatter": "standard",
+        "level": "INFO",
+    },
+    "error_file": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": os.path.join(LOG_DIR, "error.log"),
+        "maxBytes": 10485760,
+        "backupCount": 5,
+        "formatter": "standard",
+        "level": "ERROR",
+    },
+    "access_file": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": os.path.join(LOG_DIR, "access.log"),
+        "maxBytes": 10485760,
+        "backupCount": 5,
+        "formatter": "standard",
+        "level": "INFO",
+    },
+}
+
+if _has_console:
+    _handlers["console"] = {
+        "class": "logging.StreamHandler",
+        "formatter": "standard",
+        "level": "INFO",
+    }
+
+_main_handlers = list(_handlers.keys())
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -47,40 +86,10 @@ LOGGING_CONFIG = {
             "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         },
     },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
-            "level": "INFO",
-        },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "app.log"),
-            "maxBytes": 10485760,
-            "backupCount": 5,
-            "formatter": "standard",
-            "level": "INFO",
-        },
-        "error_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "error.log"),
-            "maxBytes": 10485760,
-            "backupCount": 5,
-            "formatter": "standard",
-            "level": "ERROR",
-        },
-        "access_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(LOG_DIR, "access.log"),
-            "maxBytes": 10485760,
-            "backupCount": 5,
-            "formatter": "standard",
-            "level": "INFO",
-        },
-    },
+    "handlers": _handlers,
     "loggers": {
         "": {
-            "handlers": ["console", "file", "error_file"],
+            "handlers": _main_handlers,
             "level": "INFO",
             "propagate": True,
         },
@@ -201,13 +210,14 @@ async def log_requests(request: Request, call_next):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    msg = str(exc) or type(exc).__name__
     logger.error(
-        f"GLOBAL ERROR | {request.method} {request.url.path} | Error: {str(exc)}",
+        f"GLOBAL ERROR | {request.method} {request.url.path} | Error: {msg}",
         exc_info=True,
     )
     return JSONResponse(
         status_code=500,
-        content={"detail": "Error interno del servidor", "message": str(exc)},
+        content={"detail": "Error interno del servidor", "message": msg},
     )
 
 
@@ -223,18 +233,10 @@ app.include_router(import_data.router, prefix="/api/v1/import", tags=["import"])
 app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["monitoring"])
 
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Bienvenido al API de SIGAI-SES",
-        "status": "Running",
-        "version": "1.0.0"
-    }
-
-
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 # ── Servir frontend compilado (cuando existe la carpeta web/) ──
 web_dir = os.path.join(static_dir, 'web')
@@ -246,6 +248,10 @@ if os.path.exists(index_path):
     if os.path.exists(assets_dir):
         app.mount('/assets', StaticFiles(directory=assets_dir), name='web_assets')
 
+    @app.get('/', include_in_schema=False)
+    async def serve_root():
+        return FR(index_path)
+
     @app.get('/{full_path:path}', include_in_schema=False)
     async def serve_frontend(full_path: str):
         if full_path.startswith(('api/', 'static/', 'docs', 'openapi')):
@@ -255,3 +261,11 @@ if os.path.exists(index_path):
         if os.path.isfile(fp):
             return FR(fp)
         return FR(index_path)
+else:
+    @app.get("/")
+    async def root():
+        return {
+            "message": "Bienvenido al API de SIGAI-SES",
+            "status": "Running",
+            "version": "1.0.0"
+        }

@@ -4,6 +4,7 @@ from typing import List, Optional, Any
 from sqlalchemy.future import select
 from app.db.session import get_db
 from app.crud import crud_alerts
+from app.crud.crud_alerts import evaluar_alertas
 from app.schemas.alerts import AlertRead, AlertUpdate, AlertEstado
 from app.schemas.common import PaginatedResponse
 from app.core.pagination import paginate
@@ -87,6 +88,12 @@ async def eliminar_alerta(
     if not alerta:
         raise HTTPException(status_code=404, detail="Alerta no encontrada")
     return {"message": "Alerta eliminada correctamente"}
+
+@router.post("/evaluar")
+async def trigger_evaluate_alerts(db: AsyncSession = Depends(get_db)):
+    """Ejecuta manualmente el motor de reglas para generar alertas de stock y garantías."""
+    await evaluar_alertas(db)
+    return {"message": "Alertas evaluadas correctamente"}
 
 @router.post("/", response_model=AlertRead)
 async def crear_alerta(

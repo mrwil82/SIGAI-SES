@@ -14,7 +14,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Info,
-  ChevronDown,
   Menu,
   UserCog,
   Briefcase,
@@ -24,7 +23,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getDashboardAlerts } from "../services/alerts";
 import { globalSearch } from "../services/analytics";
-import UserSettingsModal from "./UserSettingsModal";
 import { logger } from "../lib/logger";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
@@ -92,7 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
         className="absolute inset-0 bg-bg0/80 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`relative w-full max-w-lg my-8 bg-bg1 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
+      <div className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/5 bg-bg2">
           <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-emerald-primary">
             {title}
@@ -203,7 +201,7 @@ export const Alert: React.FC<AlertProps> = ({ type, message, onClose }) => {
     >
       <Icon className={`${config.color} shrink-0 mt-0.5`} size={16} />
       <p
-        className={`text-[10px] md:text-xs ${config.color} flex-1 leading-relaxed`}
+        className={`text-[10px] md:text-xs ${config.color} flex-1 leading-relaxed break-words`}
       >
         {message}
       </p>
@@ -262,26 +260,19 @@ export const NeoSelect = React.forwardRef<
   HTMLSelectElement,
   React.SelectHTMLAttributes<HTMLSelectElement>
 >(({ children, ...props }, ref) => (
-  <div className="relative">
-    <select
-      {...props}
-      id={props.id || props.name}
-      ref={ref}
-      style={{ colorScheme: "dark" }}
-      className={`
-        w-full bg-bg2 border border-white/10 rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3 appearance-none
-        text-xs md:text-sm text-content-primary outline-none
-        focus:ring-1 focus:ring-emerald-primary/30 transition-all
-        ${props.className || ""}
-      `}
-    >
-      {children}
-    </select>
-    <ChevronDown
-      size={14}
-      className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-content-muted pointer-events-none"
-    />
-  </div>
+  <select
+    {...props}
+    id={props.id || props.name}
+    ref={ref}
+    className={`
+      w-full bg-bg2 border border-white/10 rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3
+      text-xs md:text-sm text-content-primary outline-none
+      focus:ring-1 focus:ring-emerald-primary/30 transition-all
+      ${props.className || ""}
+    `}
+  >
+    {children}
+  </select>
 ));
 
 export const NeoTextarea = React.forwardRef<
@@ -292,7 +283,7 @@ export const NeoTextarea = React.forwardRef<
     {...props}
     ref={ref}
     className={`
-      w-full bg-bginput border border-white/5 rounded-xl px-4 py-3 min-h-[100px]
+      w-full bg-bginput border border-white/5 rounded-xl px-4 py-3 min-h-[100px] resize-y
       text-sm text-content-primary outline-none shadow-neo-inset
       focus:ring-1 focus:ring-emerald-primary/30 transition-all
       ${props.className || ""}
@@ -747,13 +738,10 @@ const Sidebar = ({
 const Navbar = ({
   onMenuClick,
   onToggleSidebar,
-  onSettingsClick,
 }: {
   onMenuClick: () => void;
   onToggleSidebar: () => void;
-  onSettingsClick: () => void;
 }) => {
-  const [showSettings, setShowSettings] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
   const [alerts, setAlerts] = useState<any>(null);
 
@@ -928,11 +916,11 @@ const Navbar = ({
           />
           <NavButton
             icon={<Settings size={18} />}
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => navigate('/settings')}
           />
 
           {showAlerts && alerts && (
-            <div className="absolute right-0 top-12 w-80 md:w-96 bg-bg3 border border-white/10 rounded-2xl shadow-2xl p-6 z-50 animate-in fade-in zoom-in duration-200">
+            <div className="absolute right-0 top-12 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-bg3 border border-white/10 rounded-2xl shadow-2xl p-6 z-50 animate-in fade-in zoom-in duration-200">
               <h3 className="font-bold text-[10px] md:text-xs uppercase text-content-primary mb-4 flex justify-between items-center">
                 <span>Notificaciones</span>
                 <span className="bg-emerald-primary/10 text-emerald-primary px-2 py-0.5 rounded-full">
@@ -994,22 +982,6 @@ const Navbar = ({
             </div>
           )}
 
-          {showSettings && (
-            <div className="absolute top-12 right-0 w-48 bg-bg2 border border-white/5 shadow-2xl rounded-xl p-2 z-50">
-              <button className="w-full text-left px-4 py-2 text-xs font-bold text-content-muted hover:text-emerald-primary hover:bg-white/5 rounded-lg transition-colors">
-                Perfil de Usuario
-              </button>
-              <button
-                onClick={() => {
-                  onSettingsClick();
-                  setShowSettings(false);
-                }}
-                className="w-full text-left px-4 py-2 text-xs font-bold text-content-muted hover:text-emerald-primary hover:bg-white/5 rounded-lg transition-colors"
-              >
-                Preferencias
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </header>
@@ -1023,7 +995,6 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   return (
     <ToastProvider>
@@ -1063,21 +1034,12 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
           <Navbar
             onMenuClick={() => setIsSidebarOpen(true)}
             onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            onSettingsClick={() => setShowSettingsModal(true)}
           />
           <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar text-[10px] md:text-xs">
             {children}
           </main>
         </div>
       </div>
-
-      {/* Modal de Preferencias */}
-      {showSettingsModal && (
-        <UserSettingsModal
-          isOpen={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-        />
-      )}
     </ToastProvider>
   );
 };

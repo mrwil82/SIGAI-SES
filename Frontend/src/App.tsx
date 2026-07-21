@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './components/Toaster';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
@@ -23,6 +24,7 @@ import Settings from './pages/Settings';
 function App() {
   return (
     <AuthProvider>
+      <ThemeProvider>
       <ToastProvider>
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ErrorBoundary>
@@ -47,6 +49,7 @@ function App() {
           </ErrorBoundary>
         </Router>
       </ToastProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

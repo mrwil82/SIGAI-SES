@@ -22,7 +22,7 @@ class Usuario(Base):
     nombre = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
-    rol = Column(Enum(UserRole), nullable=False)
+    rol = Column(Enum(UserRole, name="userrole"), nullable=False)
     id_regional = Column(Integer, ForeignKey("regionales.id_regional"))
     cedula = Column(String(20), unique=True, index=True)
     codigo_empleado = Column(String(20), unique=True, index=True)

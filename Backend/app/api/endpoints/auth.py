@@ -48,7 +48,7 @@ async def login(
     # Almacenar sesión 
     
     token_payload = decode_token(refresh_token)
-    expires_at = datetime.fromtimestamp(token_payload["exp"], tz=timezone.utc) if token_payload else None
+    expires_at = datetime.fromtimestamp(token_payload["exp"]) if token_payload else None
     
     nueva_sesion = SesionUsuario(
         id_usuario=int(getattr(user, "id_usuario")),
@@ -83,7 +83,7 @@ async def refresh_token_endpoint(refresh_token: str, db: AsyncSession = Depends(
         select(SesionUsuario).filter(
             SesionUsuario.token_hash == token_hash,
             SesionUsuario.revocado == False,
-            SesionUsuario.expires_at > datetime.now(timezone.utc)
+            SesionUsuario.expires_at > datetime.now()
         )
     )
     sesion = result.scalars().first()

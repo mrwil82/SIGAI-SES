@@ -161,6 +161,17 @@ async def update_activo_triaje(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.get("/activos/id/{id_activo}", response_model=Activo)
+async def read_activo_by_id(
+    id_activo: int,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    activo = await crud_inventory.get_activo_by_id(db, activo_id=id_activo)
+    if not activo:
+        raise HTTPException(status_code=404, detail="Activo no encontrado")
+    return activo
+
 @router.get("/activos/{serial}", response_model=Activo)
 async def read_activo_by_serial(serial: str, db: AsyncSession = Depends(get_db)):
     activo = await crud_inventory.get_activo_by_serial(db, serial=serial)
@@ -212,7 +223,7 @@ async def delete_item(
 async def delete_activo(
     id_activo: int, 
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN"))
+    current_user = Depends(require_roles("ADMIN", "TECNICO_LABORATORIO"))
 ):
     activo = await crud_inventory.delete_activo(db, activo_id=id_activo, current_user_id=current_user.id_usuario)
     if not activo:

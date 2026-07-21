@@ -48,9 +48,10 @@ const COLORS = ['#00C26A', '#3B82F6', '#EAB308', '#A855F7', '#EF4444', '#6366F1'
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
+    const label = payload[0].payload?.name ?? payload[0].name;
     return (
       <div className="bg-bg3 border border-white/10 p-3 rounded-xl shadow-2xl backdrop-blur-md">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary mb-1">{payload[0].name}</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary mb-1">{label}</p>
         <p className="text-xl font-black text-emerald-primary">{payload[0].value}</p>
       </div>
     );
@@ -71,7 +72,7 @@ const Dashboard: React.FC = () => {
       setIsLoading(true);
       try {
         const [statsData, auditData] = await Promise.all([
-          getDashboardStats(),
+          getDashboardStats(timeRange),
           getAuditLogs(1, 50)
         ]);
         setStats(statsData);
@@ -154,6 +155,10 @@ const Dashboard: React.FC = () => {
 
   const totalActivos = stats?.activos_por_estado ? Object.values(stats.activos_por_estado).reduce((a: any, b: any) => Number(a) + Number(b), 0) : 0;
   const enGarantia = Number(stats?.activos_por_estado?.EN_GARANTIA || 0);
+  const nuevosIngresos = Number(stats?.nuevos_ingresos || 0);
+  const movimientosPeriodo = Number(stats?.movimientos_periodo || 0);
+
+  const timeRangeLabel = timeRange === 'hoy' ? 'hoy' : timeRange === 'semana' ? '7 días' : '30 días';
 
   const pieData = stats?.activos_por_estado ? Object.entries(stats.activos_por_estado).map(([name, value]) => ({
     name: name.replace(/_/g, ' '),
@@ -203,10 +208,10 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard title="Total Activos" value={totalActivos} icon={<Package />} trend="+4.2%" color="blue" />
-        <StatCard title="En Garantía" value={enGarantia} icon={<ShieldCheck />} trend="+12%" color="emerald" />
-        <StatCard title="Stock Crítico" value={Number(stats?.items_stock_bajo || 0)} icon={<AlertTriangle />} trend="Atención" color="gold" trendUp={false} />
-        <StatCard title="Eficiencia Lab" value="94%" icon={<TrendingUp />} trend="Óptimo" color="purple" />
+        <StatCard title={`Activos (${timeRangeLabel})`} value={totalActivos} icon={<Package />} trend="En período" color="blue" />
+        <StatCard title="En Garantía" value={enGarantia} icon={<ShieldCheck />} trend="Actual" color="emerald" />
+        <StatCard title="Nuevos Ingresos" value={nuevosIngresos} icon={<TrendingUp />} trend={timeRangeLabel} color="purple" />
+        <StatCard title="Movimientos" value={movimientosPeriodo} icon={<History />} trend={timeRangeLabel} color="gold" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -305,7 +310,7 @@ const Dashboard: React.FC = () => {
                     <TD className="text-xs text-content-primary">
                       {a.usuario?.nombre || a.usuario?.email || `ID ${a.id_usuario}`}
                     </TD>
-                    <TD className="text-[10px] text-content-muted max-w-[200px] truncate">
+                    <TD className="text-[10px] text-content-muted max-w-[120px] lg:max-w-[250px] truncate">
                       {(() => {
                         try {
                           if (!a.valor_nuevo) return '---';
@@ -328,7 +333,7 @@ const Dashboard: React.FC = () => {
         <div className="xl:col-span-4 space-y-8">
           <Card className="p-6">
             <SectionTitle>Accesos Rápidos</SectionTitle>
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mt-4">
                 <QuickAccessBtn icon={<Package size={18} />} label="Inventario" onClick={() => navigate('/inventory')} />
                 <QuickAccessBtn icon={<ShieldCheck size={18} />} label="Garantías" onClick={() => navigate('/guarantees')} />
                 <QuickAccessBtn icon={<Users size={18} />} label="Clientes" onClick={() => navigate('/clients')} />

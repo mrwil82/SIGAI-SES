@@ -12,7 +12,7 @@ scheduler = AsyncIOScheduler()
 async def evaluate_alerts_job():
     from app.crud.crud_alerts import evaluar_alertas
     db_url = settings.DATABASE_URL
-    engine = create_async_engine(db_url, echo=False)
+    engine = create_async_engine(db_url, echo=False, connect_args={"ssl": "require"})
     async_session = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
     try:
         async with async_session() as db:
@@ -35,6 +35,14 @@ def start_scheduler():
         )
         scheduler.start()
         logger.info("APScheduler iniciado correctamente")
+        # Ejecutar evaluación inmediatamente al arrancar
+        scheduler.add_job(
+            evaluate_alerts_job,
+            trigger="date",
+            id="evaluate_alerts_startup",
+            name="Evaluar alertas al inicio",
+            replace_existing=True,
+        )
 
 
 def stop_scheduler():

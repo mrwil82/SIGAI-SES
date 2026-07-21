@@ -6,8 +6,12 @@ Uso: python -m scripts.seed_admin
 import asyncio
 import os
 import sys
+from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Cargar .env desde Backend/
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import select
@@ -16,7 +20,7 @@ from app.core.security import get_password_hash
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "mysql+aiomysql://sigai:sigai_password@localhost:3306/sigai_ses"
+    "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
 )
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@securitas.com")
@@ -27,7 +31,7 @@ ADMIN_CODIGO = os.getenv("ADMIN_CODIGO", "ADM001")
 
 
 async def create_admin():
-    engine = create_async_engine(DATABASE_URL, echo=False)
+    engine = create_async_engine(DATABASE_URL, echo=False, connect_args={"ssl": "require"})
     async_session = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as db:
