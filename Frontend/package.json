@@ -9,7 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "cap:build": "npm run build && npx cap copy && npx cap sync",
-    "cap:apk": "cd android && ./gradlew assembleDebug"
+    "cap:apk": "cd android && gradlew assembleDebug"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.0",
