@@ -50,7 +50,7 @@ websockets==16.0
 click==8.3.3
 colorama==0.4.6
 Pygments==2.20.0
-packaging==26.2
+packaging==24.2
 
 # --- Rate Limiting ---
 slowapi==0.1.9
