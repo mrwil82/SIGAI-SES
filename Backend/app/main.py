@@ -27,13 +27,19 @@ import sys
 import logging
 import logging.config
 import os
+from pathlib import Path
 import time
 import json
 import uuid
 from datetime import datetime, timezone
 from app.core.logger import set_request_id, set_user_id
 
-LOG_DIR = os.getenv("LOG_DIR", "logs")
+if getattr(sys, 'frozen', False):
+    APP_DIR = Path(sys.executable).parent
+else:
+    APP_DIR = Path(__file__).parent.parent
+
+LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
 os.makedirs(LOG_DIR, exist_ok=True)
 
 _has_console = sys.stderr is not None
