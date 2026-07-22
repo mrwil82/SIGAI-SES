@@ -153,23 +153,20 @@ try:
     cors_env = getattr(settings, "CORS_ALLOWED_ORIGINS", None)
     if cors_env and cors_env.strip():
         allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+        origin_regex = None
     else:
         allowed_origins = [
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://localhost",
-            "capacitor://localhost",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1",
             "https://sigai-ses-api.onrender.com",
         ]
+        origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^capacitor://localhost$|^file://$"
 except Exception:
     allowed_origins = ["*"]
+    origin_regex = None
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

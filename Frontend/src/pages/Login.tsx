@@ -35,14 +35,19 @@ const Login: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Login error:", err);
+      console.error("Login error string:", err.message);
+      console.error("Login error response:", err.response);
+      console.error("Login error response data:", err.response?.data);
       const detail = err.response?.data?.detail;
+      const status = err.response?.status;
+      const errMsg = err.message || "desconocido";
       setError(
         Array.isArray(detail)
           ? detail
               .map((e: any) => e.msg)
               .filter(Boolean)
               .join("; ")
-          : detail || "Error al iniciar sesión. Verifique sus credenciales.",
+          : detail || `Error (${status}): ${errMsg}`,
       );
     } finally {
       setIsLoading(false);
