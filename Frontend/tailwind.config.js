@@ -13,6 +13,7 @@ export default {
         'bg3': 'rgb(var(--bg3) / <alpha-value>)',
         'bg4': 'rgb(var(--bg4) / <alpha-value>)',
         'bginput': 'rgb(var(--bginput) / <alpha-value>)',
+        'border-muted': 'rgb(var(--border-muted) / <alpha-value>)',
         'emerald': {
           primary: 'rgb(var(--emerald-primary) / <alpha-value>)',
           bright:  'rgb(var(--emerald-bright) / <alpha-value>)',

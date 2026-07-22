@@ -224,7 +224,7 @@ const UsersPage: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0 border-white/5">
+      <Card className="overflow-hidden p-0 border-bg4">
         <TableContainer>
           <THead>
             <TH>Usuario / Nombre</TH>
@@ -254,7 +254,7 @@ const UsersPage: React.FC = () => {
                           className="w-10 h-10 rounded-xl object-cover border border-emerald-primary/20 shadow-neo shrink-0"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-white/5 shadow-neo shrink-0 uppercase font-bold">
+                        <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-bg4 shadow-neo shrink-0 uppercase font-bold">
                           {u.nombre.substring(0, 2)}
                         </div>
                       )}
@@ -283,7 +283,7 @@ const UsersPage: React.FC = () => {
                         <span className="text-[9px] font-bold uppercase">Activo</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-red-500">
+                      <div className="flex items-center gap-1 text-danger">
                         <UserX size={12} />
                         <span className="text-[9px] font-bold uppercase">Inactivo</span>
                       </div>
@@ -293,13 +293,13 @@ const UsersPage: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <button 
                         onClick={() => handleEdit(u)}
-                        className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button 
                         onClick={() => openConfirm(u.id_usuario)}
-                        className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-all shadow-neo border border-white/5"
+                        className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -316,7 +316,7 @@ const UsersPage: React.FC = () => {
         </TableContainer>
       </Card>
 
-      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-white/5">
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
         <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
           Mostrando {users.length} de {totalUsers} registros
         </div>
@@ -410,7 +410,7 @@ const UsersPage: React.FC = () => {
             </FormGroup>
           </div>
 
-          <div className="border-t border-white/10 pt-3 mt-3">
+          <div className="border-t border-bg3 pt-3 mt-3">
             <p className="text-[9px] md:text-xs text-content-muted mb-3 uppercase tracking-wider font-bold">
               {editingUser ? "Cambiar contraseña" : "Credenciales de Acceso"}
             </p>

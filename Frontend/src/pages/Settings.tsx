@@ -60,7 +60,7 @@ const Settings: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-white/5">
+        <button onClick={() => navigate('/')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-bg4">
           <ArrowLeft size={18} />
         </button>
         <div>
@@ -80,10 +80,10 @@ const Settings: React.FC = () => {
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   theme === t.id
                     ? 'border-emerald-primary bg-emerald-primary/5'
-                    : 'border-white/5 bg-bg2 hover:bg-bg3'
+                    : 'border-bg4 bg-bg2 hover:bg-white/5'
                 }`}
               >
-                <div className={`w-full h-8 rounded-lg mb-3 ${t.preview} bg-opacity-30 border border-white/10`} />
+                <div className={`w-full h-8 rounded-lg mb-3 ${t.preview} bg-opacity-30 border border-bg3`} />
                 <p className="text-xs font-bold text-content-primary">{t.label}</p>
                 <p className="text-[9px] text-content-muted mt-0.5">{t.desc}</p>
               </button>
@@ -105,7 +105,7 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <label className="flex-1 flex items-center gap-3 p-4 border-2 border-dashed border-white/10 rounded-xl bg-bg3/50 cursor-pointer hover:border-emerald-primary/30 transition-colors">
+                <label className="flex-1 flex items-center gap-3 p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 cursor-pointer hover:border-emerald-primary/30 transition-colors">
                   <Upload size={20} className="text-content-muted shrink-0" />
                   <span className="text-[11px] text-content-muted truncate">
                     {avatarFile ? avatarFile.name : 'Seleccionar imagen...'}

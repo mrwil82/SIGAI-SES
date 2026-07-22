@@ -28,7 +28,7 @@ export const ExportMenu = ({ module }: { module: string }) => {
         <FileSpreadsheet size={14} className="text-emerald-primary" /> Excel
       </Button>
       <Button variant="ghost" className="h-9 gap-2 text-xs" onClick={() => handleExport('pdf')}>
-        <FileText size={14} className="text-red-500" /> PDF
+        <FileText size={14} className="text-danger" /> PDF
       </Button>
     </div>
   );

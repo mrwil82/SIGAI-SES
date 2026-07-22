@@ -427,7 +427,7 @@ const Desmontes: React.FC = () => {
                       </Button>
                       <button
                         onClick={() => handleDeleteClick(activo.id_activo)}
-                        className="h-9 w-9 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center"
+                        className="h-9 w-9 rounded-lg border border-red-500/20 text-danger/80 hover:bg-danger/10 transition-colors flex items-center justify-center"
                         title="Eliminar de triaje"
                       >
                         <Trash2 size={14} />
@@ -558,14 +558,14 @@ const Desmontes: React.FC = () => {
                 onClick={() => setDesmonteCatFilter(cat)}
                 className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all border ${
                   desmonteCatFilter === cat
-                    ? "bg-emerald-500/12 border-emerald-500/40 text-emerald-400"
-                    : "bg-white/4 border-white/10 text-content-muted hover:border-emerald-500/20 hover:text-content"
+                    ? "bg-emerald-muted border-emerald-500/40 text-emerald-primary"
+                    : "bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-500/20 hover:text-content"
                 }`}
               >
                 {cat === "all" ? "Todos" : cat}
               </button>
             ))}
-            <div className="ml-auto flex items-center gap-2 rounded-lg border border-white/8 px-3 py-1.5 bg-white/4">
+            <div className="ml-auto flex items-center gap-2 rounded-lg border border-bg4/80 px-3 py-1.5 bg-bg1/80">
               <Search size={12} className="text-content-muted" />
               <input
                 type="text"
@@ -578,24 +578,24 @@ const Desmontes: React.FC = () => {
           </div>
 
           {/* Tabla de items */}
-          <div className="overflow-x-auto overflow-y-auto max-h-[400px] border border-white/5 rounded-xl">
+          <div className="overflow-x-auto overflow-y-auto max-h-[400px] border border-bg4 rounded-xl">
             <table className="w-full border-collapse" style={{ minWidth: 600 }}>
               <thead>
                 <tr>
-                  <th className="w-10 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm"></th>
-                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  <th className="w-10 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm"></th>
+                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
                     Equipo
                   </th>
-                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
                     Categoría
                   </th>
-                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
                     Marca
                   </th>
-                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
                     Ref.
                   </th>
-                  <th className="w-24 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-white/5 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  <th className="w-24 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
                     Cantidad
                   </th>
                 </tr>
@@ -645,7 +645,7 @@ const Desmontes: React.FC = () => {
                         <tr
                           key={it.id_item}
                           onClick={() => toggleDesmonteItem(it.id_item)}
-                          className="cursor-pointer border-b border-white/3 transition-colors"
+                          className="cursor-pointer border-b border-bg3/50 transition-colors"
                           style={{
                             background: isSelected
                               ? "rgba(52,211,153,0.06)"
@@ -657,7 +657,7 @@ const Desmontes: React.FC = () => {
                               className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
                                 isSelected
                                   ? "bg-emerald-400 text-bg1"
-                                  : "border border-white/15"
+                                  : "border border-bg3"
                               }`}
                             >
                               {isSelected && (
@@ -671,7 +671,7 @@ const Desmontes: React.FC = () => {
                             </p>
                           </td>
                           <td className="px-4 py-2.5">
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest border border-white/10 text-content-muted">
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest border border-bg3 text-content-muted">
                               {it.categoria || "OTROS"}
                             </span>
                           </td>
@@ -695,7 +695,7 @@ const Desmontes: React.FC = () => {
                               onChange={(e) =>
                                 setDesmonteQty(it.id_item, e.target.value)
                               }
-                              className="w-16 text-center text-[11px] rounded-md border border-white/8 py-1 px-2 bg-white/5 text-content outline-none focus:border-emerald-500/30 disabled:opacity-30"
+                              className="w-16 text-center text-[11px] rounded-md border border-bg4/80 py-1 px-2 bg-bg2 text-content outline-none focus:border-emerald-500/30 disabled:opacity-30"
                             />
                           </td>
                         </tr>
@@ -773,7 +773,7 @@ const Desmontes: React.FC = () => {
             </FormGroup>
           </div>
 
-          <div className="p-4 border-2 border-dashed border-white/10 rounded-xl bg-bg3/50 text-center">
+          <div className="p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 text-center">
             <input
               type="file"
               id="excel-upload"
@@ -952,7 +952,7 @@ const Desmontes: React.FC = () => {
             </div>
 
             {(selectedActivo.proyecto || selectedActivo.cliente_actual) && (
-              <div className="border-t border-white/5 pt-4">
+              <div className="border-t border-bg4 pt-4">
                 <span className="text-[9px] uppercase tracking-widest text-content-muted font-bold block mb-2">
                   Origen
                 </span>
@@ -974,7 +974,7 @@ const Desmontes: React.FC = () => {
             )}
 
             {selectedActivo.observaciones && (
-              <div className="border-t border-white/5 pt-4">
+              <div className="border-t border-bg4 pt-4">
                 <span className="text-[9px] uppercase tracking-widest text-content-muted font-bold block mb-1">
                   Observaciones
                 </span>
@@ -984,7 +984,7 @@ const Desmontes: React.FC = () => {
               </div>
             )}
 
-            <div className="border-t border-white/5 pt-3 flex gap-3 text-[9px] text-content-muted">
+            <div className="border-t border-bg4 pt-3 flex gap-3 text-[9px] text-content-muted">
               {selectedActivo.fecha_ingreso_laboratorio && (
                 <span>
                   Ingreso:{" "}

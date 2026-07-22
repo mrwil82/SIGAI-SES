@@ -58,7 +58,7 @@ const ProjectDetail: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/projects')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-white/5">
+        <button onClick={() => navigate('/projects')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-bg4">
           <ArrowLeft size={18} />
         </button>
         <div>
@@ -102,7 +102,7 @@ const ProjectDetail: React.FC = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <MapPin size={16} className="text-red-400 mt-0.5" />
+              <MapPin size={16} className="text-danger/80 mt-0.5" />
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Ubicación</p>
                 <p className="text-sm">{proyecto.ubicacion || 'No definida'}</p>
@@ -110,20 +110,20 @@ const ProjectDetail: React.FC = () => {
             </div>
           </div>
 
-          <div className="border-t border-white/5 pt-6">
+          <div className="border-t border-bg4 pt-6">
             <SectionTitle>Línea de Tiempo</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+              <div className="bg-bg2 p-4 rounded-xl border border-bg4">
                 <Calendar size={14} className="text-emerald-primary mb-2" />
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Inicio</p>
                 <p className="font-bold text-sm">{proyecto.fecha_inicio ? new Date(proyecto.fecha_inicio).toLocaleDateString('es-CO') : '---'}</p>
               </div>
-              <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+              <div className="bg-bg2 p-4 rounded-xl border border-bg4">
                 <Calendar size={14} className="text-gold mb-2" />
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Fin Estimado</p>
                 <p className="font-bold text-sm">{proyecto.fecha_fin_estimada ? new Date(proyecto.fecha_fin_estimada).toLocaleDateString('es-CO') : '---'}</p>
               </div>
-              <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+              <div className="bg-bg2 p-4 rounded-xl border border-bg4">
                 <Calendar size={14} className="text-chart-blue mb-2" />
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Cierre Real</p>
                 <p className="font-bold text-sm">{proyecto.fecha_cierre_real ? new Date(proyecto.fecha_cierre_real).toLocaleDateString('es-CO') : '---'}</p>
@@ -132,7 +132,7 @@ const ProjectDetail: React.FC = () => {
           </div>
 
           {proyecto.descripcion && (
-            <div className="border-t border-white/5 pt-6">
+            <div className="border-t border-bg4 pt-6">
               <SectionTitle>Descripción</SectionTitle>
               <p className="text-sm text-content-secondary leading-relaxed">{proyecto.descripcion}</p>
             </div>

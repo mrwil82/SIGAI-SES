@@ -64,7 +64,7 @@ const ActaViewModal: React.FC<ActaViewModalProps> = ({ isOpen, onClose, acta, pr
                 </thead>
                 <tbody>
                   {(acta.detalles || []).map((d: any, i: number) => (
-                    <tr key={i} className="border-t border-white/5">
+                    <tr key={i} className="border-t border-bg4">
                       <td className="px-3 py-2">{i + 1}</td>
                       <td className="px-3 py-2">{d.descripcion || d.id_item || '—'}</td>
                       <td className="px-3 py-2">{d.cantidad ?? '—'}</td>

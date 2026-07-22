@@ -63,7 +63,7 @@ const EditActaModal: React.FC<EditActaModalProps> = ({ isOpen, onClose, acta, on
           </button>
         </div>
 
-        {error && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-xs">{error}</div>}
+        {error && <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-red-500/20 text-danger text-xs">{error}</div>}
 
         <FormGroup label="Número de Acta" htmlFor="numero_acta">
           <NeoInput id="numero_acta" value={localActa.numero_acta || ''} onChange={(e) => setLocalActa({ ...localActa, numero_acta: e.target.value })} />

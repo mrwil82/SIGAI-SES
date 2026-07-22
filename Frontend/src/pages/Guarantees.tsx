@@ -210,7 +210,7 @@ const Guarantees: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0 border-white/5">
+      <Card className="overflow-hidden p-0 border-bg4">
         <TableContainer>
           <THead>
             <TH>Caso / Trazabilidad</TH>
@@ -281,18 +281,18 @@ const Guarantees: React.FC = () => {
                     <div className="flex justify-end gap-1.5 md:gap-2">
                       <button 
                         onClick={() => handleEdit(garantia)}
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button 
                         onClick={() => openConfirm(garantia.id_garantia)}
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />
                       </button>
                       <button 
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
                         onClick={() => navigate(`/guarantees/${garantia.id_garantia}`)}
                       >
                         <ExternalLink size={13} />

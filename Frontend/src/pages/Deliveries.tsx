@@ -350,7 +350,7 @@ const Deliveries: React.FC = () => {
 
         <div className="lg:col-span-3 space-y-6">
           <Card className="p-0 overflow-hidden">
-            <div className="p-5 border-b border-white/5 flex justify-between items-center bg-bg2/30">
+            <div className="p-5 border-b border-bg4 flex justify-between items-center bg-bg2/30">
               <div className="flex items-center gap-3">
                 <Package className="text-emerald-primary" size={18} />
                 <SectionTitle>2. Herramienta, Equipos, Consumibles y EPPs</SectionTitle>
@@ -383,7 +383,7 @@ const Deliveries: React.FC = () => {
                       <TD><p className="text-xs text-content-muted">{item.referencia || '—'}</p></TD>
                       <TD><p className="text-xs text-content-muted font-mono">{item.serie || '—'}</p></TD>
                       <TD><p className="text-xs font-bold text-center">{item.cantidad}</p></TD>
-                      <TD><button onClick={() => removeItem(index)} className="text-content-muted hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button></TD>
+                      <TD><button onClick={() => removeItem(index)} className="text-content-muted hover:text-danger transition-colors p-1"><Trash2 size={16} /></button></TD>
                     </TR>
                   ))}
                 </TBody>
@@ -405,7 +405,7 @@ const Deliveries: React.FC = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted" size={16} />
               <input id="searchActas" type="text" value={searchActas} onChange={(e) => setSearchActas(e.target.value)} placeholder="Buscar acta..."
-                className="w-full rounded-xl border border-white/10 bg-bg1/80 py-3 pl-10 pr-4 text-sm text-content outline-none focus:border-emerald-500" />
+                className="w-full rounded-xl border border-bg3 bg-bg1/80 py-3 pl-10 pr-4 text-sm text-content outline-none focus:border-emerald-500" />
             </div>
             <NeoSelect id="filterActaType" value={filterActaType} onChange={(e) => setFilterActaType(e.target.value)} className="h-11 text-xs">
               <option value="">Todos los tipos</option>
@@ -442,7 +442,7 @@ const Deliveries: React.FC = () => {
                         <button title="Ver" onClick={() => handleViewActa(a.id_acta)} className="p-1 text-content-muted hover:text-content"><FileText size={16} /></button>
                         {currentUser?.rol === 'ADMIN' && <button title="Editar" onClick={() => handleEditActa(a)} className="p-1 text-content-muted hover:text-content"><Pen size={16} /></button>}
                         <button title="Descargar" onClick={() => generateActaPDF(a.id_acta)} className="p-1 text-content-muted hover:text-content"><Download size={16} /></button>
-                        {currentUser?.rol === 'ADMIN' && <button title="Eliminar" onClick={() => handleDeleteActa(a.id_acta)} className="p-1 text-content-muted hover:text-red-500"><Trash2 size={16} /></button>}
+                        {currentUser?.rol === 'ADMIN' && <button title="Eliminar" onClick={() => handleDeleteActa(a.id_acta)} className="p-1 text-content-muted hover:text-danger"><Trash2 size={16} /></button>}
                       </div>
                     </TD>
                   </TR>
@@ -453,7 +453,7 @@ const Deliveries: React.FC = () => {
         </div>
       </Card>
 
-      <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-white/5">
+      <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
         <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold">
           Mostrando {actas.length} de {actasTotal} registros
         </div>

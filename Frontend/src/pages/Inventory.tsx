@@ -308,8 +308,8 @@ const Inventory: React.FC = () => {
                 onClick={() => setShowDeleted(!showDeleted)}
                 className={`h-11 md:h-12 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
                   showDeleted
-                    ? 'bg-red-500/10 border-red-500/40 text-red-400'
-                    : 'border-white/10 text-content-muted hover:border-red-500/30 hover:text-red-400'
+                    ? 'bg-danger/10 border-red-500/40 text-danger/80'
+                    : 'border-bg3 text-content-muted hover:border-red-500/30 hover:text-danger/80'
                 }`}
               >
                 <Trash2 size={14} className="inline mr-1.5" />
@@ -320,7 +320,7 @@ const Inventory: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0 border-white/5">
+      <Card className="overflow-hidden p-0 border-bg4">
         <TableContainer>
           <>
             <THead>
@@ -347,7 +347,7 @@ const Inventory: React.FC = () => {
                   <TR key={item.id_item} className={item.deleted_at ? "opacity-50 [&_td]:line-through [&_td]:decoration-red-500/30 [&_td]:decoration-1" : ""}>
                     <TD>
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-white/5 shadow-neo">
+                        <div className="w-9 h-9 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-bg4 shadow-neo">
                           <Package size={16} />
                         </div>
                         <div>
@@ -368,7 +368,7 @@ const Inventory: React.FC = () => {
                       />
                     </TD>
                     <TD className="hidden sm:table-cell">
-                      <div className="font-mono text-content-secondary text-[10px] bg-bg3/50 px-2 py-1 rounded border border-white/5">
+                      <div className="font-mono text-content-secondary text-[10px] bg-bg3/50 px-2 py-1 rounded border border-bg4">
                         {item.referencia || "N/A"}
                       </div>
                     </TD>
@@ -408,13 +408,13 @@ const Inventory: React.FC = () => {
                       <div className="flex justify-end gap-1.5">
                         <button
                           onClick={() => handleEdit(item)}
-                          className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-white/5"
+                          className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                         >
                           <Edit2 size={13} />
                         </button>
                         <button
                           onClick={() => openConfirm(item.id_item)}
-                          className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-all shadow-neo border border-white/5"
+                          className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -587,7 +587,7 @@ const Inventory: React.FC = () => {
         }
       >
         <div className="space-y-6">
-          <div className="p-4 border-2 border-dashed border-white/10 rounded-xl bg-bg3/50 text-center">
+          <div className="p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 text-center">
             <input
               type="file"
               id="excel-upload"
@@ -668,7 +668,7 @@ const Inventory: React.FC = () => {
         </div>
       </Modal>
 
-      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-white/5">
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
         <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
           Mostrando {items.length} de {totalItems} registros
         </div>

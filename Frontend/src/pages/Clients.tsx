@@ -175,7 +175,7 @@ const Clients: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0 border-white/5">
+      <Card className="overflow-hidden p-0 border-bg4">
         <TableContainer>
           <THead>
             <TH>Cliente / Empresa</TH>
@@ -200,7 +200,7 @@ const Clients: React.FC = () => {
                 <TR key={cliente.id_cliente}>
                   <TD>
                     <div className="flex items-center gap-3 md:gap-4">
-                      <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-purple border border-white/5 shadow-neo shrink-0">
+                      <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-purple border border-bg4 shadow-neo shrink-0">
                         <Building2 size={16} className="md:size-[18px]" />
                       </div>
                       <div className="min-w-0">
@@ -210,7 +210,7 @@ const Clients: React.FC = () => {
                     </div>
                   </TD>
                   <TD className="hidden sm:table-cell">
-                    <div className="font-mono text-content-secondary text-[10px] md:text-[11px] bg-bg3/50 px-2 py-1 rounded inline-block border border-white/5">
+                    <div className="font-mono text-content-secondary text-[10px] md:text-[11px] bg-bg3/50 px-2 py-1 rounded inline-block border border-bg4">
                       {cliente.nit || 'S.N.'}
                     </div>
                   </TD>
@@ -240,18 +240,18 @@ const Clients: React.FC = () => {
                     <div className="flex justify-end gap-1.5 md:gap-2">
                       <button 
                         onClick={() => handleEdit(cliente)}
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button 
                         onClick={() => handleDelete(cliente.id_cliente)}
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />
                       </button>
                       <button 
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
                         onClick={() => navigate(`/clients/${cliente.id_cliente}`)}
                       >
                         <ExternalLink size={13} />

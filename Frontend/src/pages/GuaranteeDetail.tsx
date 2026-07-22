@@ -68,7 +68,7 @@ const GuaranteeDetail: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/guarantees')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-white/5">
+        <button onClick={() => navigate('/guarantees')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-bg4">
           <ArrowLeft size={18} />
         </button>
         <div>
@@ -125,20 +125,20 @@ const GuaranteeDetail: React.FC = () => {
             </div>
           </div>
 
-          <div className="border-t border-white/5 pt-6">
+          <div className="border-t border-bg4 pt-6">
             <SectionTitle>Fechas Clave</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+              <div className="bg-bg2 p-4 rounded-xl border border-bg4">
                 <Calendar size={14} className="text-chart-blue mb-2" />
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Envío</p>
                 <p className="font-bold text-sm">{garantia.fecha_envio || '---'}</p>
               </div>
-              <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+              <div className="bg-bg2 p-4 rounded-xl border border-bg4">
                 <Clock size={14} className="text-gold mb-2" />
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Límite</p>
                 <p className="font-bold text-sm">{garantia.fecha_limite_estimada || '---'}</p>
               </div>
-              <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+              <div className="bg-bg2 p-4 rounded-xl border border-bg4">
                 <Calendar size={14} className="text-emerald-primary mb-2" />
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Retorno</p>
                 <p className="font-bold text-sm">{garantia.fecha_recibido_reparado || '---'}</p>
@@ -147,14 +147,14 @@ const GuaranteeDetail: React.FC = () => {
           </div>
 
           {garantia.falla_reportada && (
-            <div className="border-t border-white/5 pt-6">
+            <div className="border-t border-bg4 pt-6">
               <SectionTitle>Falla Reportada</SectionTitle>
               <p className="text-sm text-content-secondary leading-relaxed">{garantia.falla_reportada}</p>
             </div>
           )}
 
           {garantia.comentarios_proceso && (
-            <div className="border-t border-white/5 pt-6">
+            <div className="border-t border-bg4 pt-6">
               <SectionTitle>Comentarios del Proceso</SectionTitle>
               <p className="text-sm text-content-secondary leading-relaxed">{garantia.comentarios_proceso}</p>
             </div>

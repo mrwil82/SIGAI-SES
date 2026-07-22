@@ -56,7 +56,7 @@ const ClientDetail: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/clients')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-white/5">
+        <button onClick={() => navigate('/clients')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-bg4">
           <ArrowLeft size={18} />
         </button>
         <div>
@@ -112,7 +112,7 @@ const ClientDetail: React.FC = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <MapPin size={16} className="text-red-400 mt-0.5" />
+              <MapPin size={16} className="text-danger/80 mt-0.5" />
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-content-muted">Dirección</p>
                 <p className="text-sm">{cliente.direccion || '---'}</p>
@@ -131,7 +131,7 @@ const ClientDetail: React.FC = () => {
         <Card className="space-y-4">
           <SectionTitle>Resumen</SectionTitle>
           <div className="space-y-3">
-            <div className="bg-bg2 p-4 rounded-xl border border-white/5">
+            <div className="bg-bg2 p-4 rounded-xl border border-bg4">
               <p className="text-[10px] uppercase tracking-widest text-content-muted">CECO Asociado</p>
               <p className="font-mono font-bold text-lg text-emerald-primary">{cliente.ceco_asociado || '---'}</p>
             </div>

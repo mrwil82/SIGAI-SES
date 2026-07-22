@@ -70,19 +70,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       {selected && !isOpen ? (
         <div
           onClick={() => { setIsOpen(true); inputRef.current?.focus(); }}
-          className="flex items-center gap-2 w-full h-10 px-3 rounded-xl border border-white/10 bg-white/5 text-xs text-content-primary cursor-pointer hover:border-emerald-500/30 transition-colors min-w-0"
+          className="flex items-center gap-2 w-full h-10 px-3 rounded-xl border border-bg3 bg-bg2 text-xs text-content-primary cursor-pointer hover:border-emerald-500/30 transition-colors min-w-0"
         >
           <Check size={14} className="text-emerald-primary shrink-0" />
           <span className="flex-1 min-w-0 truncate">{selected.label}</span>
           <button
             onClick={(e) => { e.stopPropagation(); handleClear(); }}
-            className="p-0.5 rounded hover:bg-white/10 text-content-muted hover:text-red-500 transition-colors"
+            className="p-0.5 rounded hover:bg-white/5 text-content-muted hover:text-danger transition-colors"
           >
             <X size={14} />
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 w-full h-10 px-3 rounded-xl border border-white/10 bg-white/5 focus-within:border-emerald-500/30 transition-colors min-w-0">
+        <div className="flex items-center gap-2 w-full h-10 px-3 rounded-xl border border-bg3 bg-bg2 focus-within:border-emerald-500/30 transition-colors min-w-0">
           <Search size={14} className="text-content-muted shrink-0" />
           <input
             ref={inputRef}
@@ -95,7 +95,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             className="flex-1 min-w-0 bg-transparent text-xs text-content-primary outline-none placeholder:text-content-muted truncate"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="p-0.5 rounded hover:bg-white/10 text-content-muted transition-colors">
+            <button onClick={() => setSearch('')} className="p-0.5 rounded hover:bg-white/5 text-content-muted transition-colors">
               <X size={14} />
             </button>
           )}
@@ -103,7 +103,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-bg2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] custom-scrollbar">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-xl border border-bg3 bg-bg2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] custom-scrollbar">
           {filtered.length === 0 ? (
             <div className="p-4 text-center text-[10px] text-content-muted uppercase tracking-widest">
               {emptyMessage}
@@ -115,8 +115,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 onClick={() => handleSelect(opt.value)}
                 className={`flex items-center gap-2 px-3 py-2.5 text-xs cursor-pointer transition-colors ${
                   opt.value === value
-                    ? 'bg-emerald-500/10 text-emerald-primary'
-                    : 'text-content-primary hover:bg-white/5'
+                    ? 'bg-emerald-muted text-emerald-primary'
+                    : 'text-content-primary hover:bg-bg2'
                 }`}
               >
                 {opt.value === value && <Check size={14} className="text-emerald-primary shrink-0" />}

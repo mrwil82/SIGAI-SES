@@ -139,7 +139,7 @@ const Audit: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0 border-white/5">
+      <Card className="overflow-hidden p-0 border-bg4">
         <TableContainer>
           <THead>
             <TH className="hidden sm:table-cell">Fecha / Hora</TH>
@@ -190,7 +190,7 @@ const Audit: React.FC = () => {
         </TableContainer>
       </Card>
 
-      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-white/5">
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
         <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
           Mostrando {logs.length} de {totalLogs} registros
         </div>

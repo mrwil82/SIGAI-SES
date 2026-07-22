@@ -218,13 +218,13 @@ const Alerts: React.FC = () => {
                   <div className="flex justify-end gap-1.5">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleOpenModal(a); }}
-                      className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-white/5"
+                      className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                     >
                       <Edit2 size={13}/>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteAlerta(a.id); }}
-                      className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-all shadow-neo border border-white/5"
+                      className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                     >
                       <Trash2 size={13}/>
                     </button>
@@ -236,7 +236,7 @@ const Alerts: React.FC = () => {
         </TableContainer>
       </Card>
 
-      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-white/5">
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
         <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
           Mostrando {alerts.length} de {totalAlerts} registros
         </div>
@@ -288,8 +288,8 @@ const Alerts: React.FC = () => {
       >
         {selectedAlert && (
           <div className="space-y-6">
-            <div className="bg-bg2 p-4 rounded-xl border border-white/5 flex items-start gap-4 shadow-neo-inset">
-              <div className={`p-3 rounded-lg shrink-0 ${selectedAlert.prioridad === 'critica' ? 'bg-red-500/10 text-red-500' : 'bg-gold/10 text-gold'}`}>
+            <div className="bg-bg2 p-4 rounded-xl border border-bg4 flex items-start gap-4 shadow-neo-inset">
+              <div className={`p-3 rounded-lg shrink-0 ${selectedAlert.prioridad === 'critica' ? 'bg-danger/10 text-danger' : 'bg-gold/10 text-gold'}`}>
                 <AlertTriangle size={24}/>
               </div>
               <div className="min-w-0">

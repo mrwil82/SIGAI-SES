@@ -55,7 +55,7 @@ export const Card: React.FC<{
 }> = ({ children, className = "", glow = false }) => (
   <div
     className={`
-    bg-bg2 rounded-[12px] md:rounded-[14px] border border-white/5 p-3 md:p-4 shadow-neo relative overflow-hidden
+    bg-bg2 rounded-[12px] md:rounded-[14px] border border-bg4 p-3 md:p-4 shadow-neo relative overflow-hidden
     ${glow ? "shadow-[0_0_20px_rgba(0,194,106,0.05),2px_2px_8px_rgba(0,0,0,0.3)]" : ""}
     ${className}
   `}
@@ -87,17 +87,17 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
       <div
-        className="absolute inset-0 bg-bg0/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/5 bg-bg2">
+      <div className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-bg3 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-bg4 bg-bg2">
           <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-emerald-primary">
             {title}
           </h3>
           <button
             onClick={onClose}
-            className="text-content-muted hover:text-white transition-colors"
+            className="text-content-muted hover:text-content-primary transition-colors"
           >
             <X size={18} />
           </button>
@@ -106,7 +106,7 @@ export const Modal: React.FC<ModalProps> = ({
           {children}
         </div>
         {footer && (
-          <div className="p-4 md:p-6 border-t border-white/5 bg-bg2 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3">
+          <div className="p-4 md:p-6 border-t border-bg4 bg-bg2 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3">
             {footer}
           </div>
         )}
@@ -174,8 +174,8 @@ export const Alert: React.FC<AlertProps> = ({ type, message, onClose }) => {
     },
     error: {
       icon: AlertCircle,
-      color: "text-red-500",
-      bg: "bg-red-500/10",
+      color: "text-danger",
+      bg: "bg-danger/10",
       border: "border-red-500/20",
     },
     warning: {
@@ -234,7 +234,7 @@ export const FormGroup: React.FC<{
     </label>
     {children}
     {error && (
-      <span className="text-[9px] text-red-500 ml-1 block">{error}</span>
+      <span className="text-[9px] text-danger ml-1 block">{error}</span>
     )}
   </div>
 );
@@ -248,7 +248,7 @@ export const NeoInput = React.forwardRef<
     id={props.id || props.name}
     ref={ref}
     className={`
-      w-full bg-bginput border border-white/5 rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3
+      w-full bg-bginput border border-bg4 rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3
       text-xs md:text-sm text-content-primary outline-none shadow-neo-inset
       focus:ring-1 focus:ring-emerald-primary/30 focus:border-emerald-primary/50 transition-all
       ${props.className || ""}
@@ -265,7 +265,7 @@ export const NeoSelect = React.forwardRef<
     id={props.id || props.name}
     ref={ref}
     className={`
-      w-full bg-bg2 border border-white/10 rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3
+      w-full bg-bg2 border border-bg3 rounded-lg md:rounded-xl px-3 md:px-4 py-2.5 md:py-3
       text-xs md:text-sm text-content-primary outline-none
       focus:ring-1 focus:ring-emerald-primary/30 transition-all
       ${props.className || ""}
@@ -283,7 +283,7 @@ export const NeoTextarea = React.forwardRef<
     {...props}
     ref={ref}
     className={`
-      w-full bg-bginput border border-white/5 rounded-xl px-4 py-3 min-h-[100px] resize-y
+      w-full bg-bginput border border-bg4 rounded-xl px-4 py-3 min-h-[100px] resize-y
       text-sm text-content-primary outline-none shadow-neo-inset
       focus:ring-1 focus:ring-emerald-primary/30 transition-all
       ${props.className || ""}
@@ -301,12 +301,12 @@ export const Button: React.FC<
     "px-4 md:px-6 py-[10px] md:py-[12px] font-bold text-[10px] md:text-[11px] rounded-xl border-none cursor-pointer font-mono tracking-widest transition-all duration-200 uppercase flex items-center justify-center gap-2";
   const variants = {
     primary:
-      "bg-emerald-primary text-bg0 shadow-[0_0_20px_rgba(0,194,106,0.35)] hover:shadow-[0_0_25px_rgba(0,194,106,0.5)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
-    neo: "bg-bg3 text-content-secondary shadow-neo border border-white/5 hover:text-content-primary hover:bg-bginput active:shadow-neo-inset",
+      "bg-emerald-primary text-[rgb(var(--btn-primary-text))] shadow-[0_0_20px_rgba(0,194,106,0.35)] hover:shadow-[0_0_25px_rgba(0,194,106,0.5)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
+    neo: "bg-bg3 text-[rgb(var(--btn-neo-text))] shadow-neo border border-bg4 hover:text-[rgb(var(--content-primary))] hover:bg-bginput active:shadow-neo-inset",
     danger:
-      "bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 active:scale-95",
+      "bg-danger/20 text-danger border border-red-500/30 hover:bg-red-500/30 active:scale-95",
     ghost:
-      "bg-transparent text-content-muted hover:text-content-primary hover:bg-white/5",
+      "bg-transparent text-content-muted hover:text-content-primary hover:bg-bg2",
   };
 
   return (
@@ -334,7 +334,7 @@ export const TableContainer: React.FC<{ children: React.ReactNode }> = ({
 export const THead: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
-  <thead className="border-b border-white/5 bg-bg2/50">
+  <thead className="border-b border-bg4 bg-bg2/50">
     <tr>{children}</tr>
   </thead>
 );
@@ -352,7 +352,7 @@ export const TH: React.FC<
 
 export const TBody: React.FC<{ children: React.ReactNode }> = ({
   children,
-}) => <tbody className="divide-y divide-white/5">{children}</tbody>;
+}) => <tbody className="divide-y divide-bg4">{children}</tbody>;
 
 export const TR: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
   children,
@@ -483,8 +483,8 @@ const SidebarItem = ({
       flex items-center gap-4 px-5 py-3.5 rounded-xl cursor-pointer transition-all no-underline group
       ${
         active
-          ? "bg-bg3 text-emerald-primary shadow-neo border border-white/5"
-          : "text-content-secondary hover:text-content-primary hover:bg-white/5"
+          ? "bg-bg3 text-emerald-primary shadow-neo border border-bg4"
+          : "text-content-secondary hover:text-content-primary hover:bg-bg2"
       }
       ${isCollapsed ? "justify-center px-0" : ""}
     `}
@@ -518,11 +518,11 @@ const NavButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-bg3 flex items-center justify-center text-content-secondary hover:text-emerald-primary transition-all border border-white/5 shadow-neo relative hover:scale-105 active:scale-95 ${className}`}
+    className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-bg3 flex items-center justify-center text-[rgb(var(--btn-neo-text))] hover:text-emerald-primary transition-all border border-bg4 shadow-neo relative hover:scale-105 active:scale-95 ${className}`}
   >
     {icon}
     {count && (
-      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 text-[7px] md:text-[8px] font-bold text-white rounded-full flex items-center justify-center border-2 border-bg0 shadow-glow-red">
+      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-danger text-[7px] md:text-[8px] font-bold text-white rounded-full flex items-center justify-center border-2 border-bg0 shadow-glow-red">
         {count}
       </span>
     )}
@@ -547,7 +547,7 @@ const Sidebar = ({
 
   return (
     <aside
-      className={`${className} ${isCollapsed ? "w-20" : "w-72"} h-screen sticky top-0 flex flex-col bg-bg1 border-r border-white/5 shadow-neo z-[70] overflow-hidden transition-all duration-300`}
+      className={`${className} ${isCollapsed ? "w-20" : "w-72"} h-screen sticky top-0 flex flex-col bg-bg1 border-r border-bg4 shadow-neo z-[70] overflow-hidden transition-all duration-300`}
     >
       {/* Logo  */}
 
@@ -561,10 +561,10 @@ const Sidebar = ({
         >
           <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center shadow-neo group-hover:shadow-glow transition-all duration-300 shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32">
-              <rect x="2" y="2" width="28" height="28" rx="7" fill="none" stroke="#10b981" stroke-width="1.5"/>
+              <rect x="2" y="2" width="28" height="28" rx="7" fill="none" stroke="rgb(var(--emerald-primary))" stroke-width="1.5"/>
               <g transform="translate(8,8)">
-                <rect x="1" y="3" width="14" height="11" rx="1.5" fill="none" stroke="#10b981" stroke-width="1.5"/>
-                <rect x="1" y="1" width="14" height="3" rx="1" fill="#10b981" opacity="0.9"/>
+                <rect x="1" y="3" width="14" height="11" rx="1.5" fill="none" stroke="rgb(var(--emerald-primary))" stroke-width="1.5"/>
+                <rect x="1" y="1" width="14" height="3" rx="1" fill="rgb(var(--emerald-primary))" opacity="0.9"/>
                 <path d="M5 10l2 2 4-4" fill="none" stroke="#0d1a12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </g>
             </svg>
@@ -687,10 +687,10 @@ const Sidebar = ({
       {/* Sección del usuario */}
 
       <div
-        className={`p-4 mt-auto flex-shrink-0 border-t border-white/5 ${isCollapsed ? "flex flex-col items-center gap-3" : ""}`}
+        className={`p-4 mt-auto flex-shrink-0 border-t border-bg4 ${isCollapsed ? "flex flex-col items-center gap-3" : ""}`}
       >
         <div
-          className={`bg-bg2/50 rounded-2xl ${isCollapsed ? "p-2" : "p-4"} border border-white/5 flex ${isCollapsed ? "flex-col items-center" : "items-center gap-4"} shadow-neo-inset`}
+          className={`bg-bg2/50 rounded-2xl ${isCollapsed ? "p-2" : "p-4"} border border-bg4 flex ${isCollapsed ? "flex-col items-center" : "items-center gap-4"} shadow-neo-inset`}
         >
           {user?.avatar_url ? (
             <img
@@ -722,7 +722,7 @@ const Sidebar = ({
               navigate("/login");
             }}
             title="Cerrar sesión"
-            className={`p-2 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-colors shadow-neo shrink-0 ${isCollapsed ? "mt-2" : ""}`}
+            className={`p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-colors shadow-neo shrink-0 ${isCollapsed ? "mt-2" : ""}`}
           >
             <LogOut size={isCollapsed ? 14 : 16} />
           </button>
@@ -824,17 +824,17 @@ const Navbar = ({
   };
 
   return (
-    <header className="h-16 md:h-20 bg-bg0/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 md:px-10 z-40 sticky top-0">
+    <header className="h-16 md:h-20 bg-bg0/80 backdrop-blur-xl border-b border-bg4 flex items-center justify-between px-4 md:px-10 z-40 sticky top-0">
       <div className="flex items-center gap-3 md:gap-6">
         <button
           onClick={onMenuClick}
-          className="lg:hidden w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary shadow-neo border border-white/5 active:shadow-neo-inset transition-all"
+          className="lg:hidden w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary shadow-neo border border-bg4 active:shadow-neo-inset transition-all"
         >
           <Menu size={20} />
         </button>
         <button
           onClick={onToggleSidebar}
-          className="hidden lg:flex w-10 h-10 rounded-xl bg-bg3 items-center justify-center text-emerald-primary shadow-neo border border-white/5 active:shadow-neo-inset transition-all"
+          className="hidden lg:flex w-10 h-10 rounded-xl bg-bg3 items-center justify-center text-emerald-primary shadow-neo border border-bg4 active:shadow-neo-inset transition-all"
         >
           <Menu size={20} />
         </button>{" "}
@@ -851,7 +851,7 @@ const Navbar = ({
 
       <div className="flex items-center gap-3 md:gap-6">
         <div className="hidden md:flex relative" ref={searchRef}>
-          <div className="flex items-center bg-bginput rounded-xl px-4 py-2.5 border border-white/5 shadow-neo-inset group focus-within:border-emerald-primary/30 transition-all">
+          <div className="flex items-center bg-bginput rounded-xl px-4 py-2.5 border border-bg4 shadow-neo-inset group focus-within:border-emerald-primary/30 transition-all">
             <Search
               size={14}
               className={`${isSearching ? "animate-pulse text-emerald-primary" : "text-content-muted"} group-focus-within:text-emerald-primary transition-colors`}
@@ -867,21 +867,21 @@ const Navbar = ({
 
           {/* Panel de resultados */}
           {showResults && (
-            <div className="absolute top-12 left-0 w-full bg-bg3 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[400px] overflow-y-auto custom-scrollbar">
-              <div className="p-3 border-b border-white/5 bg-white/5">
+            <div className="absolute top-12 left-0 w-full bg-bg3 border border-bg3 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div className="p-3 border-b border-bg4 bg-bg2">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-content-muted">
                   Resultados Encontrados
                 </p>
               </div>
               {searchResults.length > 0 ? (
-                <div className="divide-y divide-white/5">
+                <div className="divide-y divide-bg4">
                   {searchResults.map((res, i) => (
                     <div
                       key={i}
                       onClick={() => handleResultClick(res.link)}
                       className="p-3 hover:bg-emerald-primary/5 cursor-pointer transition-colors flex items-center gap-3 group"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-bg2 flex items-center justify-center text-emerald-primary group-hover:bg-emerald-primary group-hover:text-bg0 transition-all">
+                      <div className="w-8 h-8 rounded-lg bg-bg2 flex items-center justify-center text-emerald-primary group-hover:bg-emerald-primary group-hover:text-[rgb(var(--btn-primary-text))] transition-all">
                         {res.type === "Activo" && <Package size={14} />}
                         {res.type === "Ítem" && <ShieldCheck size={14} />}
                         {res.type === "Cliente" && <Users size={14} />}
@@ -920,7 +920,7 @@ const Navbar = ({
           />
 
           {showAlerts && alerts && (
-            <div className="absolute right-0 top-12 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-bg3 border border-white/10 rounded-2xl shadow-2xl p-6 z-50 animate-in fade-in zoom-in duration-200">
+            <div className="absolute right-0 top-12 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-bg3 border border-bg3 rounded-2xl shadow-2xl p-6 z-50 animate-in fade-in zoom-in duration-200">
               <h3 className="font-bold text-[10px] md:text-xs uppercase text-content-primary mb-4 flex justify-between items-center">
                 <span>Notificaciones</span>
                 <span className="bg-emerald-primary/10 text-emerald-primary px-2 py-0.5 rounded-full">
@@ -937,7 +937,7 @@ const Navbar = ({
                       <div
                         key={i}
                         onClick={() => handleAlertClick(s.id)}
-                        className="bg-white/5 p-3 rounded-lg flex justify-between items-center border border-white/5 hover:border-gold/30 transition-all cursor-pointer group"
+                        className="bg-bg2 p-3 rounded-lg flex justify-between items-center border border-bg4 hover:border-gold/30 transition-all cursor-pointer group"
                       >
                         <span className="text-[10px] md:text-xs text-content-secondary font-medium group-hover:text-gold transition-colors">
                           {s.title}
@@ -951,16 +951,16 @@ const Navbar = ({
                 )}
                 {alerts.garantias.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[9px] font-bold uppercase text-red-400 tracking-widest mt-2">
+                    <p className="text-[9px] font-bold uppercase text-danger/80 tracking-widest mt-2">
                       Garantías (Vencimiento)
                     </p>
                     {alerts.garantias.map((g: any, i: number) => (
                       <div
                         key={i}
                         onClick={() => handleAlertClick(g.id)}
-                        className="bg-white/5 p-3 rounded-lg border border-white/5 hover:border-red-500/30 transition-all cursor-pointer group"
+                        className="bg-bg2 p-3 rounded-lg border border-bg4 hover:border-red-500/30 transition-all cursor-pointer group"
                       >
-                        <span className="text-[10px] md:text-xs text-red-400 font-medium group-hover:text-red-300 transition-colors">
+                        <span className="text-[10px] md:text-xs text-danger/80 font-medium group-hover:text-danger/60 transition-colors">
                           {g.title}
                         </span>
                       </div>
@@ -1016,7 +1016,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
       `}
         >
           <div
-            className="absolute inset-0 bg-bg0/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={() => setIsSidebarOpen(false)}
           />
           <Sidebar

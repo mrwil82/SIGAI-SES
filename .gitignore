@@ -149,6 +149,7 @@ Eisvogel-3.5.1/
 generar_pdfs.ps1
 installer.iss
 *.spec
+dist_installer/
 
 # --- Debug / dev scripts ---
 Backend/scripts/debug_*.py

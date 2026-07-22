@@ -45,7 +45,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
         <div className={`p-3 rounded-2xl ${scheme.iconBg} shadow-inner transition-transform group-hover:rotate-6`}>
           {React.cloneElement(icon as React.ReactElement, { size: 24, className: scheme.iconColor })}
         </div>
-        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full bg-bg3/50 backdrop-blur-md border border-white/5 text-[10px] font-bold ${trendUp === false ? 'text-red-400' : 'text-emerald-primary'}`}>
+        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full bg-bg3/50 backdrop-blur-md border border-bg4 text-[10px] font-bold ${trendUp === false ? 'text-danger/80' : 'text-emerald-primary'}`}>
            {trend}
         </div>
       </div>
@@ -67,7 +67,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
 export const QuickAccessBtn = ({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) => (
   <button 
     onClick={onClick}
-    className="w-full flex flex-col gap-1 items-center justify-center p-3 rounded-xl bg-bg3 border border-white/5 shadow-neo hover:bg-bg3/80 transition-all active:scale-95"
+    className="w-full flex flex-col gap-1 items-center justify-center p-3 rounded-xl bg-bg3 border border-bg4 shadow-neo hover:bg-white/5/80 transition-all active:scale-95"
   >
     {icon}
     <span className="text-[8px] uppercase tracking-widest text-content-muted">{label}</span>
@@ -77,7 +77,7 @@ export const QuickAccessBtn = ({ icon, label, onClick }: { icon: any, label: str
 //notificaciones del dashboard
 
 export const NotificationItem = ({ icon, title, time }: any) => (
-  <div className="flex gap-3 p-3 rounded-xl bg-bg2/50 border border-white/5 hover:bg-bg2 transition-colors cursor-pointer group">
+  <div className="flex gap-3 p-3 rounded-xl bg-bg2/50 border border-bg4 hover:bg-bg2 transition-colors cursor-pointer group">
     <div className="mt-0.5">{icon}</div>
     <div className="flex-1 min-w-0">
       <p className="text-[10px] font-bold text-content-primary truncate group-hover:text-emerald-primary transition-colors">{title}</p>

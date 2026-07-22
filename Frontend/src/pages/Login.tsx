@@ -109,13 +109,13 @@ const Login: React.FC = () => {
               </g>
               <defs>
                 <linearGradient id="loginAccent" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#10b981" />
-                  <stop offset="100%" stop-color="#059669" />
+                  <stop offset="0%" stop-color="rgb(var(--emerald-primary))" />
+                  <stop offset="100%" stop-color="rgb(var(--emerald-deep))" />
                 </linearGradient>
               </defs>
             </svg>
           </div>
-          <h1 className="text-3xl font-black tracking-tighter text-white">
+          <h1 className="text-3xl font-black tracking-tighter text-content-primary">
             SIGAI-<span className="text-emerald-primary">SES</span>
           </h1>
           <p className="text-content-muted text-[10px] uppercase tracking-[0.4em] mt-3 font-mono text-center">
@@ -125,41 +125,41 @@ const Login: React.FC = () => {
 
         {/* Contenedor efecto cristal */}
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <div className="bg-bg2 backdrop-blur-xl border border-bg3 p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-500 text-xs">
+              <div className="p-4 bg-danger/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-danger text-xs">
                 <AlertCircle size={18} className="shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-[#9AB8A4] ml-1 font-bold">
+              <label className="text-[10px] uppercase tracking-widest text-[rgb(var(--content-secondary))] ml-1 font-bold">
                 Credencial de Acceso
               </label>
               <div className="relative group">
                 <User
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A7A65]"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[rgb(var(--content-muted))]"
                   size={18}
                 />
                 <input
                   {...register("username", {
                     required: "El correo/usuario es requerido",
                   })}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/20 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all"
+                  className="w-full bg-bginput border border-bg3 rounded-xl py-3.5 pl-12 pr-4 text-sm text-content-primary placeholder:text-content-muted/50 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all"
                   placeholder="nombre.apellido@securitas.com"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest text-[#9AB8A4] ml-1 font-bold">
+              <label className="text-[10px] uppercase tracking-widest text-[rgb(var(--content-secondary))] ml-1 font-bold">
                 Contraseña de Seguridad
               </label>
               <div className="relative group">
                 <Lock
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A7A65]"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[rgb(var(--content-muted))]"
                   size={18}
                 />
                 <input
@@ -167,13 +167,13 @@ const Login: React.FC = () => {
                     required: "La contraseña es requerida",
                   })}
                   type={showPassword ? "text" : "password"}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-sm text-white placeholder:text-white/20 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all"
+                  className="w-full bg-bginput border border-bg3 rounded-xl py-3.5 pl-12 pr-12 text-sm text-content-primary placeholder:text-content-muted/50 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-green-900 hover:text-emerald-primary transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-content-primary hover:text-emerald-primary transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -191,7 +191,7 @@ const Login: React.FC = () => {
         </div>
 
         <div className="mt-10 text-center">
-          <p className="text-[8px] text-white/30 mt-4 uppercase tracking-widest">
+          <p className="text-[8px] text-content-muted/50 mt-4 uppercase tracking-widest">
             © 2026 SIGAI-SES - v1.0.0
           </p>
         </div>

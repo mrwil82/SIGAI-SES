@@ -13,7 +13,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
   width,
   height,
 }) => {
-  const base = 'bg-white/5 rounded animate-pulse';
+  const base = 'bg-bg2 rounded animate-pulse';
   const variants: Record<string, string> = {
     text: 'h-4 w-full rounded',
     circular: 'rounded-full',
@@ -41,7 +41,7 @@ export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({ rows
 );
 
 export const CardSkeleton: React.FC = () => (
-  <div className="bg-bg2 rounded-[14px] border border-white/5 p-4 shadow-neo space-y-4">
+  <div className="bg-bg2 rounded-[14px] border border-bg4 p-4 shadow-neo space-y-4">
     <Skeleton className="h-6 w-1/3" />
     <Skeleton className="h-10 w-full" />
     <Skeleton className="h-10 w-2/3" />

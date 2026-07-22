@@ -51,12 +51,14 @@ def do_run_migrations(connection):
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
+    db_url = config.get_main_option("sqlalchemy.url")
+    connect_args = {"ssl": "require"} if "postgresql" in db_url else {}
     connectable = AsyncEngine(
         engine_from_config(
             config.get_section(config.config_ini_section, {}),
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,
-            connect_args={"ssl": "require"},  # Supabase requiere SSL
+            connect_args=connect_args,
         )
     )
 

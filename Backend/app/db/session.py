@@ -15,12 +15,20 @@ if db_url and "sqlite" in db_url:
         db_url,
         echo=False,
     )
-else:
-    # Crear motor asíncrono para PostgreSQL con SSL y pool de conexiones
+elif db_url and "mysql" in db_url:
     engine = create_async_engine(
         db_url,
         echo=False,
-        connect_args={"ssl": "require"},  # Supabase requiere SSL
+        pool_size=10,
+        max_overflow=20,
+        pool_timeout=60,
+        pool_recycle=1800
+    )
+else:
+    engine = create_async_engine(
+        db_url,
+        echo=False,
+        connect_args={"ssl": "require"},
         pool_size=10,
         max_overflow=20,
         pool_timeout=60,

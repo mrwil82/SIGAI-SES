@@ -188,7 +188,7 @@ const Projects: React.FC = () => {
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0 border-white/5">
+      <Card className="overflow-hidden p-0 border-bg4">
         <TableContainer>
           <THead>
             <TH>Nombre del Proyecto</TH>
@@ -211,7 +211,7 @@ const Projects: React.FC = () => {
                 <TR key={proj.id_proyecto}>
                   <TD>
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-blue border border-white/5 shadow-neo shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-blue border border-bg4 shadow-neo shrink-0">
                         <Briefcase size={18} />
                       </div>
                       <div className="font-bold text-xs md:text-sm text-content-primary truncate max-w-[150px] sm:max-w-[250px] lg:max-w-none">{proj.nombre_proyecto}</div>
@@ -243,18 +243,18 @@ const Projects: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <button 
                         onClick={() => handleEdit(proj)}
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button 
                         onClick={() => openConfirm(proj.id_proyecto)}
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-red-500 transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />
                       </button>
                       <button 
-                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-white/5"
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
                         onClick={() => navigate(`/projects/${proj.id_proyecto}`)}
                       >
                         <ChevronRight size={13} />

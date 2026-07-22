@@ -50,7 +50,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const label = payload[0].payload?.name ?? payload[0].name;
     return (
-      <div className="bg-bg3 border border-white/10 p-3 rounded-xl shadow-2xl backdrop-blur-md">
+      <div className="bg-bg3 border border-bg3 p-3 rounded-xl shadow-2xl backdrop-blur-md">
         <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary mb-1">{label}</p>
         <p className="text-xl font-black text-emerald-primary">{payload[0].value}</p>
       </div>
@@ -116,9 +116,9 @@ const Dashboard: React.FC = () => {
     switch (accion) {
       case 'CREATE': return 'text-emerald-primary border-emerald-primary/20 bg-emerald-primary/10';
       case 'UPDATE': return 'text-chart-blue border-chart-blue/20 bg-chart-blue/10';
-      case 'DELETE': return 'text-red-500 border-red-500/20 bg-red-500/10';
-      case 'LOGIN': return 'text-purple-400 border-purple-400/20 bg-purple-400/10';
-      default: return 'text-content-muted border-white/10 bg-white/5';
+      case 'DELETE': return 'text-danger border-red-500/20 bg-danger/10';
+      case 'LOGIN': return 'text-chart-purple border-purple-400/20 bg-purple-400/10';
+      default: return 'text-content-muted border-bg3 bg-bg2';
     }
   };
 
@@ -179,11 +179,11 @@ const Dashboard: React.FC = () => {
             <h1 className="text-2xl font-black tracking-tighter">Bienvenido, {user?.nombre?.split(' ')[0]}</h1>
             <p className="text-[10px] text-content-muted uppercase tracking-[0.3em] font-bold mt-1">Resumen Ejecutivo del Laboratorio</p>
          </div>
-         <div className="flex gap-2 bg-bg3/30 p-1 rounded-xl border border-white/5">
+         <div className="flex gap-2 bg-bg3/30 p-1 rounded-xl border border-bg4">
             <button 
               onClick={() => setTimeRange('hoy')}
               className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
-                timeRange === 'hoy' ? 'bg-emerald-primary text-bg0 shadow-glow-sm' : 'text-content-muted hover:text-white'
+                timeRange === 'hoy' ? 'bg-emerald-primary text-[rgb(var(--btn-primary-text))] shadow-glow-sm' : 'text-content-muted hover:text-content-primary'
               }`}
             >
               Hoy
@@ -191,7 +191,7 @@ const Dashboard: React.FC = () => {
             <button 
               onClick={() => setTimeRange('semana')}
               className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
-                timeRange === 'semana' ? 'bg-emerald-primary text-bg0 shadow-glow-sm' : 'text-content-muted hover:text-white'
+                timeRange === 'semana' ? 'bg-emerald-primary text-[rgb(var(--btn-primary-text))] shadow-glow-sm' : 'text-content-muted hover:text-content-primary'
               }`}
             >
               Semana
@@ -199,7 +199,7 @@ const Dashboard: React.FC = () => {
             <button 
               onClick={() => setTimeRange('mes')}
               className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
-                timeRange === 'mes' ? 'bg-emerald-primary text-bg0 shadow-glow-sm' : 'text-content-muted hover:text-white'
+                timeRange === 'mes' ? 'bg-emerald-primary text-[rgb(var(--btn-primary-text))] shadow-glow-sm' : 'text-content-muted hover:text-content-primary'
               }`}
             >
               Mes
@@ -285,7 +285,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           <Card className="p-0 overflow-hidden border-emerald-primary/10">
-            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-bg2/30">
+            <div className="p-6 border-b border-bg4 flex justify-between items-center bg-bg2/30">
               <div className="flex items-center gap-3">
                  <div className="p-2 bg-emerald-primary/10 rounded-lg text-emerald-primary"><Clock size={18} /></div>
                  <SectionTitle>Actividad Reciente</SectionTitle>
@@ -347,7 +347,7 @@ const Dashboard: React.FC = () => {
 
           <Card className="bg-gradient-to-br from-emerald-primary/10 to-transparent border-emerald-primary/20 p-6">
              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-primary text-bg0 flex items-center justify-center shadow-glow"><TrendingUp size={20}/></div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-primary text-[rgb(var(--btn-primary-text))] flex items-center justify-center shadow-glow"><TrendingUp size={20}/></div>
                 <h3 className="text-sm font-bold uppercase tracking-widest">Resumen de Salud</h3>
              </div>
              <p className="text-[11px] text-content-secondary leading-relaxed mb-6">
@@ -356,7 +356,7 @@ const Dashboard: React.FC = () => {
              </p>
              <button 
                 onClick={() => navigate('/alerts')}
-                className="w-full py-3 bg-bg3 border border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-primary hover:bg-bginput transition-all"
+                className="w-full py-3 bg-bg3 border border-bg4 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-primary hover:bg-bginput transition-all"
              >
                 Optimizar Inventario
              </button>

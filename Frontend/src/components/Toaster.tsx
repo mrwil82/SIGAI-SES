@@ -18,9 +18,9 @@ const CONFIG: Record<ToastType, {
   },
   error: {
     icon: AlertCircle,
-    iconBg: 'bg-red-500/10', iconColor: 'text-red-500',
-    titleColor: 'text-red-500', border: 'border-red-500/20',
-    progressColor: 'bg-red-500',
+    iconBg: 'bg-danger/10', iconColor: 'text-danger',
+    titleColor: 'text-danger', border: 'border-red-500/20',
+    progressColor: 'bg-danger',
   },
   warning: {
     icon: AlertTriangle,
@@ -92,14 +92,14 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
         </div>
         <button
           onClick={handleDismiss}
-          className="w-5 h-5 rounded-[6px] flex items-center justify-center bg-white/5 text-content-muted hover:bg-white/10 hover:text-content-primary transition-colors flex-shrink-0 -mt-0.5"
+          className="w-5 h-5 rounded-[6px] flex items-center justify-center bg-bg2 text-content-muted hover:bg-white/5 hover:text-content-primary transition-colors flex-shrink-0 -mt-0.5"
         >
           <X size={10} strokeWidth={2.5} />
         </button>
       </div>
 
       {toast.duration > 0 && (
-        <div className="h-[2px] w-full bg-white/5">
+        <div className="h-[2px] w-full bg-bg2">
           <div
             className={`h-full ${cfg.progressColor} origin-left`}
             style={{
