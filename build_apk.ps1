@@ -10,8 +10,9 @@ Write-Host "=== Build APK (producción → Render) ===" -ForegroundColor Cyan
 
 # 0. Verificar JAVA_HOME
 $jdkCandidates = @(
-    "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot",
-    "C:\Program Files\Eclipse Adoptium\jdk-17.0.*-hotspot",
+    "C:\Program Files\Eclipse Adoptium\jdk-21*",
+    "C:\Program Files\Eclipse Adoptium\jdk-17*",
+    "C:\Program Files\Java\jdk-21*",
     "C:\Program Files\Java\jdk-17*",
     $env:JAVA_HOME
 )
@@ -33,6 +34,20 @@ if (-not $jdkHome) {
 }
 $env:JAVA_HOME = $jdkHome
 Write-Host "  JAVA_HOME = $jdkHome" -ForegroundColor Green
+
+# 0b. Verificar ANDROID_HOME
+$androidSdk = "C:\Users\ASUS\AppData\Local\Android\Sdk"
+if (Test-Path $androidSdk) {
+    $env:ANDROID_HOME = $androidSdk
+    $env:ANDROID_SDK_ROOT = $androidSdk
+    $sdkUnix = $androidSdk -replace '\\', '/'
+    $propsPath = "$Root\Frontend\android\local.properties"
+    "sdk.dir=$sdkUnix" | Out-File -FilePath $propsPath -Encoding ASCII -Force
+    Write-Host "  ANDROID_HOME = $androidSdk" -ForegroundColor Green
+} else {
+    Write-Host "ERROR: Android SDK no encontrado en $androidSdk" -ForegroundColor Red
+    exit 1
+}
 
 # 0. Generar iconos desde icon-512.png
 Write-Host "[0/5] Generando iconos SIGAI-SES..." -ForegroundColor Yellow
