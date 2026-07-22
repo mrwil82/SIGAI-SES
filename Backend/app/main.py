@@ -149,24 +149,23 @@ app.mount('/static', StaticFiles(directory=static_dir), name='static')
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
+LOCAL_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^capacitor://localhost$|^file://$"
+
 try:
     cors_env = getattr(settings, "CORS_ALLOWED_ORIGINS", None)
     if cors_env and cors_env.strip():
         allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
-        origin_regex = None
     else:
         allowed_origins = [
             "https://sigai-ses-api.onrender.com",
         ]
-        origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^capacitor://localhost$|^file://$"
 except Exception:
     allowed_origins = ["*"]
-    origin_regex = None
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=origin_regex,
+    allow_origin_regex=LOCAL_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
