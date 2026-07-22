@@ -154,6 +154,7 @@ installer.iss
 Backend/scripts/debug_*.py
 Backend/scripts/check_data.py
 Backend/scripts/import_all_excel.py
+Backend/run.py
 
 # --- Environment configs ---
 .env.production
