@@ -36,10 +36,18 @@ from app.core.logger import set_request_id, set_user_id
 
 if getattr(sys, 'frozen', False):
     APP_DIR = Path(sys.executable).parent
+    try:
+        test_path = APP_DIR / "logs"
+        test_path.mkdir(exist_ok=True)
+        test_path.rmdir()
+        LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
+    except PermissionError:
+        fallback = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "SIGAI-SES" / "logs"
+        LOG_DIR = os.getenv("LOG_DIR", str(fallback))
 else:
     APP_DIR = Path(__file__).parent.parent
+    LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
 
-LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
 os.makedirs(LOG_DIR, exist_ok=True)
 
 _has_console = sys.stderr is not None
