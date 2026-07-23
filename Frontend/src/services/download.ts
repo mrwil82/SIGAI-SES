@@ -1,15 +1,7 @@
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
 import api from './api';
 
 function isCapacitor(): boolean {
   return !!(window as any).Capacitor;
-}
-
-function getMimeType(filename: string): string {
-  if (filename.endsWith('.pdf')) return 'application/pdf';
-  if (filename.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  return 'application/octet-stream';
 }
 
 async function downloadOnWeb(blob: Blob, filename: string): Promise<void> {
@@ -24,6 +16,9 @@ async function downloadOnWeb(blob: Blob, filename: string): Promise<void> {
 }
 
 async function downloadOnCapacitor(blob: Blob, filename: string): Promise<void> {
+  const { Filesystem, Directory } = await import('@capacitor/filesystem');
+  const { Share } = await import('@capacitor/share');
+
   const reader = new FileReader();
   const base64 = await new Promise<string>((resolve, reject) => {
     reader.onload = () => {
