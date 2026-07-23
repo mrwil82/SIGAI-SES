@@ -163,3 +163,6 @@ Backend/run.py
 .env.staging
 .env.local
 .env.*.local
+
+# Build backups
+*.build_backup
