@@ -5,7 +5,7 @@ services:
     repo: https://github.com/mrwil82/SIGAI-SES
     plan: free
     region: oregon
-    buildCommand: pip install -r Backend/requirements.txt
+    buildCommand: bash render-build.sh
     startCommand: cd Backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
     envVars:
       - key: DATABASE_URL
@@ -19,7 +19,7 @@ services:
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "480"
       - key: CORS_ALLOWED_ORIGINS
-        value: https://sigai-ses-api.onrender.com,https://*.onrender.com
+        value: https://sigai-ses-api.onrender.com,https://sigai-ses.onrender.com
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

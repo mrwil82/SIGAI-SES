@@ -696,8 +696,11 @@ const Sidebar = ({
             <img
               src={resolveAvatarUrl(user.avatar_url)}
               alt={user?.nombre}
-              className={`rounded-xl border border-emerald-primary/20 shrink-0 object-cover ${isCollapsed ? "w-9 h-9" : "w-10 h-10"}`}
+              width={40}
+              height={40}
+              className={`rounded-xl border border-emerald-primary/20 shrink-0 object-cover object-center max-w-full max-h-full ${isCollapsed ? "w-9 h-9" : "w-10 h-10"}`}
               title={user?.nombre}
+              loading="lazy"
             />
           ) : (
             <div

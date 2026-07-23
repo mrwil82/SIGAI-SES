@@ -1,4 +1,5 @@
 import api from './api';
+import { downloadFromFetch } from './download';
 
 export const getInventoryItems = async (skip: number, limit: number, search?: string, allResults?: boolean, includeDeleted?: boolean) => {
   const params: Record<string, string> = {
@@ -70,15 +71,6 @@ export const importInventory = async (file: File, idProyecto?: number, idCliente
 };
 
 export const downloadTemplate = async (module: string) => {
-  const response = await api.get(`/import/templates/${module}`, {
-    responseType: 'blob'
-  });
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', `Plantilla_${module}.xlsx`);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
+  const baseUrl = api.defaults.baseURL;
+  await downloadFromFetch(`${baseUrl}/import/templates/${module}`, `Plantilla_${module}.xlsx`);
 };

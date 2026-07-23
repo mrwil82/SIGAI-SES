@@ -101,7 +101,10 @@ async def init_database():
     logger.info("SIGAI-SES - Inicializacion de Base de Datos")
     logger.info("=" * 60)
 
-    engine = create_async_engine(DATABASE_URL, echo=False, connect_args={"ssl": "require"})
+    connect_args = {}
+    if "postgresql" in DATABASE_URL:
+        connect_args["ssl"] = "require"
+    engine = create_async_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 
     try:
         if not await wait_for_db(engine):

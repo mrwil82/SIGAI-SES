@@ -17,6 +17,7 @@ import ItemModal from './deliveries/ItemModal';
 import EditActaModal from './deliveries/EditActaModal';
 import ActaViewModal from './deliveries/ActaViewModal';
 import { InventoryItem, Activo, ActaItem, ActaFormData, ACTA_TYPES } from './deliveries/types';
+import { downloadPostBlob } from '../services/download';
 
 const initFormData = (user: any): ActaFormData => ({
   id_usuario_tecnico: 0,
@@ -184,11 +185,8 @@ const Deliveries: React.FC = () => {
     if (items.length === 0) { setError('Debe agregar al menos un item'); return; }
     setLoading(true); setError(null);
     try {
-      const response = await api.post('/business/actas/generate', { ...formData, items }, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url; link.setAttribute('download', `Acta_Entrega_${formData.nombre_tecnico.replace(/ /g, '_')}_${formData.fecha}.pdf`);
-      document.body.appendChild(link); link.click(); link.remove();
+      const filename = `Acta_Entrega_${formData.nombre_tecnico.replace(/ /g, '_')}_${formData.fecha}.pdf`;
+      await downloadPostBlob('/business/actas/generate', { ...formData, items }, filename);
       setSuccess('PDF generado correctamente'); toast.success('PDF generado correctamente');
       setTimeout(() => setSuccess(null), 5000);
     } catch (err: any) {
@@ -200,11 +198,7 @@ const Deliveries: React.FC = () => {
   const generateActaPDF = async (actaId: number) => {
     setLoading(true); setError(null);
     try {
-      const response = await api.post(`/business/actas/${actaId}/generate`, {}, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url; link.setAttribute('download', `Acta_${actaId}.pdf`);
-      document.body.appendChild(link); link.click(); link.remove();
+      await downloadPostBlob(`/business/actas/${actaId}/generate`, {}, `Acta_${actaId}.pdf`);
       try {
         const res = await api.post(`/business/actas/${actaId}/downloaded`);
         toast.success(res?.data?.message || 'Descarga registrada');

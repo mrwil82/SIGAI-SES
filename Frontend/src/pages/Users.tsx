@@ -251,7 +251,9 @@ const UsersPage: React.FC = () => {
                         <img
                           src={resolveAvatarUrl(u.avatar_url)}
                           alt={u.nombre}
-                          className="w-10 h-10 rounded-xl object-cover border border-emerald-primary/20 shadow-neo shrink-0"
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded-xl object-cover object-center max-w-full max-h-full border border-emerald-primary/20 shadow-neo shrink-0"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-bg4 shadow-neo shrink-0 uppercase font-bold">

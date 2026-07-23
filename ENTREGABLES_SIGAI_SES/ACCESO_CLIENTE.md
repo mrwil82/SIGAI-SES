@@ -1,134 +1,145 @@
 ﻿<p align="center">
-  <img src="https://img.shields.io/badge/SIGAI--SES-Acceso%20de%20Pruebas-0055A4?style=for-the-badge&logo=testcafe" alt="Acceso">
-  <img src="https://img.shields.io/badge/Ambiente-Staging-yellow?style=for-the-badge&logo=vercel" alt="Staging">
-  <img src="https://img.shields.io/badge/Rol-Administrador-success?style=for-the-badge&logo=admin" alt="Admin">
+  <img src="https://img.shields.io/badge/SIGAI--SES-Acceso%20Pruebas-0055A4?style=for-the-badge&logo=testcafe" alt="Acceso">
+  <img src="https://img.shields.io/badge/Ambiente-Cloud-yellow?style=for-the-badge&logo=vercel" alt="Cloud">
+  <img src="https://img.shields.io/badge/Entrega%20Final-v1.0.0-success?style=for-the-badge&logo=checkmarx" alt="Entrega">
   <img src="https://img.shields.io/badge/Julio-2026-FF6B35?style=for-the-badge&logo=calendar" alt="Fecha">
 </p>
 
 <h1 align="center">
-  SIGAI-SES - Acceso para Pruebas
+  SIGAI-SES — Acceso y Entrega Final
 </h1>
 
 <p align="center">
-  <b>Sistema Integral de Gestion de Activos e Inventario</b><br>
-  <i>Securitas Colombia S.A. - Unidad de Seguridad Electronica (SES)</i>
+  <b>Sistema Integral de Gestión de Activos e Inventario</b><br>
+  <i>Securitas Colombia S.A. — Unidad de Seguridad Electrónica (SES)</i>
+</p>
+
+<p align="center">
+  <b>Destinatario:</b> Elkin David Velasquez Hernandez — Gerente de Mantenimiento SES
 </p>
 
 ---
 
 > [!WARNING]
-> **CONFIDENCIAL** - Estas credenciales son **unicamente para pruebas** del cliente autorizado. No compartir con personal no autorizado.
+> **CONFIDENCIAL** — Este documento contiene información sensible del proyecto. No compartir con personal no autorizado.
 
 ---
 
-## Datos de Acceso
+## Datos de acceso
 
-| Dato | Valor | Nota |
-|---|---|---|
-| **URL** | [https://proyecto-sigai-ses.vercel.app](https://proyecto-sigai-ses.vercel.app) | |
-| **Usuario** | `admin@securitas.com` | |
-| **Contrasena** | `Admin123!` | |
+| Dato | Valor |
+|---|---|
+| **Usuario** | `admin@securitas.com` |
+| **Contrasena** | `Admin123!` |
 
 > [!NOTE]
-> La contrasena debe ser cambiada en el **primer inicio de sesion** en el ambiente de produccion.
+> Al ejecutar la aplicación se abrirá automáticamente el navegador con la URL local de inicio de sesión. Ambiente cloud (backend en Render, base de datos en Supabase). No se requiere instalación local.
 
 ---
 
-## Que Probar
+## Archivos entregados
 
-<details open>
-<summary><b>Funcionalidades disponibles para testing</b></summary>
-
-### Modulos del Sistema
-
-| # | Modulo | Accion | Estado Esperado |
-|---|---|---|---|
-| 1 | Login | Iniciar sesion con credenciales | Acceso concedido |
-| 2 | Dashboard | Explorar KPIs y graficos | Datos visibles |
-| 3 | Items | Crear, editar, eliminar items | CRUD funcional |
-| 4 | Clientes | Gestionar clientes y proyectos | CRUD funcional |
-| 5 | Equipos | Registrar equipos y activos serializados | CRUD funcional |
-| 6 | Movimientos | Registrar entradas, salidas, traslados | Kardex actualizado |
-| 7 | Garantias | Flujo completo de garantias | 5 estados funcionales |
-| 8 | Actas | Generar actas de entrega con firma | PDF descargable |
-| 9 | Alertas | Verificar motor de alertas automatico | Alertas visibles |
-| 10 | Reportes | Generar reportes Excel y PDF | Archivos descargables |
-| 11 | Importacion | Importar datos desde Excel | Upsert funcional |
-
-</details>
+| Archivo | Descripción |
+|---|---|
+| `SIGAI-SES.apk` | Aplicacion Android nativa (~4.4 MB) |
+| `SIGAI-SES_Portable.exe` | Windows portable, no necesita instalación (~67 MB) |
+| `SIGAI-SES-Setup-1.0.0.exe` | Instalador profesional de Windows |
 
 ---
 
-## Escenarios de Prueba Sugeridos
+## Cómo usar cada archivo
 
-> [!TIP]
-> Sigue estos escenarios para una evaluacion completa del sistema.
+### 1. APK Android
 
-| Escenario | Pasos | Resultado Esperado |
+1. Transfiere el `.apk` al dispositivo
+2. En el celular, ve a **Ajustes > Seguridad** y habilita "orígenes desconocidos"
+3. Ábrelo y selecciona **Instalar**
+
+### 2. Windows Portable (no requiere instalación)
+
+1. Haz doble clic en `SIGAI-SES_Portable.exe`
+2. Si Windows Defender lo bloquea, haz clic en "Mostrar más detalles", luego ejecuta de todas maneras.
+3. Se lanzará la ventana de comandos seguida del navegador web, donde podrás iniciar sesión.
+4. Para cerrar, presiona Ctrl+C o cierra la terminal.
+
+### 3. Instalador de Windows (set-up)
+
+1. Haz doble clic en `SIGAI-SES-Setup-1.0.0.exe`
+   y sigue el asistente de instalación
+2. Una vez finalizado, busca "SIGAI SES" en el menú inicio
+3. Se abrirá la terminal con el servidor, seguida del navegador para iniciar sesión.
+4. Para desinstalar: Panel de control > Programas > Desinstalar.
+
+---
+
+## Requisitos
+
+| Componente | APK (Android) | Windows |
 |---|---|---|
-| **Flujo completo de garantia** | Crear item -> Asignar activo -> Registrar garantia -> Seguir 5 estados | Garantia entregada al tecnico |
-| **Inventario con alertas** | Reducir stock por debajo del minimo -> Esperar 15 min | Alarma de stock bajo |
-| **Acta de entrega** | Seleccionar activos -> Generar acta -> Firma digital -> PDF | PDF con firma y datos |
-| **Importacion masiva** | Cargar Excel de 150+ registros | Datos importados correctamente |
-| **Reporte ejecutivo** | Dashboard -> KPIs -> Exportar Excel | Excel con datos reales |
+| Versión mínima | Android 8.0+ | Windows 10/11 |
+| RAM minima | 2 GB | 4 GB |
+| Espacio en disco | 20 MB | 300 MB |
+| Conexión internet | Sí | Sí |
 
 ---
 
-## Enviar Feedback
+## Problemas y errores conocidos
+
+| # | Problema | Solución/Recomendación |
+|---|---|---|
+| 1 | APK no se instala | Habilitar orígenes desconocidos en Ajustes |
+| 2 | Windows Defender bloquea el archivo | Agregar a exclusiones del antivirus |
+| 3 | Primera carga lenta | El servicio cloud (Render) puede tardar hasta 20 segundos en arrancar. Aguardar, luego la navegación es normal |
+| 4 | API no disponible | Verificar internet; el backend y base datos están en Render y Supabase |
+
+---
+
+## Contacto para reportar problemas
 
 > [!IMPORTANT]
-> Cualquier error, sugerencia o mejora, por favor reportarlo a traves de los siguientes canales:
+> Cualquier error, sugerencia o mejora, repórtela a:
 
 | Canal | Detalle |
 |---|---|
-| **Correo** | [tucorreo@ejemplo.com](mailto:tucorreo@ejemplo.com) |
-| **WhatsApp** | [+57 300 000 0000](https://wa.me/573000000000) |
-| **Repositorio** | [Issues en GitHub](https://github.com/tu-repo/sigai-ses/issues) |
+| **WhatsApp** | [312 370 0968] |
+| **Correo** | wil82-xbox@hotmail.com |
 
 ### Plantilla para reportar errores
 
-```markdown
-**Modulo:** [ej. Garantias, Inventario, Login]
-**Descripcion:** [Que paso?]
-**Pasos para reproducir:**
-1. Ir a...
-2. Hacer click en...
-3. Observar error...
-**Resultado esperado:** [Que deberia pasar]
-**Captura de pantalla:** [Si aplica]
+```
+Modulo: [Garantias/Inventario/Login…]
+Problema:
+Pasos para reproducir:
+1.
+2.
+3.
+Resultado esperado:
+Error/Resultado obtenido:
+Captura de pantalla:
 ```
 
 ---
 
-## Informacion Tecnica del Ambiente
+## Nota de agradecimiento
 
-| Parametro | Valor |
-|---|---|
-| **Ambiente** | Staging / Pre-produccion |
-| **Hosting** | Vercel (Frontend) + Railway (Backend) |
-| **Base de datos** | TiDB Cloud (MySQL compatible) |
-| **API Base URL** | `https://sigai-ses-backend.railway.app/api` |
-| **Documentacion API** | `/docs` (Swagger UI) |
-| **TLS/SSL** | Habilitado (Let's Encrypt) |
-
----
-
-## Recursos Adicionales
-
-| Recurso | Enlace |
-|---|---|
-| Manual de usuario tecnico | [Ver manual](./03_DOCUMENTACION_USUARIO/MANUALES/01_MANUAL_USUARIO_TECNICO.md) |
-| Manual de administrador | [Ver manual](./03_DOCUMENTACION_USUARIO/MANUALES/02_MANUAL_ADMINISTRADOR.md) |
-| FAQ para usuarios | [Ver FAQ](./03_DOCUMENTACION_USUARIO/FAQ/01_FAQ_USUARIO.md) |
-| Guia de instalacion | [Ver guia](./01_DOCUMENTACION_TECNICA/02_GUIA_INSTALACION_BACKEND.md) |
+> Agradezco sinceramente a Elkin David Velasquez Hernandez, Gerente de Mantenimiento SES, por la confianza y la oportunidad de desarrollar este proyecto. También a todo el equipo de Seguridad Electrónica (SES) por su invaluable apoyo, retroalimentación constante sobre los puntos de mejora y apertura durante la implementación del sistema. Este proyecto fue desarrollado con dedicación, bajo mucho aprendizaje, y el compromiso de entregar un producto funcional, robusto y preparado para un ambiente real para ENEL Colombia.
 
 ---
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Documento%20generado-Julio%202026-0055A4?style=for-the-badge" alt="Generado">
-  <img src="https://img.shields.io/badge/SIGAI--SES-Securitas%20Colombia-success?style=for-the-badge" alt="SIGAI-SES">
+  <i>Wilson Ortiz</i><br>
+  <b>Aprendiz SENA - Análisis y Desarrollo de Software</b><br>
+  SIGAI-SES — Securitas Colombia S.A.
+</p>
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/SIGAI--SES-v1.0.0-blue?style=for-the-badge" alt="version">
+  <img src="https://img.shields.io/badge/desarrollado%20por-Wilson%20Ortiz-success?style=for-the-badge" alt="Wilson Ortiz">
+  <img src="https://img.shields.io/badge/SENA-FPI-FECC02?style=for-the-badge&logo=sena" alt="SENA">
 </p>
 
 <p align="center">
-  <i>Wilson Ortiz - Pasante SENA</i>
+  <i>Bogotá, Colombia - Julio 2026</i>
 </p>
