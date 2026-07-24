@@ -7,37 +7,57 @@ on:
     branches: [ main, master ]
 
 jobs:
+
+  # ─────────────────────────────────────────
+  # JOB 1: Tests del Backend (Python/pytest)
+  # ─────────────────────────────────────────
   backend-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+
+    - name: Checkout código
+      uses: actions/checkout@v4
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - name: Install dependencies
+
+    - name: Instalar dependencias
       run: |
         cd Backend
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-asyncio aiosqlite
+
     - name: Run Backend Tests
       run: |
-        export PYTHONPATH=$PYTHONPATH:$(pwd)/Backend
-        pytest Backend/tests
+        export PYTHONPATH=$(pwd)/Backend
+        cd Backend
+        pytest -v --tb=short
 
+  # ─────────────────────────────────────────
+  # JOB 2: Lint del Frontend (Node.js/npm)
+  # ─────────────────────────────────────────
   frontend-lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+
+    - name: Checkout código
+      uses: actions/checkout@v4
+
     - name: Set up Node.js
-      uses: actions/setup-python@v5
+      uses: actions/setup-node@v4        # ✅ CORREGIDO (era setup-python@v5)
       with:
         node-version: '20'
-    - name: Install dependencies
+        cache: 'npm'
+        cache-dependency-path: Frontend/package-lock.json
+
+    - name: Instalar dependencias
       run: |
         cd Frontend
         npm install
+
     - name: Run Lint
       run: |
         cd Frontend
