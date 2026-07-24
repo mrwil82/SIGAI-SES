@@ -35,17 +35,20 @@ from datetime import datetime, timezone
 from app.core.logger import set_request_id, set_user_id
 
 if getattr(sys, 'frozen', False):
+    BASE_DIR = Path(sys._MEIPASS)
     APP_DIR = Path(sys.executable).parent
     try:
-        test_path = APP_DIR / "logs"
-        test_path.mkdir(exist_ok=True)
-        test_path.rmdir()
+        test_file = APP_DIR / "logs" / ".write_test"
+        test_file.parent.mkdir(exist_ok=True)
+        test_file.touch()
+        test_file.unlink()
         LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
-    except PermissionError:
+    except (PermissionError, OSError):
         fallback = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "SIGAI-SES" / "logs"
         LOG_DIR = os.getenv("LOG_DIR", str(fallback))
 else:
-    APP_DIR = Path(__file__).parent.parent
+    BASE_DIR = Path(__file__).parent.parent
+    APP_DIR = BASE_DIR
     LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
 
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -149,7 +152,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-static_dir = os.path.join(os.getcwd(), 'app', 'static')
+static_dir = os.path.join(str(BASE_DIR), 'app', 'static')
 if not os.path.exists(static_dir):
     os.makedirs(os.path.join(static_dir, 'avatars'), exist_ok=True)
     os.makedirs(os.path.join(static_dir, 'web'), exist_ok=True)

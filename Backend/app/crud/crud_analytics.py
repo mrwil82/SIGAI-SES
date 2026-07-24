@@ -51,7 +51,7 @@ async def get_dashboard_stats(db: AsyncSession, time_range: str = "hoy"):
     fecha_limite = datetime.now() - timedelta(days=15)
     res_gar = await db.execute(
         select(func.count(Garantia.id_garantia))
-        .where(Garantia.estado_proceso != 'ENTREGADO AL CLIENTE')
+        .where(Garantia.estado_proceso != 'ENTREGADO_CLIENTE')
         .where(Garantia.fecha_envio <= fecha_limite.date())
     )
     garantias_criticas = res_gar.scalar() or 0
@@ -62,15 +62,33 @@ async def get_dashboard_stats(db: AsyncSession, time_range: str = "hoy"):
         select(func.count(Item.id_item))
         .join(StockBulk, Item.id_item == StockBulk.id_item)
         .where(StockBulk.cantidad_actual <= Item.stock_minimo)
+        .where(Item.deleted_at.is_(None))
     )
     stock_bajo = res_stock.scalar() or 0
+
+    # Total de items activos en catálogo
+    res_total_items = await db.execute(
+        select(func.count(Item.id_item))
+        .where(Item.deleted_at.is_(None))
+    )
+    total_items = res_total_items.scalar() or 0
+
+    # Items por categoría
+    res_items_cat = await db.execute(
+        select(Item.categoria, func.count(Item.id_item))
+        .where(Item.deleted_at.is_(None))
+        .group_by(Item.categoria)
+    )
+    items_por_categoria = {row[0]: row[1] for row in res_items_cat.all()}
 
     return {
         "activos_por_estado": activos_status,
         "nuevos_ingresos": nuevos_ingresos,
         "movimientos_periodo": movimientos_periodo,
         "garantias_criticas": garantias_criticas,
-        "items_stock_bajo": stock_bajo
+        "items_stock_bajo": stock_bajo,
+        "total_items": total_items,
+        "items_por_categoria": items_por_categoria
     }
 
 async def global_search(db: AsyncSession, query: str) -> List[Dict[str, Any]]:

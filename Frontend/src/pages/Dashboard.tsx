@@ -12,7 +12,9 @@ import {
   LayoutDashboard,
   ArrowUpRight,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Box,
+  Layers
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -157,18 +159,33 @@ const Dashboard: React.FC = () => {
   const enGarantia = Number(stats?.activos_por_estado?.EN_GARANTIA || 0);
   const nuevosIngresos = Number(stats?.nuevos_ingresos || 0);
   const movimientosPeriodo = Number(stats?.movimientos_periodo || 0);
+  const totalItems = Number(stats?.total_items || 0);
 
   const timeRangeLabel = timeRange === 'hoy' ? 'hoy' : timeRange === 'semana' ? '7 días' : '30 días';
 
-  const pieData = stats?.activos_por_estado ? Object.entries(stats.activos_por_estado).map(([name, value]) => ({
-    name: name.replace(/_/g, ' '),
-    value: Number(value)
-  })) : [];
+  const pieData = stats?.activos_por_estado && Object.keys(stats.activos_por_estado).length > 0
+    ? Object.entries(stats.activos_por_estado).map(([name, value]) => ({
+        name: name.replace(/_/g, ' '),
+        value: Number(value)
+      }))
+    : stats?.items_por_categoria
+      ? Object.entries(stats.items_por_categoria).map(([name, value]) => ({
+          name: name.replace(/_/g, ' '),
+          value: Number(value)
+        }))
+      : [];
 
-  const barData = stats?.activos_por_estado ? Object.entries(stats.activos_por_estado).map(([name, value]) => ({
-    name: name.replace(/_/g, ' '),
-    count: Number(value)
-  })).sort((a, b) => b.count - a.count) : [];
+  const barData = stats?.activos_por_estado && Object.keys(stats.activos_por_estado).length > 0
+    ? Object.entries(stats.activos_por_estado).map(([name, value]) => ({
+        name: name.replace(/_/g, ' '),
+        count: Number(value)
+      })).sort((a, b) => b.count - a.count)
+    : stats?.items_por_categoria
+      ? Object.entries(stats.items_por_categoria).map(([name, value]) => ({
+          name: name.replace(/_/g, ' '),
+          count: Number(value)
+        })).sort((a, b) => b.count - a.count)
+      : [];
 
   return (
     <DashboardLayout>
@@ -207,10 +224,11 @@ const Dashboard: React.FC = () => {
          </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-10">
         <StatCard title={`Activos (${timeRangeLabel})`} value={totalActivos} icon={<Package />} trend="En período" color="blue" />
         <StatCard title="En Garantía" value={enGarantia} icon={<ShieldCheck />} trend="Actual" color="emerald" />
-        <StatCard title="Nuevos Ingresos" value={nuevosIngresos} icon={<TrendingUp />} trend={timeRangeLabel} color="purple" />
+        <StatCard title="Equipos en Catálogo" value={totalItems} icon={<Box />} trend="Total" color="purple" />
+        <StatCard title="Nuevos Ingresos" value={nuevosIngresos} icon={<TrendingUp />} trend={timeRangeLabel} color="gold" />
         <StatCard title="Movimientos" value={movimientosPeriodo} icon={<History />} trend={timeRangeLabel} color="gold" />
       </div>
 
