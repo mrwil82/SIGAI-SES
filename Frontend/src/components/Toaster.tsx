@@ -92,7 +92,7 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
         </div>
         <button
           onClick={handleDismiss}
-          className="w-5 h-5 rounded-[6px] flex items-center justify-center bg-bg2 text-content-muted hover:bg-white/5 hover:text-content-primary transition-colors flex-shrink-0 -mt-0.5"
+          className="w-5 h-5 rounded-[6px] flex items-center justify-center bg-bg2 text-content-muted hover:bg-emerald-primary/5 hover:text-content-primary transition-colors flex-shrink-0 -mt-0.5"
         >
           <X size={10} strokeWidth={2.5} />
         </button>

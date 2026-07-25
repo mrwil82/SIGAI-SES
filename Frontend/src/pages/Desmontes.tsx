@@ -395,24 +395,9 @@ const Desmontes: React.FC = () => {
                         }))
                       }
                     >
-                      <option
-                        value="BUENO"
-                        style={{ background: "#fff", color: "#111" }}
-                      >
-                        Bueno
-                      </option>
-                      <option
-                        value="RECUPERABLE"
-                        style={{ background: "#fff", color: "#111" }}
-                      >
-                        Recuperable
-                      </option>
-                      <option
-                        value="DESECHO"
-                        style={{ background: "#fff", color: "#111" }}
-                      >
-                        Desecho
-                      </option>
+                      <option value="BUENO">Bueno</option>
+                      <option value="RECUPERABLE">Recuperable</option>
+                      <option value="DESECHO">Desecho</option>
                     </NeoSelect>
                   </TD>
                   <TD className="text-right">
@@ -427,7 +412,7 @@ const Desmontes: React.FC = () => {
                       </Button>
                       <button
                         onClick={() => handleDeleteClick(activo.id_activo)}
-                        className="h-9 w-9 rounded-lg border border-red-500/20 text-danger/80 hover:bg-danger/10 transition-colors flex items-center justify-center"
+                        className="h-9 w-9 rounded-lg border border-danger/20 text-danger/80 hover:bg-danger/10 transition-colors flex items-center justify-center"
                         title="Eliminar de triaje"
                       >
                         <Trash2 size={14} />
@@ -557,9 +542,9 @@ const Desmontes: React.FC = () => {
                 key={cat}
                 onClick={() => setDesmonteCatFilter(cat)}
                 className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all border ${
-                  desmonteCatFilter === cat
-                    ? "bg-emerald-muted border-emerald-500/40 text-emerald-primary"
-                    : "bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-500/20 hover:text-content"
+                    desmonteCatFilter === cat
+                      ? "bg-emerald-muted border-emerald-primary/40 text-emerald-primary"
+                      : "bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-primary/20 hover:text-content"
                 }`}
               >
                 {cat === "all" ? "Todos" : cat}
@@ -578,7 +563,7 @@ const Desmontes: React.FC = () => {
           </div>
 
           {/* Tabla de items */}
-          <div className="overflow-x-auto overflow-y-auto max-h-[400px] border border-bg4 rounded-xl">
+          <div className="overflow-x-auto overflow-y-auto max-h-[400px] border border-bg4 rounded-xl custom-scrollbar">
             <table className="w-full border-collapse" style={{ minWidth: 600 }}>
               <thead>
                 <tr>
@@ -656,7 +641,7 @@ const Desmontes: React.FC = () => {
                             <div
                               className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
                                 isSelected
-                                  ? "bg-emerald-400 text-bg1"
+                                  ? "bg-emerald-primary text-[rgb(var(--btn-primary-text))]"
                                   : "border border-bg3"
                               }`}
                             >
@@ -695,7 +680,7 @@ const Desmontes: React.FC = () => {
                               onChange={(e) =>
                                 setDesmonteQty(it.id_item, e.target.value)
                               }
-                              className="w-16 text-center text-[11px] rounded-md border border-bg4/80 py-1 px-2 bg-bg2 text-content outline-none focus:border-emerald-500/30 disabled:opacity-30"
+                              className="w-16 text-center text-[11px] rounded-md border border-bg4/80 py-1 px-2 bg-bg2 text-content outline-none focus:border-emerald-primary/30 disabled:opacity-30"
                             />
                           </td>
                         </tr>

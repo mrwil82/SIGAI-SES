@@ -9,7 +9,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
       gradient: "from-chart-blue/10 to-transparent",
       iconBg: "bg-chart-blue/20",
       iconColor: "text-chart-blue",
-      shadow: "shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+      shadow: "shadow-glow-sm"
     },
     emerald: {
       border: "border-emerald-primary/20",
@@ -17,7 +17,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
       gradient: "from-emerald-primary/10 to-transparent",
       iconBg: "bg-emerald-primary/20",
       iconColor: "text-emerald-primary",
-      shadow: "shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+      shadow: "shadow-glow-sm"
     },
     gold: {
       border: "border-gold/20",
@@ -25,7 +25,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
       gradient: "from-gold/10 to-transparent",
       iconBg: "bg-gold/20",
       iconColor: "text-gold",
-      shadow: "shadow-[0_0_20px_rgba(234,179,8,0.1)]"
+      shadow: "shadow-glow-sm"
     },
     purple: {
       border: "border-chart-purple/20",
@@ -33,7 +33,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
       gradient: "from-chart-purple/10 to-transparent",
       iconBg: "bg-chart-purple/20",
       iconColor: "text-chart-purple",
-      shadow: "shadow-[0_0_20px_rgba(168,85,247,0.1)]"
+      shadow: "shadow-glow-sm"
     }
   };
 
@@ -67,7 +67,7 @@ export const StatCard = ({ title, value, icon, trend, color, trendUp }: any) => 
 export const QuickAccessBtn = ({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) => (
   <button 
     onClick={onClick}
-    className="w-full flex flex-col gap-1 items-center justify-center p-3 rounded-xl bg-bg3 border border-bg4 shadow-neo hover:bg-white/5/80 transition-all active:scale-95"
+    className="w-full flex flex-col gap-1 items-center justify-center p-3 rounded-xl bg-bg3 border border-bg4 shadow-neo hover:bg-emerald-primary/5 transition-all active:scale-95"
   >
     {icon}
     <span className="text-[8px] uppercase tracking-widest text-content-muted">{label}</span>

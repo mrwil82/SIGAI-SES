@@ -10,8 +10,7 @@ import { useTheme, ThemeName } from '../context/ThemeContext';
 const THEMES: { id: ThemeName; label: string; desc: string; preview: string }[] = [
   { id: 'green', label: 'Verde', desc: 'Industrial / seguridad', preview: 'bg-emerald-primary' },
   { id: 'blue', label: 'Azul Cobalto', desc: 'Oscuro / corporativo', preview: 'bg-chart-blue' },
-  { id: 'bone', label: 'Blanco Hueso', desc: 'Cálido / natural', preview: 'bg-emerald-primary' },
-  { id: 'sand', label: 'Arena', desc: 'Beige / acento dorado', preview: 'bg-gold' },
+  { id: 'bone', label: 'Blanco Hueso', desc: 'Cálido / natural', preview: 'bg-gold' },
 ];
 
 const Settings: React.FC = () => {
@@ -80,7 +79,7 @@ const Settings: React.FC = () => {
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   theme === t.id
                     ? 'border-emerald-primary bg-emerald-primary/5'
-                    : 'border-bg4 bg-bg2 hover:bg-white/5'
+                    : 'border-bg4 bg-bg2 hover:bg-emerald-primary/5'
                 }`}
               >
                 <div className={`w-full h-8 rounded-lg mb-3 ${t.preview} bg-opacity-30 border border-bg3`} />

@@ -97,14 +97,14 @@ const ItemModal: React.FC<ItemModalProps> = ({
         style={{
           background: 'var(--bg1, rgb(var(--bg1)))',
           border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(52,211,153,0.06)',
+          boxShadow: 'var(--shadow-neo), 0 0 0 1px rgba(var(--emerald-primary), 0.06)',
           animation: 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         <div className="flex items-center gap-3 px-6 py-4 border-b border-bg4"
-             style={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.05), transparent)' }}>
+             style={{ background: 'linear-gradient(135deg, rgba(var(--emerald-primary), 0.05), transparent)' }}>
           <div className="flex items-center justify-center w-9 h-9 rounded-xl"
-               style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.2)' }}>
+               style={{ background: 'rgba(var(--emerald-primary), 0.12)', border: '1px solid rgba(var(--emerald-primary), 0.2)' }}>
             <Package size={16} className="text-emerald-primary" />
           </div>
           <div>
@@ -129,8 +129,8 @@ const ItemModal: React.FC<ItemModalProps> = ({
               onClick={() => setCatFilter(cat)}
               className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all border ${
                 catFilter === cat
-                  ? 'bg-emerald-muted border-emerald-500/40 text-emerald-primary'
-                  : 'bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-500/20 hover:text-content'
+                  ? 'bg-emerald-muted border-emerald-primary/40 text-emerald-primary'
+                  : 'bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-primary/20 hover:text-content'
               }`}
             >
               {cat === 'all' ? 'Todos' : CAT_LABELS[cat]}
@@ -149,7 +149,7 @@ const ItemModal: React.FC<ItemModalProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto overflow-y-auto flex-1">
+        <div className="overflow-x-auto overflow-y-auto flex-1 custom-scrollbar">
           <table className="w-full border-collapse" style={{ minWidth: 600 }}>
             <thead>
               <tr>
@@ -180,12 +180,12 @@ const ItemModal: React.FC<ItemModalProps> = ({
                       key={it.id_item}
                       onClick={() => toggle(it.id_item)}
                       className="cursor-pointer border-b border-bg3/50 transition-colors"
-                      style={{ background: isSelected ? 'rgba(52,211,153,0.06)' : undefined }}
+                      style={{ background: isSelected ? 'rgba(var(--emerald-primary), 0.06)' : undefined }}
                     >
                       <td className="px-4 py-2.5">
                         <div className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-emerald-400 text-bg1'
+                            ? 'bg-emerald-primary text-[rgb(var(--btn-primary-text))]'
                             : 'border border-bg3'
                         }`}>
                           {isSelected && <span className="text-[9px] font-bold">✓</span>}
@@ -211,7 +211,7 @@ const ItemModal: React.FC<ItemModalProps> = ({
                           value={selections[it.id_item] ?? 1}
                           disabled={!isSelected}
                           onChange={(e) => setQty(it.id_item, e.target.value)}
-                          className="w-16 text-center text-[11px] rounded-md border border-bg4/80 py-1 px-2 bg-bg2 text-content outline-none focus:border-emerald-500/30 disabled:opacity-30"
+                          className="w-16 text-center text-[11px] rounded-md border border-bg4/80 py-1 px-2 bg-bg2 text-content outline-none focus:border-emerald-primary/30 disabled:opacity-30"
                         />
                       </td>
                     </tr>

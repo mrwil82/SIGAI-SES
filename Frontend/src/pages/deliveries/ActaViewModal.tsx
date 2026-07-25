@@ -16,7 +16,7 @@ const ActaViewModal: React.FC<ActaViewModalProps> = ({ isOpen, onClose, acta, pr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="w-full max-w-[680px] mx-4 bg-bg1 p-4 sm:p-6 rounded-xl shadow-lg" style={{ animation: 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1)' }}>
+      <div className="w-full max-w-[680px] mx-4 bg-bg1 p-4 sm:p-6 rounded-xl shadow-neo" style={{ animation: 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1)' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">Vista Acta</h2>
           <div className="flex items-center gap-2">
@@ -52,7 +52,7 @@ const ActaViewModal: React.FC<ActaViewModalProps> = ({ isOpen, onClose, acta, pr
 
           <div>
             <p className="text-[10px] text-content-muted mb-2">Detalles</p>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full border-collapse">
                 <thead>
                   <tr>

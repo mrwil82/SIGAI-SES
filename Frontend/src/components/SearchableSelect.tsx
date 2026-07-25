@@ -76,7 +76,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <span className="flex-1 min-w-0 truncate">{selected.label}</span>
           <button
             onClick={(e) => { e.stopPropagation(); handleClear(); }}
-            className="p-0.5 rounded hover:bg-white/5 text-content-muted hover:text-danger transition-colors"
+            className="p-0.5 rounded hover:bg-emerald-primary/5 text-content-muted hover:text-danger transition-colors"
           >
             <X size={14} />
           </button>
@@ -95,7 +95,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             className="flex-1 min-w-0 bg-transparent text-xs text-content-primary outline-none placeholder:text-content-muted truncate"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="p-0.5 rounded hover:bg-white/5 text-content-muted transition-colors">
+            <button onClick={() => setSearch('')} className="p-0.5 rounded hover:bg-emerald-primary/5 text-content-muted transition-colors">
               <X size={14} />
             </button>
           )}

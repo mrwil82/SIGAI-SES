@@ -55,7 +55,7 @@ const EditActaModal: React.FC<EditActaModalProps> = ({ isOpen, onClose, acta, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={(e: React.MouseEvent) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="w-full max-w-[500px] mx-4 bg-bg1 p-4 sm:p-6 rounded-xl shadow-lg" style={{ animation: 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1)' }}>
+      <div className="w-full max-w-[500px] mx-4 bg-bg1 p-4 sm:p-6 rounded-xl shadow-neo" style={{ animation: 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1)' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">Editar Acta</h2>
           <button onClick={onClose} className="text-content-muted hover:text-content">
@@ -63,7 +63,7 @@ const EditActaModal: React.FC<EditActaModalProps> = ({ isOpen, onClose, acta, on
           </button>
         </div>
 
-        {error && <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-red-500/20 text-danger text-xs">{error}</div>}
+        {error && <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs">{error}</div>}
 
         <FormGroup label="Número de Acta" htmlFor="numero_acta">
           <NeoInput id="numero_acta" value={localActa.numero_acta || ''} onChange={(e) => setLocalActa({ ...localActa, numero_acta: e.target.value })} />

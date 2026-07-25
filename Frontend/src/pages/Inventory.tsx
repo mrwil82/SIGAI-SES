@@ -308,8 +308,8 @@ const Inventory: React.FC = () => {
                 onClick={() => setShowDeleted(!showDeleted)}
                 className={`h-11 md:h-12 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
                   showDeleted
-                    ? 'bg-danger/10 border-red-500/40 text-danger/80'
-                    : 'border-bg3 text-content-muted hover:border-red-500/30 hover:text-danger/80'
+                    ? 'bg-danger/10 border-danger/40 text-danger/80'
+                    : 'border-bg3 text-content-muted hover:border-danger/30 hover:text-danger/80'
                 }`}
               >
                 <Trash2 size={14} className="inline mr-1.5" />
@@ -344,7 +344,7 @@ const Inventory: React.FC = () => {
                 </TR>
               ) : filteredItems.length > 0 ? (
                 filteredItems.map((item: any) => (
-                  <TR key={item.id_item} className={item.deleted_at ? "opacity-50 [&_td]:line-through [&_td]:decoration-red-500/30 [&_td]:decoration-1" : ""}>
+                  <TR key={item.id_item} className={item.deleted_at ? "opacity-50 [&_td]:line-through [&_td]:decoration-danger/30 [&_td]:decoration-1" : ""}>
                     <TD>
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-bg4 shadow-neo">

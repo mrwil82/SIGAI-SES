@@ -67,15 +67,15 @@ export const CAT_LABELS: Record<string, string> = {
 };
 
 export const CAT_COLORS: Record<string, string> = {
-  HERRAMIENTA:     'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-  EQUIPO:          'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-  CONSUMIBLE:      'bg-purple-500/10 text-purple-400 border border-purple-500/20',
-  EPP:             'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
-  MONITOREO:       'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
-  MANTENIMIENTO:   'bg-orange-500/10 text-orange-400 border border-orange-500/20',
-  INSTALACION:     'bg-pink-500/10 text-pink-400 border border-pink-500/20',
-  SOLUCIONES:      'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
-  HERRAMIENTA_LAB: 'bg-gray-500/10 text-gray-400 border border-gray-500/20',
+  HERRAMIENTA:     'bg-chart-blue/10 text-chart-blue border border-chart-blue/20',
+  EQUIPO:          'bg-emerald-primary/10 text-emerald-primary border border-emerald-primary/20',
+  CONSUMIBLE:      'bg-chart-purple/10 text-chart-purple border border-chart-purple/20',
+  EPP:             'bg-gold/10 text-gold border border-gold/20',
+  MONITOREO:       'bg-cyan/10 text-cyan border border-cyan/20',
+  MANTENIMIENTO:   'bg-chart-orange/10 text-chart-orange border border-chart-orange/20',
+  INSTALACION:     'bg-chart-purple/10 text-chart-purple border border-chart-purple/20',
+  SOLUCIONES:      'bg-chart-blue/10 text-chart-blue border border-chart-blue/20',
+  HERRAMIENTA_LAB: 'bg-content-muted/10 text-content-muted border border-content-muted/20',
 };
 
 export const ACTA_TYPES = ['ENTREGA_HERRAMIENTA', 'ENTREGA_EPP', 'DESPACHO_PROYECTO', 'DEVOLUCION', 'INGRESO_DESMONTE'];

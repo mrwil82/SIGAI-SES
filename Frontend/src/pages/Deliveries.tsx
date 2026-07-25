@@ -399,7 +399,7 @@ const Deliveries: React.FC = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted" size={16} />
               <input id="searchActas" type="text" value={searchActas} onChange={(e) => setSearchActas(e.target.value)} placeholder="Buscar acta..."
-                className="w-full rounded-xl border border-bg3 bg-bg1/80 py-3 pl-10 pr-4 text-sm text-content outline-none focus:border-emerald-500" />
+                className="w-full rounded-xl border border-bg3 bg-bg1/80 py-3 pl-10 pr-4 text-sm text-content outline-none focus:border-emerald-primary/50" />
             </div>
             <NeoSelect id="filterActaType" value={filterActaType} onChange={(e) => setFilterActaType(e.target.value)} className="h-11 text-xs">
               <option value="">Todos los tipos</option>

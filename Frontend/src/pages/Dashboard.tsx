@@ -46,13 +46,20 @@ import { getDashboardStats } from '../services/analytics';
 import { getAuditLogs } from '../services/users';
 import { useNavigate } from 'react-router-dom';
 
-const COLORS = ['#00C26A', '#3B82F6', '#EAB308', '#A855F7', '#EF4444', '#6366F1'];
+const COLORS = [
+  'rgb(var(--emerald-primary))',
+  'rgb(var(--chart-blue))',
+  'rgb(var(--gold))',
+  'rgb(var(--chart-purple))',
+  'rgb(var(--danger))',
+  '#6366F1'
+];
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const label = payload[0].payload?.name ?? payload[0].name;
     return (
-      <div className="bg-bg3 border border-bg3 p-3 rounded-xl shadow-2xl backdrop-blur-md">
+      <div className="bg-bg3 border border-bg3 p-3 rounded-xl shadow-neo backdrop-blur-md">
         <p className="text-[10px] font-bold uppercase tracking-widest text-content-secondary mb-1">{label}</p>
         <p className="text-xl font-black text-emerald-primary">{payload[0].value}</p>
       </div>
@@ -118,8 +125,8 @@ const Dashboard: React.FC = () => {
     switch (accion) {
       case 'CREATE': return 'text-emerald-primary border-emerald-primary/20 bg-emerald-primary/10';
       case 'UPDATE': return 'text-chart-blue border-chart-blue/20 bg-chart-blue/10';
-      case 'DELETE': return 'text-danger border-red-500/20 bg-danger/10';
-      case 'LOGIN': return 'text-chart-purple border-purple-400/20 bg-purple-400/10';
+      case 'DELETE': return 'text-danger border-danger/20 bg-danger/10';
+      case 'LOGIN': return 'text-chart-purple border-chart-purple/20 bg-chart-purple/10';
       default: return 'text-content-muted border-bg3 bg-bg2';
     }
   };

@@ -90,7 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-bg3 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
+      <div className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-bg3 shadow-neo overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-bg4 bg-bg2">
           <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-emerald-primary">
             {title}
@@ -176,7 +176,7 @@ export const Alert: React.FC<AlertProps> = ({ type, message, onClose }) => {
       icon: AlertCircle,
       color: "text-danger",
       bg: "bg-danger/10",
-      border: "border-red-500/20",
+      border: "border-danger/20",
     },
     warning: {
       icon: AlertCircle,
@@ -870,7 +870,7 @@ const Navbar = ({
 
           {/* Panel de resultados */}
           {showResults && (
-            <div className="absolute top-12 left-0 w-full bg-bg3 border border-bg3 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="absolute top-12 left-0 w-full bg-bg3 border border-bg3 rounded-2xl shadow-neo overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[400px] overflow-y-auto custom-scrollbar">
               <div className="p-3 border-b border-bg4 bg-bg2">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-content-muted">
                   Resultados Encontrados
@@ -923,7 +923,7 @@ const Navbar = ({
           />
 
           {showAlerts && alerts && (
-            <div className="absolute right-0 top-12 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-bg3 border border-bg3 rounded-2xl shadow-2xl p-6 z-50 animate-in fade-in zoom-in duration-200">
+            <div className="absolute right-0 top-12 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-bg3 border border-bg3 rounded-2xl shadow-neo p-6 z-50 animate-in fade-in zoom-in duration-200">
               <h3 className="font-bold text-[10px] md:text-xs uppercase text-content-primary mb-4 flex justify-between items-center">
                 <span>Notificaciones</span>
                 <span className="bg-emerald-primary/10 text-emerald-primary px-2 py-0.5 rounded-full">

@@ -22,16 +22,19 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-asyncio aiosqlite
     - name: Run Backend Tests
+      env:
+        DATABASE_URL: sqlite+aiosqlite:///:memory:
+        SECRET_KEY: test-secret-key-for-ci
       run: |
         export PYTHONPATH=$PYTHONPATH:$(pwd)/Backend
-        pytest Backend/tests
+        pytest Backend/tests -v --tb=short
 
   frontend-lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Set up Node.js
-      uses: actions/setup-python@v5
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
     - name: Install dependencies

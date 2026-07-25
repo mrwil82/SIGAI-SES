@@ -1,23 +1,8 @@
 import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.db.session import Base
 from app.services.import_service import import_service
 from app.models.inventory import Item
 from sqlalchemy.future import select
-
-@pytest_asyncio.fixture
-async def test_db():
-    # Usar SQLite en memoria para pruebas rápidas
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    Session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-    async with Session() as session:
-        yield session
-    
-    await engine.dispose()
 
 @pytest.mark.asyncio
 async def test_upsert_item_and_stock(test_db):

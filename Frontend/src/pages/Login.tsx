@@ -187,7 +187,7 @@ const Login: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full py-4 rounded-xl mt-4 font-bold uppercase tracking-[0.2em] text-[11px] h-14 bg-emerald-primary text-black hover:bg-emerald-bright transition-all"
+              className="w-full py-4 rounded-xl mt-4 font-bold uppercase tracking-[0.2em] text-[11px] h-14 bg-emerald-primary text-[rgb(var(--btn-primary-text))] hover:bg-emerald-bright transition-all"
               disabled={isLoading}
             >
               {isLoading ? "Validando..." : "Iniciar Sesión"}

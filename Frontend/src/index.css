@@ -119,42 +119,6 @@
   --shadow-glow-sm: 0 0 12px rgba(200, 165, 100, 0.25);
 }
 
-/* ===== TEMA ARENA DORADO (LIGHT) ===== */
-[data-theme="sand"] {
-  --bg0: 252 246 236;
-  --bg1: 242 232 216;
-  --bg2: 226 212 190;
-  --bg3: 35 45 75;
-  --bg4: 24 34 60;
-  --bginput: 230 216 196;
-
-  --emerald-primary: 215 178 110;
-  --emerald-bright: 225 192 130;
-  --emerald-glow: 235 206 150;
-  --emerald-muted: 248 236 214;
-  --emerald-deep: 252 244 230;
-
-  --chart-green: 195 170 130;
-  --chart-blue: 145 175 205;
-  --chart-orange: 228 182 115;
-  --chart-purple: 185 165 200;
-  --chart-teal: 150 190 178;
-
-  --gold: 215 178 105;
-  --danger: 210 90 80;
-  --cyan: 140 185 172;
-
-  --content-primary: 10 16 34;
-  --content-secondary: 45 56 90;
-  --content-muted: 105 116 145;
-  --btn-primary-text: 10 16 34;
-  --btn-neo-text: 215 222 242;
-
-  --shadow-neo: 4px 4px 12px rgba(24, 34, 60, 0.12), -2px -2px 8px rgba(255, 255, 255, 0.7);
-  --shadow-neo-inset: inset 3px 3px 8px rgba(24, 34, 60, 0.08), inset -1px -1px 4px rgba(255, 255, 255, 0.5);
-  --shadow-glow-sm: 0 0 12px rgba(215, 178, 110, 0.25);
-}
-
 body {
   margin: 0;
   background-color: rgb(var(--bg0));
@@ -162,12 +126,10 @@ body {
   min-height: 100vh;
 }
 
-[data-theme="bone"] .hover\:bg-white\/5:hover,
-[data-theme="sand"] .hover\:bg-white\/5:hover {
+[data-theme="bone"] .hover\:bg-white\/5:hover {
   background-color: rgba(var(--bg3), 0.08);
 }
-[data-theme="bone"] .hover\:bg-white\/10:hover,
-[data-theme="sand"] .hover\:bg-white\/10:hover {
+[data-theme="bone"] .hover\:bg-white\/10:hover {
   background-color: rgba(var(--bg4), 0.15);
 }
 

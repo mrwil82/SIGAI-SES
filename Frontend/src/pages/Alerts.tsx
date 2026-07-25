@@ -201,13 +201,13 @@ const Alerts: React.FC = () => {
                   <Badge 
                     label={a.tipo === 'stock_bajo' ? 'EXISTENCIAS BAJAS' : a.tipo.replace(/_/g, ' ')} 
                     color={a.tipo === 'stock_bajo' ? 'var(--gold)' : 'var(--emerald)'} 
-                    bg={a.tipo === 'stock_bajo' ? 'rgba(212,175,55,0.1)' : 'rgba(0,194,106,0.1)'}
+                    bg={a.tipo === 'stock_bajo' ? 'rgba(var(--gold), 0.1)' : 'rgba(var(--emerald-primary), 0.1)'}
                   />
                 </TD>
                 <TD className="hidden md:table-cell">
                   <Badge 
                     label={a.prioridad} 
-                    color={a.prioridad === 'critica' ? '#ef4444' : '#fbbf24'} 
+                    color={a.prioridad === 'critica' ? 'rgb(var(--danger))' : 'rgb(var(--gold))'} 
                     bg="transparent"
                   />
                 </TD>
@@ -295,7 +295,7 @@ const Alerts: React.FC = () => {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                    <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-primary">#{selectedAlert.id}</span>
-                   <Badge label={selectedAlert.estado} color="var(--emerald)" bg="rgba(0,194,106,0.1)"/>
+                   <Badge label={selectedAlert.estado}                      color="rgb(var(--emerald-primary))" bg="rgba(var(--emerald-primary), 0.1)"/>
                 </div>
                 <h4 className="font-bold text-sm text-content-primary truncate">{selectedAlert.titulo}</h4>
                 <p className="text-xs text-content-muted mt-1 leading-relaxed">{selectedAlert.descripcion}</p>

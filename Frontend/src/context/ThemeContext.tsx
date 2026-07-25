@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type ThemeName = 'green' | 'blue' | 'bone' | 'sand';
+export type ThemeName = 'green' | 'blue' | 'bone';
 
 interface ThemeContextType {
   theme: ThemeName;
@@ -17,8 +17,8 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeName>(() => {
     const saved = localStorage.getItem('sigai-theme') as string | null;
-    if (saved === 'graphite' || saved === 'bone') return 'bone';
-    if (saved === 'green' || saved === 'blue' || saved === 'sand') return saved;
+    if (saved === 'graphite' || saved === 'bone' || saved === 'sand') return 'bone';
+    if (saved === 'green' || saved === 'blue') return saved;
     return 'green';
   });
 
