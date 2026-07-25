@@ -33,6 +33,7 @@ import {
   FormGroup,
   NeoSelect,
   Alert,
+  AvatarImg,
   resolveAvatarUrl
 } from '../components/Fusion';
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -247,19 +248,7 @@ const UsersPage: React.FC = () => {
                 <TR key={u.id_usuario}>
                   <TD>
                     <div className="flex items-center gap-4">
-                      {u.avatar_url ? (
-                        <img
-                          src={resolveAvatarUrl(u.avatar_url)}
-                          alt={u.nombre}
-                          width={40}
-                          height={40}
-                          className="w-10 h-10 rounded-xl object-cover object-center max-w-full max-h-full border border-emerald-primary/20 shadow-neo shrink-0"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-bg4 shadow-neo shrink-0 uppercase font-bold">
-                          {u.nombre.substring(0, 2)}
-                        </div>
-                      )}
+                      <AvatarImg url={u.avatar_url} name={u.nombre} className="shadow-neo" />
                       <div className="flex flex-col">
                         <span className="font-bold text-xs md:text-sm text-content-primary">{u.nombre}</span>
                         <span className="text-[10px] text-content-muted">{u.email}</span>

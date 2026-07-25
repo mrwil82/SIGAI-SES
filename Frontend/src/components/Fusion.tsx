@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ToastProvider } from "./Toaster";
 import {
   LayoutDashboard,
@@ -33,6 +33,39 @@ export function resolveAvatarUrl(url: string | undefined): string | undefined {
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   return `${API_BACKEND_BASE}${url}`;
 }
+
+export const AvatarImg: React.FC<{
+  url?: string | null;
+  name?: string | null;
+  size?: "sm" | "md";
+  className?: string;
+}> = ({ url, name, size = "md", className = "" }) => {
+  const [imgError, setImgError] = useState(false);
+  const dim = size === "sm" ? "w-9 h-9 text-[10px]" : "w-10 h-10";
+
+  if (url && !imgError) {
+    return (
+      <img
+        src={resolveAvatarUrl(url)}
+        alt={name || "Avatar"}
+        width={size === "sm" ? 36 : 40}
+        height={size === "sm" ? 36 : 40}
+        onError={() => setImgError(true)}
+        className={`${dim} rounded-xl border border-emerald-primary/20 shrink-0 object-cover object-center max-w-full max-h-full ${className}`}
+        title={name || undefined}
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${dim} rounded-xl bg-emerald-primary/10 flex items-center justify-center text-emerald-primary border border-emerald-primary/20 font-bold shrink-0 ${className}`}
+    >
+      {name?.substring(0, 2).toUpperCase() || "US"}
+    </div>
+  );
+};
 
 /* seccion del titulo */
 
@@ -692,23 +725,11 @@ const Sidebar = ({
         <div
           className={`bg-bg2/50 rounded-2xl ${isCollapsed ? "p-2" : "p-4"} border border-bg4 flex ${isCollapsed ? "flex-col items-center" : "items-center gap-4"} shadow-neo-inset`}
         >
-          {user?.avatar_url ? (
-            <img
-              src={resolveAvatarUrl(user.avatar_url)}
-              alt={user?.nombre}
-              width={40}
-              height={40}
-              className={`rounded-xl border border-emerald-primary/20 shrink-0 object-cover object-center max-w-full max-h-full ${isCollapsed ? "w-9 h-9" : "w-10 h-10"}`}
-              title={user?.nombre}
-              loading="lazy"
-            />
-          ) : (
-            <div
-              className={`rounded-xl bg-emerald-primary/10 flex items-center justify-center text-emerald-primary border border-emerald-primary/20 font-bold shrink-0 ${isCollapsed ? "w-9 h-9 text-[10px]" : "w-10 h-10"}`}
-            >
-              {user?.nombre?.substring(0, 2).toUpperCase() || "US"}
-            </div>
-          )}
+          <AvatarImg
+            url={user?.avatar_url}
+            name={user?.nombre}
+            size={isCollapsed ? "sm" : "md"}
+          />
 
           {!isCollapsed && (
             <div className="min-w-0 flex-1 text-content-primary">
