@@ -453,11 +453,7 @@ sudo certbot --nginx -d sigai.securitas.com.co
 
 ### ¿Que plan gratuito recomiendan para pruebas?
 
-| Servicio | Recurso | Limite |
-|:---|---:|---:|
-| ![Railway](https://img.shields.io/badge/Railway-0B0D0E?logo=railway) Backend | 500h/mes | ~17h/dia |
-| ![Vercel](https://img.shields.io/badge/Vercel-000?logo=vercel) Frontend | 100GB bandwidth/mes | — |
-| ![TiDB](https://img.shields.io/badge/TiDB%20Cloud-2CA5E0?logo=tidb) BD | 5GB storage | 1B row reads/mes |
+Recomendamos usar el servidor corporativo si esta disponible. Si se requiere un entorno externo de pruebas, cualquier servicio cloud con PostgreSQL (o MySQL) gratuito es suficiente. El frontend se puede servir desde cualquier hosting estatico (GitHub Pages, Netlify, etc.).
 
 ### ¿Como actualizar el sistema en produccion?
 

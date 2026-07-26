@@ -11,7 +11,7 @@ title: "SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — Secu
   <img src="https://img.shields.io/badge/FastAPI-0.136-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=black" alt="Supabase">
+  <img src="https://img.shields.io/badge/SQL-3FCF8E?style=for-the-badge&logo=database&logoColor=black" alt="SQL">
   <img src="https://img.shields.io/badge/Licencia-Propietaria-FF0000?style=for-the-badge&logo=legal" alt="Licencia">
 </p>
 
@@ -50,8 +50,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | <img src="https://img.shields.io/badge/-Alembic-000?logo=alembic&logoColor=white" height="20"> | `1.18.4` | Migraciones de base de datos |
 | <img src="https://img.shields.io/badge/-Pydantic-E92063?logo=pydantic&logoColor=white" height="20"> | `2.13.4` | Validación de datos (schemas) |
 | <img src="https://img.shields.io/badge/-Pydantic--Settings-E92063?logo=pydantic&logoColor=white" height="20"> | `2.14.1` | Configuración con `.env` |
-| <img src="https://img.shields.io/badge/-Supabase-3FCF8E?logo=supabase&logoColor=black" height="20"> | — | Base de datos PostgreSQL gestionada (producción) |
-| <img src="https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white" height="20"> | `16.x` | BD primaria (Supabase) |
+| <img src="https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white" height="20"> | `16+` | Motor de BD principal |
 | <img src="https://img.shields.io/badge/-MySQL%2FMariaDB-4479A1?logo=mysql&logoColor=white" height="20"> | `8.0+` | BD alternativa local (compatible) |
 | <img src="https://img.shields.io/badge/-JOSE-000?logo=jwt&logoColor=white" height="20"> | `3.5.0` | Tokens JWT (HS256) |
 | <img src="https://img.shields.io/badge/-Passlib-000?logo=passlib&logoColor=white" height="20"> | `4.0.1` | Hashing de contraseñas con **bcrypt** |
@@ -137,7 +136,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 
 ---
 
-## Arquitectura del Sistema (3 Capas + Cloud)
+## Arquitectura del Sistema (3 Capas)
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -151,10 +150,10 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 └──────────────────────────────────────────────────────────────────┘
            │
            │   Axios HTTP (JWT Bearer Token + Refresh)
-           │   VITE_API_BASE_URL → https://sigai-ses-api.onrender.com
+           │   Proxy: /api → servidor backend
            
 ┌──────────────────────────────────────────────────────────────────┐
-│                   RENDER (Servidor de Aplicaciones)            │
+│              SERVIDOR DE APLICACIONES (FastAPI)                │
 │                                                                  │
 │    Uvicorn Workers · FastAPI 0.136 · Python 3.12              │
 │                                                                  │
@@ -162,19 +161,20 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 │    Analytics  │   Alerts  │   Monitoring                 │
 │                                                                  │
 │             60+ endpoints REST bajo /api/v1/                   │
-│             Auto-deploy desde GitHub (push a main)             │
+│             Despliegue: servidor corporativo o cloud           │
 └──────────────────────────────────────────────────────────────────┘
            │
-           │   SQLAlchemy Async (asyncpg)
-           │   Pool: conexión segura a Supabase
+           │   SQLAlchemy Async (asyncpg / aiomysql)
+           │   Pool de conexiones a base de datos
            
 ┌──────────────────────────────────────────────────────────────────┐
-│                   SUPABASE (PostgreSQL 16)                     │
+│                 BASE DE DATOS RELACIONAL                       │
 │                                                                  │
 │    usuarios  │   items  │   activos  │   garantias     │
 │    audit_logs  │   alerts  │   clientes  │  ...           │
 │                                                                  │
 │    18 tablas ·  14 migraciones Alembic · Avatares en Base64  │
+│    Motor: PostgreSQL / MySQL / MariaDB (segun entorno)        │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -333,7 +333,7 @@ Frontend/src/
 |---|---|---|
 | **Python** | `3.12+` |
 | **Node.js** | `18+` |
-| **Base de datos** | PostgreSQL 16+ (Supabase) o MySQL 8.0+ / MariaDB 10.5+ |
+| **Base de datos** | PostgreSQL 16+ / MySQL 8.0+ / MariaDB 10.5+ |
 
 ### Backend
 
@@ -397,7 +397,7 @@ npm run build
 | **Migraciones Alembic** | | 14 versiones |
 | **Roles de Usuario** | | 3 (ADMIN, TECNICO, TECNICO_LABORATORIO) |
 | **Temas UI** | | 3 (Verde, Azul Cobalto, Blanco Hueso) |
-| **Despliegue** | | Render + Supabase + GitHub Actions CI |
+| **Despliegue** | | Servidor corporativo o cloud (GitHub Actions CI) |
 | **Builds** | | Web (PWA) + APK Android + EXE Windows |
 
 </details>

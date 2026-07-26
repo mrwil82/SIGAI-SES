@@ -1,6 +1,6 @@
 ﻿<p align="center">
   <img src="https://img.shields.io/badge/SIGAI--SES-Acceso%20Pruebas-0055A4?style=for-the-badge&logo=testcafe" alt="Acceso">
-  <img src="https://img.shields.io/badge/Ambiente-Cloud%20(Render%20%2B%20Supabase)-brightgreen?style=for-the-badge&logo=render" alt="Cloud">
+  <img src="https://img.shields.io/badge/Ambiente-Producci%C3%B3n-brightgreen?style=for-the-badge" alt="Produccion">
   <img src="https://img.shields.io/badge/Entrega%20Final-v1.0.0-success?style=for-the-badge&logo=checkmarx" alt="Entrega">
   <img src="https://img.shields.io/badge/Julio-2026-FF6B35?style=for-the-badge&logo=calendar" alt="Fecha">
 </p>
@@ -33,7 +33,7 @@
 | **Contrasena** | `Admin123!` |
 
 > [!NOTE]
-> Al ejecutar la aplicación se abrirá automáticamente el navegador con la URL local de inicio de sesión. Ambiente cloud (backend en Render, base de datos en Supabase). No se requiere instalación local.
+> Al ejecutar la aplicación se abrirá automáticamente el navegador con la URL local de inicio de sesión.
 
 ---
 
@@ -89,9 +89,9 @@
 |---|---|---|
 | 1 | APK no se instala | Habilitar orígenes desconocidos en Ajustes |
 | 2 | Windows Defender bloquea el archivo | Agregar a exclusiones del antivirus |
-| 3 | Primera carga lenta | El servicio cloud (Render) puede tardar hasta 20 segundos en arrancar. Aguardar, luego la navegación es normal |
-| 4 | API no disponible | Verificar internet; el backend y base datos están en Render y Supabase |
+| 3 | Primera carga lenta | Si el servidor esta en un plan gratuito, puede tardar en responder. Aguardar unos segundos. |
 
+| 4 | API no disponible | Verificar internet y que el servidor backend esté funcionando |
 ---
 
 ## Contacto para reportar problemas

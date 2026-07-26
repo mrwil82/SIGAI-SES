@@ -36,29 +36,24 @@
 
 ---
 
-## Deploy en Render (Backend)
+## Despliegue en Servidor
 
 | Dato | Valor |
 |------|-------|
-| **URL Produccion** | `https://sigai-ses-api.onrender.com` |
-| **Swagger UI** | `https://sigai-ses-api.onrender.com/docs` |
-| **Metodo** | Auto-deploy desde `git push` a `main` |
-| **Plan** | Gratuito (750h/mes, 512 MB RAM) |
+| **Documentacion** | Ver `05_GUIA_DESPLIEGUE_PRODUCCION.md` |
+| **Metodo** | Auto-deploy desde `git push` a `main` segun configuracion |
 
-### Variables de entorno en Render
+### Variables de entorno requeridas
 
-| Variable | Valor |
-|----------|-------|
-| `DATABASE_URL` | `postgresql+asyncpg://postgres.oiyhzbgnhmlrrgxokulu:Sigaises2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres` |
-| `DATABASE_URL_SYNC` | `postgresql://postgres.oiyhzbgnhmlrrgxokulu:Sigaises2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres` |
-| `SECRET_KEY` | `clave_secreta_super_segura_123` |
-| `ALGORITHM` | `HS256` |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `480` |
-| `ADMIN_EMAIL` | `admin@securitas.com` |
-| `ADMIN_PASSWORD` | `Admin123!` |
-| `ADMIN_NAME` | `Administrador SIGAI` |
-| `ADMIN_CEDULA` | `0000000000` |
-| `ADMIN_CODIGO` | `ADM001` |
+| Variable | Descripcion |
+|----------|-------------|
+| `DATABASE_URL` | Conexion asincrona a la BD |
+| `DATABASE_URL_SYNC` | Conexion sincrona a la BD |
+| `SECRET_KEY` | Clave secreta JWT |
+| `ALGORITHM` | Algoritmo JWT |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Minutos de expiracion |
+| `ADMIN_EMAIL` | Email del admin inicial |
+| `ADMIN_PASSWORD` | Password del admin inicial |
 
 ---
 

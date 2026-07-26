@@ -9,7 +9,7 @@ title: "Gestion de Alertas -- Inventario_SE (PROYECTO_SECURITAS)"
 ![Status](https://img.shields.io/badge/Status-En%20Produccion-green)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-009688)
 ![React](https://img.shields.io/badge/React-18-61DAFB)
-![PostgreSQL](https://img.shields.io/badge/Supabase-3FCF8E)
+![Database](https://img.shields.io/badge/PostgreSQL-4169E1)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB)
 
 > Guia completa de arquitectura, UX y mejores practicas para el modulo de alertas de SIGAI-SES.
@@ -38,7 +38,7 @@ Frontend/src/
 
 ## 2. Modelo de datos
 
-### 2.1 Tabla `alerts` en PostgreSQL (Supabase)
+### 2.1 Tabla `alerts` en PostgreSQL
 
 <details open>
 <summary><b>Ver DDL de la tabla <code>alerts</code></b></summary>

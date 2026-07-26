@@ -36,7 +36,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Documento | Descripción | Enlace |
 |---|---|---|
-| `Guía Instalación Backend` | FastAPI + Supabase/PostgreSQL | [Leer](02_GUIA_INSTALACION_BACKEND.md) |
+| `Guía Instalación Backend` | FastAPI + PostgreSQL/MySQL | [Leer](02_GUIA_INSTALACION_BACKEND.md) |
 | `Guía Instalación Frontend` | React + Vite + TypeScript | [Leer](03_GUIA_INSTALACION_FRONTEND.md) |
 
 ---
@@ -53,7 +53,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Documento | Descripción | Enlace |
 |---|---|---|
-| `Guía Despliegue Producción (Cloud)` | Render + Supabase + GitHub Actions | [Leer](05_GUIA_DESPLIEGUE_PRODUCCION.md) |
+| `Guía Despliegue Producción` | Servidor corporativo + BD | [Leer](05_GUIA_DESPLIEGUE_PRODUCCION.md) |
 | `Guía Despliegue On-Premise` | Nginx + Systemd + Let's Encrypt | [Leer](06_GUIA_ON_PREMISE.md) |
 
 ---

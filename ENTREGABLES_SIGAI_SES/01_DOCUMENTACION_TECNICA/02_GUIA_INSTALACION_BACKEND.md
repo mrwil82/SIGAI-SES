@@ -8,7 +8,7 @@ title: "GUÍA DE INSTALACIÓN DEL BACKEND — FastAPI + MySQL"
   <img src="https://img.shields.io/badge/Componente-Backend-009688?style=for-the-badge&logo=fastapi" alt="Backend">
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-0.136.1-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=black" alt="Supabase">
+  <img src="https://img.shields.io/badge/SQL-3FCF8E?style=for-the-badge&logo=database&logoColor=black" alt="SQL">
   <img src="https://img.shields.io/badge/Estado-Producci%C3%B3n-2ea44f?style=for-the-badge&logo=checkmarx" alt="Estado">
 </p>
 
@@ -29,7 +29,7 @@ title: "GUÍA DE INSTALACIÓN DEL BACKEND — FastAPI + MySQL"
 | Componente | Versión Mínima | Verificación |
 |---|---|---|
 | **Python** | `3.12+` | `python --version` |
-| **Base de datos** | Supabase (PostgreSQL 16+) o MySQL 8.0+ / MariaDB 10.5+ | — |
+| **Base de datos** | PostgreSQL 16+ / MySQL 8.0+ / MariaDB 10.5+ | — |
 | **pip** | (incluido) | `pip --version` |
 
 ---
@@ -84,8 +84,8 @@ Cree un archivo `.env` en la carpeta `Backend/` con las siguientes variables:
 
 ```env
 # ───> Base de Datos ─────────────────────────────────────
-# Supabase (PostgreSQL - produccion):
-# DATABASE_URL=postgresql+asyncpg://postgres.PROYECTO:PASSWORD@aws-1-us-west-2.pooler.supabase.com:5432/postgres
+# PostgreSQL (produccion):
+# DATABASE_URL=postgresql+asyncpg://USUARIO:CONTRASENA@HOST:5432/NOMBRE_BD
 
 # Local (MySQL - desarrollo):
 # DATABASE_URL=mysql+aiomysql://root:@localhost:3306/sigai_ses
@@ -108,7 +108,7 @@ ADMIN_NAME=Administrador SIGAI
 
 | Proveedor | | URL de conexión |
 |---|---|---|
-| **Supabase (produccion)** | | `postgresql+asyncpg://postgres.PROYECTO:PASSWORD@aws-1-us-west-2.pooler.supabase.com:5432/postgres` |
+| **PostgreSQL (produccion)** | | `postgresql+asyncpg://USUARIO:CONTRASENA@HOST:5432/NOMBRE_BD` |
 | **Local (MySQL)** | | `mysql+aiomysql://root:@localhost:3306/sigai_ses` |
 | **Local (PostgreSQL)** | | `postgresql+asyncpg://postgres:password@localhost:5432/sigai_ses` |
 

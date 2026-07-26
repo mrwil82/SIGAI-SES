@@ -222,7 +222,7 @@ title: "Plan de Capacitacion -- SIGAI-SES"
 
 | Recurso | Detalle |
 |---------|------------|
-| URL del entorno | `https://sigai-ses-pruebas.vercel.app` |
+| URL del entorno | `https://sigai-ses-pruebas.ejemplo.com` |
 | Usuarios de prueba | Por perfil (ADMIN, TECNICO, TECNICO_LAB) |
 | Datos de ejemplo | 50 items, 10 activos, 5 clientes, 3 garantias |
 

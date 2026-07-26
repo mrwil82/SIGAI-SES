@@ -5,7 +5,7 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 # SIGAI-SES v1.0.0 — Reporte de Estado Final
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Estado-LISTO%20PARA%20PRODUCCI%C3%93N-brightgreen?style=for-the-badge&logo=vercel" alt="Estado">
+  <img src="https://img.shields.io/badge/Estado-LISTO%20PARA%20PRODUCCI%C3%93N-brightgreen?style=for-the-badge" alt="Estado">
   <img src="https://img.shields.io/badge/Version-1.0.0--RC-blue?style=for-the-badge&logo=semver" alt="Version">
   <img src="https://img.shields.io/badge/Release-Candidate-orange?style=for-the-badge&logo=git" alt="Release">
   <img src="https://img.shields.io/badge/Auditor%C3%ADa-14%20Jun%202026-important?style=for-the-badge&logo=security" alt="Auditoria">

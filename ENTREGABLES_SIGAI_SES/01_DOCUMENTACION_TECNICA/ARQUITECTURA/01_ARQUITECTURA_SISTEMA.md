@@ -9,10 +9,10 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 ![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=github)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=for-the-badge&logo=checkmarx)
 ![Last Update](https://img.shields.io/badge/Last%20Update-Julio%202026-orange?style=for-the-badge&logo=calendar)
-![Stack](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20Supabase-3FCF8E?style=for-the-badge&logo=codeigniter)
+![Stack](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20SQL-3FCF8E?style=for-the-badge&logo=codeigniter)
 ![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2F%20TypeScript-61DAFB?style=for-the-badge&logo=react)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2F%20Python%203.12-009688?style=for-the-badge&logo=fastapi)
-![Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-4169E1?style=for-the-badge&logo=postgresql)
+![Database](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20MySQL-4169E1?style=for-the-badge&logo=database)
 
 </div>
 
@@ -45,11 +45,11 @@ graph TB
         C[FastAPI<br/>Uvicorn Workers]
     end
     subgraph "🗄️ Datos"
-        D[(Supabase PostgreSQL)]
+        D[(Base de Datos<br/>PostgreSQL / MySQL)]
     end
     A -->|HTTPS| B
     B -->|proxy_pass :8000| C
-    C -->|asyncpg pool| D
+    C -->|asyncpg / aiomysql pool| D
 ```
 
 ---
@@ -73,7 +73,7 @@ flowchart LR
     C --> D{⚖️ Upsert}
     D -->|Nuevo| E[➕ INSERT]
     D -->|Existente| F[🔄 UPDATE]
-    E --> G[📀 Supabase PostgreSQL]
+    E --> G[📀 Base de Datos]
     F --> G
     G --> H[📊 Dashboard<br/>en Tiempo Real]
 ```
@@ -148,7 +148,7 @@ flowchart LR
 
 | Atributo | Detalle |
 |:---|---|
-| **Motor** | Supabase PostgreSQL 16 (produccion) / MySQL 8.0+ (local) |
+| **Motor** | PostgreSQL 16+ / MySQL 8.0+ / MariaDB 10.5+ |
 | **Pool** | asyncpg / aiomysql — `pool_size=30`, `max_overflow=50` |
 | **ORM** | SQLAlchemy 2.0 Async (Base declarativa) |
 | **Migraciones** | Alembic — **14 versiones** aplicadas |
@@ -178,7 +178,7 @@ sequenceDiagram
     participant U as 🖥️ Usuario
     participant N as 🌐 Nginx
     participant F as ⚡ FastAPI
-    participant M as 🗄️ Supabase PostgreSQL
+    participant M as 🗄️ Base de Datos
 
     U->>N: HTTPS Request
     N->>F: proxy_pass :8000
@@ -213,7 +213,7 @@ sequenceDiagram
 | **ADR-02** | **React + Vite** sobre Next.js | SPA ligera, HMR rápido, deploy simple en Vercel | Next.js (SSR complejo para PWA) |
 | **ADR-03** | **SQLAlchemy Async** sobre Tortoise ORM | Madurez, documentación, Alembic | Tortoise ORM (menos maduro) |
 | **ADR-04** | **JWT en localStorage** sobre httpOnly cookies | Simplicidad, SPA sin SSR | httpOnly cookies (más seguro, pero complejo) |
-| **ADR-05** | **Supabase (PostgreSQL)** sobre MySQL | Base de datos gestionada 24/7 gratis, backup automatico, buena performance | MySQL local (mas trabajo operativo) |
+| **ADR-05** | **Compatibilidad multiple** PostgreSQL / MySQL / MariaDB | Soporta el motor que TI defina, mediante SQLAlchemy abstracto | Dependencia de un solo motor (menos flexible) |
 
 > [!WARNING]
 > **ADR-04** (JWT en localStorage) es un riesgo de seguridad asumido. Mitigado con expiración de 8h y sesiones revocables.

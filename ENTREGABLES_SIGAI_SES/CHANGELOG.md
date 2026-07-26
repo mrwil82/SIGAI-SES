@@ -32,8 +32,8 @@
 
 | Area | Cambio | Detalle |
 |------|--------|---------|
-| **Base de Datos** | Migracion a Supabase (PostgreSQL) | Cambio de MySQL a PostgreSQL gestionado, 14 migraciones Alembic |
-| **Despliegue** | Render + Supabase | Reemplazo de Railway + Vercel + TiDB Cloud |
+| **Base de Datos** | Migracion a PostgreSQL | Cambio de MySQL a PostgreSQL, 14 migraciones Alembic |
+| **Despliegue** | GitHub Actions CI | Pipeline de integracion continua |
 | **CI/CD** | GitHub Actions | Pipeline automatico: 32 tests backend + ESLint frontend |
 | **Temas UI** | Sistema de 3 temas | Verde (default), Azul Cobalto, Blanco Hueso — CSS variables |
 | **Avatar** | Almacenamiento en BD (Base64) | Persistente en cualquier entorno, sin depender del disco |
