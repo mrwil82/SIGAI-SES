@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Enum, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Enum, TIMESTAMP, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
@@ -30,7 +30,7 @@ class Usuario(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     config = Column(String(1024), nullable=True)  # JSON-encoded user preferences
-    avatar_url = Column(String(255), nullable=True)
+    avatar_url = Column(Text, nullable=True)
 
     regional_rel = relationship("Regional", back_populates="usuarios")
     sesiones = relationship("SesionUsuario", back_populates="usuario", cascade="all, delete-orphan")

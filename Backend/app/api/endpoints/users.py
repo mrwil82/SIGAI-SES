@@ -14,11 +14,11 @@ from sqlalchemy import or_
 from app.models.user import Usuario as UserModel
 import json
 from fastapi import UploadFile, File
-import os
 from app.core.security import verify_password, get_password_hash
 from app.schemas.user import UsuarioUpdate
 from app.crud.crud_audit import create_audit_log
 from datetime import datetime
+import base64
 
 router = APIRouter()
 
@@ -90,7 +90,6 @@ async def upload_avatar(file: UploadFile = File(...), db: AsyncSession = Depends
     content = await file.read()
     if len(content) > MAX_AVATAR_SIZE:
         raise HTTPException(status_code=400, detail='El archivo excede el tamaño máximo de 2MB.')
-    import base64
     b64 = base64.b64encode(content).decode('utf-8')
     data_url = f"data:{file.content_type};base64,{b64}"
 
