@@ -90,26 +90,19 @@ async def upload_avatar(file: UploadFile = File(...), db: AsyncSession = Depends
     content = await file.read()
     if len(content) > MAX_AVATAR_SIZE:
         raise HTTPException(status_code=400, detail='El archivo excede el tamaño máximo de 2MB.')
-    await file.seek(0)
-    upload_dir = os.path.join(os.getcwd(), 'app', 'static', 'avatars')
-    os.makedirs(upload_dir, exist_ok=True)
-    ext = os.path.splitext(file.filename)[1] if file.filename else '.png'
-    filename = f"avatar_{current_user.id_usuario}_{int(datetime.utcnow().timestamp())}{ext}"
-    file_path = os.path.join(upload_dir, filename)
-    with open(file_path, 'wb') as f:
-        content = await file.read()
-        f.write(content)
-    public_url = f"/static/avatars/{filename}"
+    import base64
+    b64 = base64.b64encode(content).decode('utf-8')
+    data_url = f"data:{file.content_type};base64,{b64}"
 
     result = await db.execute(select(UserModel).where(UserModel.id_usuario == current_user.id_usuario))
     db_user = result.scalars().first()
     if not db_user:
         raise HTTPException(status_code=404, detail='Usuario no encontrado')
-    setattr(db_user, 'avatar_url', public_url)
+    setattr(db_user, 'avatar_url', data_url)
     await db.commit()
     await db.refresh(db_user)
-    await create_audit_log(db, getattr(current_user, 'id_usuario', 0), 'usuarios', 'UPDATE', getattr(current_user, 'id_usuario', 0), nuevo={'avatar_url': public_url})
-    return {'avatar_url': public_url}
+    await create_audit_log(db, getattr(current_user, 'id_usuario', 0), 'usuarios', 'UPDATE', getattr(current_user, 'id_usuario', 0), nuevo={'avatar_url': data_url})
+    return {'avatar_url': data_url}
 
 
 @router.put('/me/password')

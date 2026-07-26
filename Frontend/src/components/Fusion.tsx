@@ -30,7 +30,7 @@ const API_BACKEND_BASE = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
 
 export function resolveAvatarUrl(url: string | undefined): string | undefined {
   if (!url) return undefined;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
   return `${API_BACKEND_BASE}${url}`;
 }
 
