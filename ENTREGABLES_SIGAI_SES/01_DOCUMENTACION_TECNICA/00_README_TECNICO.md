@@ -5,13 +5,13 @@ title: "SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — Secu
 # SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — Securitas
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-1.0.0--RC-2ea44f?style=for-the-badge&logo=semver" alt="Version">
-  <img src="https://img.shields.io/badge/Estado-Release%20Candidate-yellow?style=for-the-badge&logo=github" alt="Estado">
+  <img src="https://img.shields.io/badge/Version-1.0.0-2ea44f?style=for-the-badge&logo=semver" alt="Version">
+  <img src="https://img.shields.io/badge/Estado-Producci%C3%B3n-success?style=for-the-badge&logo=github" alt="Estado">
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-0.136-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql" alt="MySQL">
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=black" alt="Supabase">
   <img src="https://img.shields.io/badge/Licencia-Propietaria-FF0000?style=for-the-badge&logo=legal" alt="Licencia">
 </p>
 
@@ -46,11 +46,13 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | <img src="https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white" height="20"> | `3.12+` | Lenguaje base del backend |
 | <img src="https://img.shields.io/badge/-FastAPI-009688?logo=fastapi&logoColor=white" height="20"> | `0.136.1` | Framework web asíncrono de alto rendimiento |
 | <img src="https://img.shields.io/badge/-Uvicorn-000?logo=gunicorn&logoColor=white" height="20"> | `0.47.0` | Servidor ASGI |
-| <img src="https://img.shields.io/badge/-SQLAlchemy-000?logo=sqlalchemy&logoColor=white" height="20"> | `2.0.49` | ORM asíncrono con `aiomysql` |
+| <img src="https://img.shields.io/badge/-SQLAlchemy-000?logo=sqlalchemy&logoColor=white" height="20"> | `2.0.49` | ORM asíncrono con `asyncpg` / `aiomysql` |
 | <img src="https://img.shields.io/badge/-Alembic-000?logo=alembic&logoColor=white" height="20"> | `1.18.4` | Migraciones de base de datos |
 | <img src="https://img.shields.io/badge/-Pydantic-E92063?logo=pydantic&logoColor=white" height="20"> | `2.13.4` | Validación de datos (schemas) |
 | <img src="https://img.shields.io/badge/-Pydantic--Settings-E92063?logo=pydantic&logoColor=white" height="20"> | `2.14.1` | Configuración con `.env` |
-| <img src="https://img.shields.io/badge/-MySQL%2FMariaDB-4479A1?logo=mysql&logoColor=white" height="20"> | `8.0+` | Base de datos relacional |
+| <img src="https://img.shields.io/badge/-Supabase-3FCF8E?logo=supabase&logoColor=black" height="20"> | — | Base de datos PostgreSQL gestionada (producción) |
+| <img src="https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white" height="20"> | `16.x` | BD primaria (Supabase) |
+| <img src="https://img.shields.io/badge/-MySQL%2FMariaDB-4479A1?logo=mysql&logoColor=white" height="20"> | `8.0+` | BD alternativa local (compatible) |
 | <img src="https://img.shields.io/badge/-JOSE-000?logo=jwt&logoColor=white" height="20"> | `3.5.0` | Tokens JWT (HS256) |
 | <img src="https://img.shields.io/badge/-Passlib-000?logo=passlib&logoColor=white" height="20"> | `4.0.1` | Hashing de contraseñas con **bcrypt** |
 | <img src="https://img.shields.io/badge/-Pandas-150458?logo=pandas&logoColor=white" height="20"> | `3.0.3` | Procesamiento de Excel |
@@ -80,6 +82,10 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | **Formularios** | <img src="https://img.shields.io/badge/-React%20Hook%20Form-EC5990?logo=reacthookform&logoColor=white" height="20"> | `7.51` |
 | **Firmas** | <img src="https://img.shields.io/badge/-Signature%20Canvas-000?logo=signature&logoColor=white" height="20"> | `1.1` |
 | **Excel** | <img src="https://img.shields.io/badge/-xlsx-000?logo=microsoftexcel&logoColor=white" height="20"> | `0.18.5` |
+| **PWA** | <img src="https://img.shields.io/badge/-vite--plugin--pwa-646CFF?logo=pwa&logoColor=white" height="20"> | `1.3.0` |
+| **Móvil** | <img src="https://img.shields.io/badge/-Capacitor-119EFF?logo=capacitor&logoColor=white" height="20"> | `7.2.0` (Android) |
+| **Tema** | <img src="https://img.shields.io/badge/-CSS%20Variables-1572B6?logo=css3&logoColor=white" height="20"> | 3 temas (green/blue/bone) |
+| **Notificaciones** | <img src="https://img.shields.io/badge/-Toast-000?logo=react&logoColor=white" height="20"> | Sistema propio con portal |
 
 ---
 
@@ -131,7 +137,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 
 ---
 
-## Arquitectura del Sistema (3 Capas)
+## Arquitectura del Sistema (3 Capas + Cloud)
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -140,31 +146,35 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 │    Login  │   Dashboard  │   Inventory  │   Guarantees  │
 │                Deliveries  │   Clients  │   Projects      │
 │                                                                  │
-│             11 rutas ·  Fusion UI Design System              │
+│    14 rutas ·  Fusion UI Design System · 3 Temas CSS        │
+│    PWA (Service Worker) · APK Android (Capacitor)            │
 └──────────────────────────────────────────────────────────────────┘
            │
-           │   Axios HTTP (JWT Bearer Token)
-           │   Proxy Vite: /api → localhost:8000
+           │   Axios HTTP (JWT Bearer Token + Refresh)
+           │   VITE_API_BASE_URL → https://sigai-ses-api.onrender.com
            
 ┌──────────────────────────────────────────────────────────────────┐
-│                SERVIDOR DE APLICACIONES (FastAPI)              │
+│                   RENDER (Servidor de Aplicaciones)            │
+│                                                                  │
+│    Uvicorn Workers · FastAPI 0.136 · Python 3.12              │
 │                                                                  │
 │    Auth  │   CRUD  │   Reports  │   Import             │
 │    Analytics  │   Alerts  │   Monitoring                 │
 │                                                                  │
 │             60+ endpoints REST bajo /api/v1/                   │
+│             Auto-deploy desde GitHub (push a main)             │
 └──────────────────────────────────────────────────────────────────┘
            │
-           │   SQLAlchemy Async (aiomysql)
-           │   Pool: 30 conexiones, timeout 60s
+           │   SQLAlchemy Async (asyncpg)
+           │   Pool: conexión segura a Supabase
            
 ┌──────────────────────────────────────────────────────────────────┐
-│               BASE DE DATOS (MySQL 8.0)                        │
+│                   SUPABASE (PostgreSQL 16)                     │
 │                                                                  │
 │    usuarios  │   items  │   activos  │   garantias     │
 │    audit_logs  │   alerts  │   clientes  │  ...           │
 │                                                                  │
-│    18 tablas ·  Vistas: v_stock_consolidado, v_dashboard_kpis│
+│    18 tablas ·  14 migraciones Alembic · Avatares en Base64  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -224,9 +234,11 @@ Backend/
 │   │       └── monitoring.py      # Health check, metrics
 │   └── services/
 │       └── import_service.py      # Motor de importación Excel
-├── migrations/                  # 9 versiones de migraciones Alembic
+├── migrations/                  # 14 versiones de migraciones Alembic
 ├── tests/
-│   └── test_import_service.py     # Tests del motor de importación
+│   ├── conftest.py                # Configuración de tests (SQLite async)
+│   ├── test_import_service.py     # Tests del motor de importación
+│   └── test_main.py              # Tests de la API principal
 ├── scripts/
 │   ├── init_db.py                 # Inicialización de BD + seed admin
 │   ├── seed_admin.py              # Creación de usuario admin
@@ -248,44 +260,64 @@ Backend/
 ```
 Frontend/src/
 ├── main.tsx                    # Punto de entrada
-├── App.tsx                     # Router principal con 11 rutas
-├── index.css                   # Estilos globales + Tailwind + CSS variables
-├── custom.d.ts                 # Declaraciones de tipos
+├── App.tsx                     # Router principal con 14 rutas
+├── index.css                   # Estilos globales + Tailwind + 3 temas CSS
+├── vite-env.d.ts               # Tipos de entorno VITE
 ├── context/
-│   └── AuthContext.tsx            # Contexto de autenticación JWT
+│   ├── AuthContext.tsx            # Contexto de autenticación JWT
+│   └── ThemeContext.tsx           # Contexto de temas (green/blue/bone)
 ├── lib/
-│   └── toast.ts                  # Sistema de notificaciones
+│   ├── toast.ts                  # Sistema de notificaciones toast
+│   └── logger.ts                 # Logger estructurado
 ├── hooks/
-│   └── useInventory.ts           # Hook personalizado (React Query)
-├── services/                   # Capa de API (axios con interceptors)
+│   ├── useInventory.ts           # Hook inventario (React Query)
+│   ├── useUsers.ts               # CRUD usuarios
+│   ├── useProjects.ts            # CRUD proyectos
+│   ├── useGuarantees.ts          # CRUD garantías
+│   ├── useClients.ts             # CRUD clientes
+│   └── useAlerts.ts              # CRUD alertas
+├── services/                   # Capa de API (axios con interceptores)
 │   ├── api.ts                    # Instancia axios + refresh token
 │   ├── auth.ts                   # Login, register, me
-│   ├── users.ts                  # CRUD usuarios
+│   ├── users.ts                  # CRUD usuarios + avatar + settings
 │   ├── inventory.ts             # Items, activos, ubicaciones, importación
 │   ├── business.ts              # Clientes, proyectos, garantías, actas
 │   ├── analytics.ts             # Dashboard stats, search global
 │   ├── alerts.ts                # Alertas
 │   ├── desmontes.ts             # Triage
-│   └── regionales.ts            # Regionales
+│   ├── regionales.ts            # Regionales
+│   ├── download.ts             # Descarga blob (web + Capacitor)
+│   └── errorHandler.ts         # Parseo de errores API
 ├── components/                # Componentes reutilizables
-│   ├── Fusion.tsx               # Design System completo
-│   ├── DashboardComponents      # StatCard, QuickAccessBtn...
+│   ├── Fusion.tsx               # Design System (1069 líneas)
+│   ├── DashboardComponents.tsx  # StatCard, QuickAccessBtn...
 │   ├── ProtectedRoute.tsx       # Ruta protegida (requiere token)
 │   ├── RoleProtectedRoute.tsx   # Ruta protegida por rol
 │   ├── Toaster.tsx              # Portal de notificaciones toast
 │   ├── ExportMenu.tsx           # Exportación PDF/Excel
-│   └── UserSettingsModal.tsx    # Modal de preferencias
-└── pages/                    # 11 páginas
+│   ├── UserSettingsModal.tsx    # Modal de avatar + contraseña
+│   ├── SearchableSelect.tsx     # Select con búsqueda
+│   ├── Skeleton.tsx             # Placeholders de carga
+│   └── ErrorBoundary.tsx        # Captura de errores React
+└── pages/                    # 14 páginas + sub-páginas
     ├── Login.tsx                #  Inicio de sesión
     ├── Dashboard.tsx            #  Panel principal con KPIs
     ├── Inventory.tsx            #  Gestión de inventario
     ├── Clients.tsx              #  Directorio de clientes
+    ├── ClientDetail.tsx         #  Detalle de cliente
     ├── Projects.tsx             #  Gestión de proyectos
+    ├── ProjectDetail.tsx        #  Detalle de proyecto
     ├── Guarantees.tsx           #  Seguimiento de garantías
+    ├── GuaranteeDetail.tsx      #  Detalle de garantía
     ├── Alerts.tsx               #  Centro de alertas
     ├── Audit.tsx                #  Bitácora de auditoría (solo ADMIN)
     ├── Users.tsx                #  Administración de usuarios (solo ADMIN)
     ├── Deliveries.tsx           #  Actas de entrega (solo ADMIN)
+    │   ├── types.ts             #  Tipos y constantes de actas
+    │   ├── ItemModal.tsx        #  Modal selección items
+    │   ├── EditActaModal.tsx    #  Modal edición acta
+    │   └── ActaViewModal.tsx    #  Modal vista acta
+    ├── Settings.tsx             #  Configuración de usuario
     └── Desmontes.tsx            #  Triage de equipos desmontados
 ```
 </details>
@@ -298,10 +330,10 @@ Frontend/src/
 > Asegúrate de tener los siguientes requisitos antes de comenzar:
 
 | Requisito | Versión Mínima |
-|---|---|
+|---|---|---|
 | **Python** | `3.12+` |
 | **Node.js** | `18+` |
-| **MySQL/MariaDB** | `8.0+` / `10.5+` |
+| **Base de datos** | PostgreSQL 16+ (Supabase) o MySQL 8.0+ / MariaDB 10.5+ |
 
 ### Backend
 
@@ -357,12 +389,16 @@ npm run build
 
 | Indicador | | Estado |
 |---|---|---|
-| **Versión Actual** | | `v1.0.0` — Release Candidate |
+| **Versión Actual** | | `v1.0.0` — Producción |
 | **Fecha** | | Julio 2026 |
-| **Cobertura de Tests** | | Motor de importación |
-| **Endpoints Documentados** | | 60+ REST |
+| **Cobertura de Tests** | | 32 tests (backend) — CI pasa |
+| **Endpoints API** | | 60+ REST (`/api/v1/`) |
 | **Tablas en BD** | | 18 |
+| **Migraciones Alembic** | | 14 versiones |
 | **Roles de Usuario** | | 3 (ADMIN, TECNICO, TECNICO_LABORATORIO) |
+| **Temas UI** | | 3 (Verde, Azul Cobalto, Blanco Hueso) |
+| **Despliegue** | | Render + Supabase + GitHub Actions CI |
+| **Builds** | | Web (PWA) + APK Android + EXE Windows |
 
 </details>
 

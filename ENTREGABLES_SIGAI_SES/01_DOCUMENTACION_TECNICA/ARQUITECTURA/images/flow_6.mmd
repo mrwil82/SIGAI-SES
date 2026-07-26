@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend React
+    participant B as Backend FastAPI
+    participant D as Supabase PostgreSQL
+
+    U->>F: Ingresa email + password
+    F->>B: POST /api/v1/auth/login
+    B->>D: Buscar usuario por email
+    D-->>B: Datos del usuario
+    B->>B: Verificar password (bcrypt)
+    B->>B: Generar access_token (8h)
+    B->>B: Generar refresh_token (7d)
+    B->>D: Registrar sesion
+    B-->>F: {access_token, refresh_token, user}
+    F->>F: Almacenar en sessionStorage
+    F-->>U: Redirigir a Dashboard

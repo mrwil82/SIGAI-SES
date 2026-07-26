@@ -1,6 +1,6 @@
 ﻿<p align="center">
   <img src="https://img.shields.io/badge/SIGAI--SES-Acceso%20Pruebas-0055A4?style=for-the-badge&logo=testcafe" alt="Acceso">
-  <img src="https://img.shields.io/badge/Ambiente-Cloud-yellow?style=for-the-badge&logo=vercel" alt="Cloud">
+  <img src="https://img.shields.io/badge/Ambiente-Cloud%20(Render%20%2B%20Supabase)-brightgreen?style=for-the-badge&logo=render" alt="Cloud">
   <img src="https://img.shields.io/badge/Entrega%20Final-v1.0.0-success?style=for-the-badge&logo=checkmarx" alt="Entrega">
   <img src="https://img.shields.io/badge/Julio-2026-FF6B35?style=for-the-badge&logo=calendar" alt="Fecha">
 </p>

@@ -6,10 +6,10 @@ title: "Guia de Despliegue para Pruebas del Cliente -- SIGAI-SES"
 # Guia de Despliegue para Pruebas del Cliente -- SIGAI-SES
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Producci%C3%B3n-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
 ![Cost](https://img.shields.io/badge/Cost-%240-ff69b4?style=for-the-badge)
-![Stack](https://img.shields.io/badge/Stack-Vercel%20%E2%86%92%20Railway%20%E2%86%92%20TiDB-6DB33F?style=for-the-badge)
+![Stack](https://img.shields.io/badge/Stack-Render%20%E2%86%92%20Supabase-6DB33F?style=for-the-badge)
 
 ---
 
@@ -22,21 +22,22 @@ title: "Guia de Despliegue para Pruebas del Cliente -- SIGAI-SES"
 
 ```
 +------------------+       +----------------------------------+
-|    Cliente       |       |         Railway (Backend)         |
+|    Cliente       |       |        Render (Backend)           |
 |   (Navegador)    | ----> |  +----------------------------+  |
-|                  |       |  |  FastAPI + Uvicorn          |  |
-+------------------+       |  |  Puerto 8000                |  |
+|   + APK Android  |       |  | FastAPI + Uvicorn (4w)     |  |
+|   + EXE Windows  |       |  | Python 3.12                |  |
++------------------+       |  | Auto-deploy desde GitHub   |  |
         |                  |  +----------+-----------------+  |
         |                  |             |                     |
         v                  |  +----------v-----------------+  |
-+------------------+       |  |  TiDB Cloud (MySQL 5GB)    |  |
-|    Vercel        |       |  |  Serverless, 24/7          |  |
-| (Frontend        |       |  +----------------------------+  |
-|  React)          |       +----------------------------------+
-+------------------+
++------------------+       |  | Supabase (PostgreSQL 16)   |  |
+|   GitHub Pages   |       |  | 500 MB, 4 GB RAM          |  |
+| (Frontend        |       |  | Session Pooler (IPv4)     |  |
+|  React Build)    |       |  +----------------------------+  |
++------------------+       +----------------------------------+
 ```
 
-**Costo: $0 USD** -- Planes gratuitos de Railway + Vercel + TiDB Cloud
+**Costo: $0 USD** -- Planes gratuitos de Render + Supabase
 
 ---
 
@@ -45,9 +46,10 @@ title: "Guia de Despliegue para Pruebas del Cliente -- SIGAI-SES"
 | # | Paso | Servicio | Tiempo |
 |---|------|----------|----------|
 | 1 | Subir codigo a GitHub | GitHub | ~10 min |
-| 2 | Crear BD gratis (TiDB Cloud) | TiDB Cloud | ~10 min |
-| 3 | Desplegar Backend en Railway | Railway | ~15 min |
-| 4 | Desplegar Frontend en Vercel | Vercel | ~10 min |
+| 2 | Crear BD gratis (Supabase) | Supabase | ~10 min |
+| 3 | Configurar variables de entorno | Render | ~5 min |
+| 4 | Desplegar Backend en Render | Render | ~15 min |
+| 5 | CI Pipeline (GitHub Actions) | GitHub | ~5 min |
 | 5 | Probar el sistema | -- | ~5 min |
 | 6 | Dar acceso al cliente | GitHub/Vercel | ~5 min |
 | 7 | Actualizaciones desde VS Code | VS Code | ~1 min |
@@ -57,215 +59,210 @@ title: "Guia de Despliegue para Pruebas del Cliente -- SIGAI-SES"
 ## PASO 1: Subir el codigo a GitHub
 
 > [!IMPORTANT]
-> El codigo debe estar en un repositorio GitHub para que Railway y Vercel puedan desplegarlo.
+> El codigo ya debe estar en un repositorio GitHub. Render y GitHub Actions se conectan directamente al repositorio.
 
-### 1.1 Crear repositorio en GitHub
+**Repositorio actual:** [https://github.com/mrwil82/SIGAI-SES](https://github.com/mrwil82/SIGAI-SES)
 
-| # | Accion | Detalle |
-|---|--------|---------|
-| 1 | Ir a | [https://github.com/new](https://github.com/new) |
-| 2 | Nombre del repo | `proyecto-sigai-ses` |
-| 3 | Visibilidad | **Private** (solo tu y el cliente ven el codigo) |
-| 4 | Crear | Click en **"Create repository"** |
+### Verificar que el `.gitignore` excluye archivos sensibles
 
-### 1.2 Subir el codigo desde VS Code
-
-```bash
-cd C:\Users\ASUS\Desktop\PASANTIA\Proyecto_SES
-
-# Inicializar git
-git init
-git add .
-git commit -m "Version inicial para pruebas"
-
-# Conectar con GitHub
-git remote add origin https://github.com/TU_USUARIO/proyecto-sigai-ses.git
-git branch -M main
-git push -u origin main
 ```
-
-> [!WARNING]
-> **Verificar que el `.gitignore` excluye archivos sensibles:**
-> ```
-> .env
-> Backend/.env
-> Frontend/.env
-> docker-compose.override.yml
-> *.log
-> __pycache__/
-> node_modules/
-> .venv/
-> Frontend/dist/
-> ```
+.env
+Backend/.env
+Frontend/.env
+*.log
+__pycache__/
+node_modules/
+.venv/
+Frontend/dist/
+Backend/app/static/avatars/
+```
 
 ---
 
-## PASO 2: Crear Base de Datos Gratis (TiDB Cloud)
+## PASO 2: Crear Base de Datos Gratis (Supabase)
 
 > [!NOTE]
-> TiDB Cloud ofrece **MySQL compatible 100% gratis, 24/7, con 5GB de almacenamiento**. Perfecto para pruebas.
+> Supabase ofrece **PostgreSQL 100% gratis, 24/7, con 500 MB de almacenamiento**.
 
 ### 2.1 Crear cuenta
 
-| # | Accion |
-|---|--------|
-| 1 | Ve a [https://tidbcloud.com](https://tidbcloud.com) |
-| 2 | Click **"Sign Up"** (puedes usar Google) |
-| 3 | Verifica tu correo electronico |
+1. Ve a [https://supabase.com](https://supabase.com)
+2. Click **"Start your project"**
+3. Login con GitHub
 
-### 2.2 Crear cluster gratis
-
-```mermaid
-graph LR
-    A[Click Create Cluster] --> B[Seleccionar Serverless]
-    B --> C[Region: AWS us-west-2]
-    C --> D[Click Create]
-    D --> E[Esperar ~2 minutos]
-```
-
-### 2.3 Obtener datos de conexion
-
-```sql
--- Cadena de conexion de ejemplo:
-mysql+pymysql://username:password@gateway01.us-west-2.prod.aws.tidbcloud.com:4000/sigai_ses_db
-```
-
-### 2.4 Crear la base de datos
-
-```sql
-CREATE DATABASE IF NOT EXISTS sigai_ses_db;
-```
-
-> [!CAUTION]
-> **Guarda la cadena de conexion.** La necesitaras en el PASO 3.
-
----
-
-## PASO 3: Desplegar Backend en Railway
-
-> [!TIP]
-> Railway despliega tu backend automaticamente con Docker. **Gratis 500 horas/mes (~17h/dia).**
-
-### 3.1 Crear cuenta
-
-1. Ve a [https://railway.app](https://railway.app)
-2. Click **"Start a New Project"**
-3. Login con tu cuenta de **GitHub**
-
-### 3.2 Crear proyecto
-
-1. Click **"New Project"**
-2. Selecciona **"Deploy from GitHub repo"**
-3. Selecciona tu repositorio `proyecto-sigai-ses`
-4. Railway detecta el `Dockerfile` automaticamente
-
-### 3.3 Configurar variables de entorno
-
-| Variable | Valor | Seguridad |
-|----------|-------|-----|
-| `DATABASE_URL` | Cadena de TiDB Cloud (usa `aiomysql`) | Critica |
-| `SECRET_KEY` | `openssl rand -hex 32` | Critica |
-| `ADMIN_EMAIL` | `admin@securitas.com` | Fija |
-| `ADMIN_PASSWORD` | `Admin123!` | Temporal |
-| `CORS_ALLOWED_ORIGINS` | `https://proyecto-sigai-ses.vercel.app` | URL |
-| `BACKEND_PORT` | `8000` | Default |
-
-**Ejemplo de DATABASE_URL:**
-```
-mysql+aiomysql://username:password@gateway01.us-west-2.prod.aws.tidbcloud.com:4000/sigai_ses_db
-```
-
-### 3.4 Deploy
-
-```
-[OK] Railway redepliega automaticamente
-[OK] Ve a la pestana "Deployments" para ver el progreso
-[OK] Cuando este verde, el backend esta corriendo
-[OK] Copia la URL: https://proyecto-sigai-ses-production.up.railway.app
-```
-
-### 3.5 Verificar
-
-```bash
-# Abre en el navegador:
-# https://TU-URL-RAILWAY.app/docs
-# Debes ver la documentacion Swagger de la API
-```
-
----
-
-## PASO 4: Desplegar Frontend en Vercel
-
-> [!TIP]
-> Vercel hostea tu frontend React **gratis, 24/7, con HTTPS automatico**.
-
-### 4.1 Crear cuenta
-
-1. Ve a [https://vercel.com](https://vercel.com)
-2. Click **"Sign Up"**
-3. Login con tu cuenta de **GitHub**
-
-### 4.2 Importar proyecto
+### 2.2 Crear proyecto
 
 | Campo | Valor |
 |-------|-------|
-| Repositorio | `proyecto-sigai-ses` |
-| Framework Preset | **Vite** |
-| Root Directory | `Frontend` |
+| **Name** | `sigai-ses-db` |
+| **Database Password** | `Sigaises2026` |
+| **Region** | `US West-2 (Oregon)` |
+| **Pricing Plan** | Free |
 
-### 4.3 Configurar variables de entorno
+Espera ~2 minutos a que se provisione.
+
+### 2.3 Obtener cadena de conexion
+
+1. En Dashboard > **Project Settings** > **Database**
+2. En **Connection string** selecciona **URI**
+3. Copia la cadena `postgresql://postgres.xxxxx:password@aws-1-us-west-2.pooler.supabase.com:5432/postgres`
+
+### 2.4 Configurar en el backend
+
+Reemplaza los valores en la variable `DATABASE_URL`:
+
+```
+DATABASE_URL=postgresql+asyncpg://postgres.TU_PROYECTO:TU_PASSWORD@aws-1-us-west-2.pooler.supabase.com:5432/postgres
+DATABASE_URL_SYNC=postgresql://postgres.TU_PROYECTO:TU_PASSWORD@aws-1-us-west-2.pooler.supabase.com:5432/postgres
+```
+
+> [!CAUTION]
+> Guarda la cadena de conexion. La necesitaras en el PASO 3.
+
+---
+
+## PASO 3: Desplegar Backend en Render
+
+> [!TIP]
+> Render despliega tu backend automaticamente desde GitHub. **Plan gratuito: 750 horas/mes, incluye HTTPS.**
+
+### 3.1 Crear cuenta
+
+1. Ve a [https://dashboard.render.com](https://dashboard.render.com)
+2. Click **"Sign Up"** con cuenta de **GitHub**
+
+### 3.2 Crear Web Service
+
+1. Click **"New +"** > **"Web Service"**
+2. Conecta tu repositorio `mrwil82/SIGAI-SES`
+3. Configura:
+
+| Campo | Valor |
+|-------|-------|
+| **Name** | `sigai-ses-api` |
+| **Runtime** | `Python 3` |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port 10000` |
+
+### 3.3 Configurar variables de entorno
 
 | Variable | Valor |
 |----------|-------|
-| `VITE_API_BASE_URL` | `https://TU-URL-RAILWAY.app/api/v1` |
+| `DATABASE_URL` | `postgresql+asyncpg://postgres.oiyhzbgnhmlrrgxokulu:Sigaises2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres` |
+| `DATABASE_URL_SYNC` | `postgresql://postgres.oiyhzbgnhmlrrgxokulu:Sigaises2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres` |
+| `SECRET_KEY` | `clave_secreta_super_segura_123` |
+| `ALGORITHM` | `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `480` |
+| `ADMIN_EMAIL` | `admin@securitas.com` |
+| `ADMIN_PASSWORD` | `Admin123!` |
+| `ADMIN_NAME` | `Administrador SIGAI` |
+| `ADMIN_CEDULA` | `0000000000` |
+| `ADMIN_CODIGO` | `ADM001` |
 
-### 4.4 Deploy
+### 3.4 Deploy
+
+1. Click **"Create Web Service"**
+2. Render construye e inicia el servicio (~3 min)
+3. Una vez verde, la URL sera: `https://sigai-ses-api.onrender.com`
+
+### 3.5 Auto-deploy
+
+Render redepliega automaticamente con cada `git push` a la rama `main`.
+
+### 3.6 Verificar
 
 ```
-1. Click "Deploy"
-2. Espera ~1 minuto
-3. Vercel te da una URL: https://proyecto-sigai-ses.vercel.app
+Abre en el navegador:
+https://sigai-ses-api.onrender.com/docs
+→ Debes ver la documentacion Swagger de la API
 ```
 
-### 4.5 Actualizar CORS en Railway
+---
 
-```bash
-# Ve a Railway > Variables
-# Actualiza CORS_ALLOWED_ORIGINS con la URL exacta de Vercel:
-CORS_ALLOWED_ORIGINS=https://proyecto-sigai-ses.vercel.app
+## PASO 4: CI Pipeline (GitHub Actions)
+
+> [!NOTE]
+> El pipeline se ejecuta automaticamente en cada `git push` y ejecuta:
+> - **backend-tests**: 32 tests (pytest con SQLite async)
+> - **frontend-lint**: ESLint con `--max-warnings 300`
+
+### Workflow definido en `.github/workflows/main.yml`
+
+```yaml
+name: CI Pipeline
+on: [push]
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+      SECRET_KEY: "test-secret-key"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - run: pip install -r Backend/requirements.txt
+      - run: pytest Backend/tests/
+
+  frontend-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: Frontend/package-lock.json
+      - run: npm ci
+        working-directory: Frontend
+      - run: npm run lint
+        working-directory: Frontend
 ```
+
+> [!TIP]
+> Para ver el estado del pipeline: [https://github.com/mrwil82/SIGAI-SES/actions](https://github.com/mrwil82/SIGAI-SES/actions)
 
 ---
 
 ## PASO 5: Probar
 
-- [x] Abre la URL de Vercel en el navegador
+- [x] Abre `https://sigai-ses-api.onrender.com` en el navegador
 - [x] Login: `admin@securitas.com` / `Admin123!`
-- [x] El frontend debe conectar con el backend [OK]
-- [x] Prueba crear un usuario, un item, etc.
-
-> [!NOTE]
-> Si todo funciona correctamente, el dashboard mostrara datos y podras navegar por todos los modulos.
+- [x] Dashboard carga con KPIs
+- [x] Prueba crear un item, un cliente, una garantia
+- [x] Genera un acta de entrega con PDF
+- [x] Cambia el tema en Configuracion
+- [x] Sube tu foto de avatar
+- [x] Verifica que los tests pasan en GitHub Actions
 
 ---
 
-## PASO 6: Dar Acceso al Cliente
+## PASO 6: Builds Ejecutables
 
-### Credenciales de acceso
+### APK Android
 
+```bash
+cd Frontend
+npm run cap:apk
+# Genera: Frontend/android/app/build/outputs/apk/debug/app-debug.apk (~4.4 MB)
 ```
-URL:    https://proyecto-sigai-ses.vercel.app
-Usuario: admin@securitas.com
-Clave:  Admin123!
+
+### EXE Windows (Portable)
+
+```bash
+cd Backend
+pyinstaller backend.spec
+# Genera: Backend/dist/SIGAI-SES.exe (~67 MB)
 ```
 
-### Acceso al repositorio (opcional)
+### Instalador Windows
 
-| # | Accion |
-|---|--------|
-| 1 | GitHub > tu repositorio > **Settings > Collaborators** |
-| 2 | Click **"Add people"** |
-| 3 | Agrega el correo del cliente |
+```bash
+# Usar Inno Setup con dist_installer/setup.iss
+# Genera: dist_installer/SIGAI-SES-Setup-1.0.0.exe
+```
 
 ---
 
@@ -274,28 +271,21 @@ Clave:  Admin123!
 > [!TIP]
 > Para hacer cambios y que se reflejen automaticamente en produccion:
 
-### Hacer cambios
-
 ```bash
 cd C:\Users\ASUS\Desktop\PASANTIA\Proyecto_SES
 # Editar archivos en VS Code...
-# Ejemplo: corregir un bug en Backend/app/main.py
-```
+# Luego:
 
-### Subir cambios
-
-```bash
 git add .
-git commit -m "Correccion: descripcion del cambio"
+git commit -m "Descripcion del cambio"
 git push
 ```
 
-### Despliegue automatico
-
 | Componente | Tiempo | Gatillo |
 |------------|--------|---------|
-| **Backend** (Railway) | ~2 minutos | `git push` |
-| **Frontend** (Vercel) | ~1 minuto | `git push` |
+| **Backend** (Render) | ~3 minutos | `git push` a `main` |
+| **Frontend** (Render) | ~2 minutos | `git push` a `main` |
+| **CI Pipeline** | ~4 minutos | `git push` |
 
 > [!IMPORTANT]
 > No necesitas hacer nada mas. **Solo `git push` y los cambios estan en produccion.**
@@ -307,26 +297,27 @@ git push
 <details>
 <summary>Click para expandir comandos</summary>
 
-### Ver logs del backend (Railway)
+### Ver logs del backend (Render)
 
-```bash
-railway logs
-# O desde la interfaz web: pestana "Logs"
+```
+Ir a: https://dashboard.render.com
+→ Seleccionar servicio "sigai-ses-api"
+→ Pestana "Logs"
 ```
 
 ### Verificar estado de la BD
 
 ```bash
-# Conectar a TiDB Cloud desde terminal
-mysql -h gateway01.us-west-2.prod.aws.tidbcloud.com -P 4000 -u username -p
+# Conectar a Supabase desde terminal
+psql -h aws-1-us-west-2.pooler.supabase.com -p 5432 -U postgres.oiyhzbgnhmlrrgxokulu -d postgres
 ```
 
 ### Rollback (si algo se rompe)
 
 | Servicio | Como hacer rollback |
 |----------|-------------------|
-| Railway | Deployment > seleccionar version anterior > **"Redeploy"** |
-| Vercel | Deployments > seleccionar version anterior > **"Promote to Production"** |
+| Render | Dashboard > Deploy > seleccionar version anterior > **"Deploy"** |
+| GitHub Actions | No aplica, solo CI; si falla no bloquea el deploy |
 
 </details>
 
@@ -336,12 +327,12 @@ mysql -h gateway01.us-west-2.prod.aws.tidbcloud.com -P 4000 -u username -p
 
 | Servicio | Limite | Impacto |
 |----------|-----------|------------|
-| Railway | 500 horas/mes (~17h/dia) | Si se agota, el backend se duerme hasta el mes siguiente |
-| Vercel | 100GB bandwidth/mes | Suficiente para pruebas |
-| TiDB Cloud | 5GB almacenamiento, 1B row reads/mes | Suficiente para pruebas |
+| Render | 750 horas/mes, 512 MB RAM | Suficiente para pruebas 24/7 |
+| Supabase | 500 MB BD, 2 GB ancho de banda | Suficiente para pruebas |
+| GitHub Actions | 2000 min/mes | Suficiente para CI |
 
 > [!NOTE]
-> **Para pruebas del cliente es mas que suficiente.** Si necesitas mas en el futuro, los planes de pago cuestan ~$5/mes.
+> **Para pruebas del cliente es mas que suficiente.** Si se requiere crecimiento, los planes de pago cuestan ~$7-25/mes.
 
 ---
 
@@ -349,32 +340,34 @@ mysql -h gateway01.us-west-2.prod.aws.tidbcloud.com -P 4000 -u username -p
 
 | Problema | Solucion |
 |-------------|-------------|
-| Frontend no carga | Verificar que la URL de Vercel esta en `CORS_ALLOWED_ORIGINS` en Railway |
-| Error 500 en API | Ver logs en Railway > pestana **"Logs"** |
-| "Connection refused" | Verificar que `DATABASE_URL` esta correcto en Railway |
-| Login falla | Verificar que las tablas se crearon en TiDB Cloud |
-| Los cambios no se ven | Esperar 2 minutos, Railway/Vercel tardan en redesplegar |
+| Frontend no carga | Verificar que `VITE_API_BASE_URL` apunta a Render |
+| Error 500 en API | Revisar logs en Render > pestana **"Logs"** |
+| "value too long for type VARCHAR(255)" | Ejecutar migracion: `ALTER TABLE usuarios ALTER COLUMN avatar_url TYPE TEXT;` |
+| Login falla | Verificar que `SECRET_KEY` y `DATABASE_URL` estan configurados en Render |
+| Los cambios no se ven | Esperar 3 minutos, Render tarda en redesplegar |
+| 404 en avatars | Los avatars antiguos en disco no existen en Render; subir avatar desde Configuracion |
 
 ---
 
 ## Progreso del Despliegue
 
 ```
-Paso 1 [========  ] 80% - Codigo en GitHub
-Paso 2 [========  ] 80% - BD creada
-Paso 3 [==========] 100% - Backend en Railway
-Paso 4 [==========] 100% - Frontend en Vercel
+Paso 1 [==========] 100% - Codigo en GitHub
+Paso 2 [==========] 100% - BD Supabase creada
+Paso 3 [==========] 100% - Backend en Render
+Paso 4 [==========] 100% - CI Pipeline funcional
 Paso 5 [========  ] 80% - Pruebas
-Paso 6 [========  ] 80% - Acceso al cliente
-Paso 7 [==========] 100% - Actualizaciones
+Paso 6 [========  ] 80% - Builds ejecutables
+Paso 7 [==========] 100% - Actualizaciones automaticas
 ```
 
 ---
 
 > [!TIP]
-> **Recuerda:** Todo el stack es gratuito para pruebas. Cuando el cliente valide, puedes migrar a planes de pago por ~$5/mes o a on-premise.
+> **Todo el stack es gratuito.** Cuando el cliente valide, se puede migrar a planes de pago o on-premise.
 
 ---
 
 *Documento actualizado: Julio 2026 -- v1.0*
-*Repositorio: [github.com/TU_USUARIO/proyecto-sigai-ses](https://github.com/TU_USUARIO/proyecto-sigai-ses)*
+*Repositorio: [https://github.com/mrwil82/SIGAI-SES](https://github.com/mrwil82/SIGAI-SES)*
+*Backend: [https://sigai-ses-api.onrender.com](https://sigai-ses-api.onrender.com)*

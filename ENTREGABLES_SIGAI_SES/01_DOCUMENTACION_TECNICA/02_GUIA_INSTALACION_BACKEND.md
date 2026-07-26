@@ -8,8 +8,8 @@ title: "GUÍA DE INSTALACIÓN DEL BACKEND — FastAPI + MySQL"
   <img src="https://img.shields.io/badge/Componente-Backend-009688?style=for-the-badge&logo=fastapi" alt="Backend">
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-0.136.1-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
-  <img src="https://img.shields.io/badge/MySQL-8.0%2B-4479A1?style=for-the-badge&logo=mysql" alt="MySQL">
-  <img src="https://img.shields.io/badge/Estado-Probado-2ea44f?style=for-the-badge&logo=checkmarx" alt="Estado">
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=black" alt="Supabase">
+  <img src="https://img.shields.io/badge/Estado-Producci%C3%B3n-2ea44f?style=for-the-badge&logo=checkmarx" alt="Estado">
 </p>
 
 ---
@@ -29,7 +29,7 @@ title: "GUÍA DE INSTALACIÓN DEL BACKEND — FastAPI + MySQL"
 | Componente | Versión Mínima | Verificación |
 |---|---|---|
 | **Python** | `3.12+` | `python --version` |
-| **MySQL / MariaDB** | `8.0+` / `10.5+` | `mysql --version` |
+| **Base de datos** | Supabase (PostgreSQL 16+) o MySQL 8.0+ / MariaDB 10.5+ | — |
 | **pip** | (incluido) | `pip --version` |
 
 ---
@@ -69,7 +69,8 @@ pip install -r requirements.txt
 | **fastapi** | `0.136.1` | Framework web async |
 | **uvicorn** | `0.47.0` | Servidor ASGI |
 | **sqlalchemy** | `2.0.49` | ORM async |
-| **aiomysql** | `0.3.2` | Driver MySQL async |
+| **asyncpg** | `0.31.0` | Driver PostgreSQL async (produccion) |
+| **aiomysql** | `0.3.2` | Driver MySQL async (local) |
 | **pydantic** | `2.13.4` | Validación de datos |
 | **python-jose** | `3.5.0` | Tokens JWT |
 | **passlib** | `1.7.4` | Encriptación bcrypt |
@@ -83,7 +84,11 @@ Cree un archivo `.env` en la carpeta `Backend/` con las siguientes variables:
 
 ```env
 # ───> Base de Datos ─────────────────────────────────────
-DATABASE_URL=mysql+aiomysql://USUARIO:PASSWORD@HOST:3306/NOMBRE_BD
+# Supabase (PostgreSQL - produccion):
+# DATABASE_URL=postgresql+asyncpg://postgres.PROYECTO:PASSWORD@aws-1-us-west-2.pooler.supabase.com:5432/postgres
+
+# Local (MySQL - desarrollo):
+# DATABASE_URL=mysql+aiomysql://root:@localhost:3306/sigai_ses
 
 # ───> Seguridad JWT ──────────────────────────────────────
 SECRET_KEY=su_clave_secreta_aqui
@@ -103,10 +108,9 @@ ADMIN_NAME=Administrador SIGAI
 
 | Proveedor | | URL de conexión |
 |---|---|---|
-| **Local** | | `mysql+aiomysql://sigai:password@localhost:3306/sigai_ses` |
-| **AWS RDS** | | `mysql+aiomysql://admin:password@mi-db.xxxxx.us-east-1.rds.amazonaws.com:3306/sigai_ses` |
-| **Azure** | | `mysql+aiomysql://admin@mibase.mysql.database.azure.com:3306/sigai_ses` |
-| **DigitalOcean** | | `mysql+aiomysql://doadmin:password@db-mibase.db.ondigitalocean.com:3306/sigai_ses` |
+| **Supabase (produccion)** | | `postgresql+asyncpg://postgres.PROYECTO:PASSWORD@aws-1-us-west-2.pooler.supabase.com:5432/postgres` |
+| **Local (MySQL)** | | `mysql+aiomysql://root:@localhost:3306/sigai_ses` |
+| **Local (PostgreSQL)** | | `postgresql+asyncpg://postgres:password@localhost:5432/sigai_ses` |
 
 ### 3.4 Iniciar el servidor
 
@@ -169,8 +173,9 @@ python --version
 # Verificar dependencias instaladas
 pip list
 
-# Verificar conectividad MySQL
-python -c "import aiomysql; print(' aiomysql OK')"
+# Verificar conectividad BD
+python -c "import asyncpg; print(' asyncpg OK')"  # PostgreSQL
+python -c "import aiomysql; print(' aiomysql OK')"  # MySQL
 
 # Probar inicio de FastAPI
 uvicorn app.main:app --host 0.0.0.0 --port 8000

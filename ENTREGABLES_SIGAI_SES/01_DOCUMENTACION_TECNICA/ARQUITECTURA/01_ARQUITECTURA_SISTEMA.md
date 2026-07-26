@@ -9,10 +9,10 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 ![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=github)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=for-the-badge&logo=checkmarx)
 ![Last Update](https://img.shields.io/badge/Last%20Update-Julio%202026-orange?style=for-the-badge&logo=calendar)
-![Stack](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20MySQL-ff69b4?style=for-the-badge&logo=codeigniter)
+![Stack](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20Supabase-3FCF8E?style=for-the-badge&logo=codeigniter)
 ![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2F%20TypeScript-61DAFB?style=for-the-badge&logo=react)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2F%20Python%203.12-009688?style=for-the-badge&logo=fastapi)
-![Database](https://img.shields.io/badge/Database-MySQL%208.0%20%2F%20MariaDB-4479A1?style=for-the-badge&logo=mysql)
+![Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-4169E1?style=for-the-badge&logo=postgresql)
 
 </div>
 
@@ -45,11 +45,11 @@ graph TB
         C[FastAPI<br/>Uvicorn Workers]
     end
     subgraph "🗄️ Datos"
-        D[(MySQL<br/>InnoDB)]
+        D[(Supabase PostgreSQL)]
     end
     A -->|HTTPS| B
     B -->|proxy_pass :8000| C
-    C -->|aiomysql pool| D
+    C -->|asyncpg pool| D
 ```
 
 ---
@@ -73,7 +73,7 @@ flowchart LR
     C --> D{⚖️ Upsert}
     D -->|Nuevo| E[➕ INSERT]
     D -->|Existente| F[🔄 UPDATE]
-    E --> G[📀 MySQL]
+    E --> G[📀 Supabase PostgreSQL]
     F --> G
     G --> H[📊 Dashboard<br/>en Tiempo Real]
 ```
@@ -122,7 +122,7 @@ flowchart LR
 |:---|---|
 | **Framework** | ![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi) (Python 3.12) |
 | **Servidor** | ![Uvicorn](https://img.shields.io/badge/Uvicorn-ASGI-4051b5?logo=uvicorn) |
-| **ORM** | SQLAlchemy 2.0 Async + aiomysql |
+| **ORM** | SQLAlchemy 2.0 Async + asyncpg / aiomysql |
 | **Documentación** | OpenAPI 3.0.3 (`/docs`, `/redoc`) |
 | **Seguridad** | OAuth2 Password Flow + JWT + bcrypt |
 | **Estructura** | **10** módulos API, **7** CRUD, **1** importación |
@@ -148,10 +148,10 @@ flowchart LR
 
 | Atributo | Detalle |
 |:---|---|
-| **Motor** | MySQL 8.0+ / MariaDB 10.5+ (InnoDB) |
-| **Pool** | aiomysql — `pool_size=30`, `max_overflow=50` |
+| **Motor** | Supabase PostgreSQL 16 (produccion) / MySQL 8.0+ (local) |
+| **Pool** | asyncpg / aiomysql — `pool_size=30`, `max_overflow=50` |
 | **ORM** | SQLAlchemy 2.0 Async (Base declarativa) |
-| **Migraciones** | Alembic — **9 versiones** aplicadas |
+| **Migraciones** | Alembic — **14 versiones** aplicadas |
 
 #### Tablas del Sistema (18)
 
@@ -178,7 +178,7 @@ sequenceDiagram
     participant U as 🖥️ Usuario
     participant N as 🌐 Nginx
     participant F as ⚡ FastAPI
-    participant M as 🗄️ MySQL
+    participant M as 🗄️ Supabase PostgreSQL
 
     U->>N: HTTPS Request
     N->>F: proxy_pass :8000
@@ -213,7 +213,7 @@ sequenceDiagram
 | **ADR-02** | **React + Vite** sobre Next.js | SPA ligera, HMR rápido, deploy simple en Vercel | Next.js (SSR complejo para PWA) |
 | **ADR-03** | **SQLAlchemy Async** sobre Tortoise ORM | Madurez, documentación, Alembic | Tortoise ORM (menos maduro) |
 | **ADR-04** | **JWT en localStorage** sobre httpOnly cookies | Simplicidad, SPA sin SSR | httpOnly cookies (más seguro, pero complejo) |
-| **ADR-05** | **MySQL** sobre PostgreSQL | Compatibilidad con MariaDB existente | PostgreSQL (mejor rendimiento, migración compleja) |
+| **ADR-05** | **Supabase (PostgreSQL)** sobre MySQL | Base de datos gestionada 24/7 gratis, backup automatico, buena performance | MySQL local (mas trabajo operativo) |
 
 > [!WARNING]
 > **ADR-04** (JWT en localStorage) es un riesgo de seguridad asumido. Mitigado con expiración de 8h y sesiones revocables.

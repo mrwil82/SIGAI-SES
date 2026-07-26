@@ -163,48 +163,34 @@ flowchart TD
 
 ## 4. Flujo de Creación de Acta de Entrega
 
-```
-INICIO
-  │
-  ▼
-Seleccionar tipo de acta:
-  ├── ENTREGA_EPP
-  ├── ENTREGA_HERRAMIENTA
-  ├── DESPACHO_PROYECTO
-  ├── DEVOLUCION
-  └── INGRESO_DESMONTE
-  │
-  ▼
-Seleccionar técnico responsable
-  │
-  ▼
-Seleccionar proyecto/cliente destino
-  │
-  ▼
-Agregar items/activos al acta
-  │  (búsqueda por nombre, serial, categoría)
-  ▼
-Capturar firma digital del técnico
-  │  (lienzo táctil react-signature-canvas)
-  │
-  ▼
-Generar PDF del acta (ReportLab)
-  │  ├── Logo Securitas
-  │  ├── Datos del técnico y representante
-  │  ├── Lista de equipos con seriales
-  │  ├── Firma digital incrustada
-  │  └── Fecha y hora de creación
-  │
-  ▼
-Registrar en BD
-  │  ├── actas_entrega
-  │  └── detalles_acta_entrega
-  │
-  ▼
-Actualizar kardex de movimientos
-  │
-  ▼
-FIN
+<div align="center">
+
+![Flujo de Acta de Entrega](images/flow_4.png)
+
+*Diagrama de flujo de creación de actas de entrega*
+
+</div>
+
+```mermaid
+flowchart TD
+    A[Inicio] --> B[Seleccionar tipo de acta]
+    B --> C{Tipo de acta}
+    C -->|ENTREGA_EPP| D[Seleccionar EPP]
+    C -->|ENTREGA_HERRAMIENTA| E[Seleccionar herramienta]
+    C -->|DESPACHO_PROYECTO| F[Seleccionar proyecto]
+    C -->|DEVOLUCION| G[Seleccionar activo]
+    C -->|INGRESO_DESMONTE| H[Seleccionar equipo desmontado]
+    D --> I[Seleccionar tecnico responsable]
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+    I --> J[Agregar items/activos al acta]
+    J --> K[Capturar firma digital]
+    K --> L[Generar PDF del acta]
+    L --> M[Registrar en BD]
+    M --> N[Actualizar kardex]
+    N --> O[Fin]
 ```
 
 > [!IMPORTANT]
@@ -214,52 +200,36 @@ FIN
 
 ## 5. Flujo de Importación Excel
 
-```
-INICIO
-  │
-  ▼
-Usuario selecciona archivo Excel (.xlsx)
-  │
-  ▼
-Servidor recibe archivo (multipart/form-data)
-  │
-  ▼
-Detección automática de tipo (por nombre/columnas):
-  ├── "Inventario" → Procesa items y activos
-  ├── "Inventario Clientes" → Procesa clientes y stock
-  └── "Garantia" → Procesa casos de garantía
-  │
-  ▼
-Normalización de datos:
-  ├── Limpieza de espacios y caracteres especiales
-  ├── Estandarización de mayúsculas/minúsculas
-  └── Validación de tipos de datos
-  │
-  ▼
-Validación de columnas obligatorias:
-  ├── ¿Faltan columnas? → Error: "Formato no válido"
-  └── ¿Todo correcto? → Continuar
-  │
-  ▼
-Procesamiento transaccional:
-  │
-  Para cada fila:
-  │   ├── ¿Existe registro por serial/referencia?
-  │   │   ├── Sí → UPDATE (actualizar datos)
-  │   │   └── No → INSERT (crear nuevo)
-  │   └── Registrar en auditoría
-  │
-  ▼
-Commit transacción (todo o nada)
-  │
-  ▼
-Generar resumen al usuario:
-  ├── Registros creados: X
-  ├── Registros actualizados: Y
-  └── Errores: Z (con detalles)
-  │
-  ▼
-FIN
+<div align="center">
+
+![Flujo de Importacion Excel](images/flow_5.png)
+
+*Diagrama de flujo del proceso de importación de datos desde Excel*
+
+</div>
+
+```mermaid
+flowchart TD
+    A[Usuario selecciona archivo Excel] --> B[Servidor recibe archivo]
+    B --> C[Deteccion automatica de tipo]
+    C --> D{Tipo detectado}
+    D -->|Inventario| E[Procesa items y activos]
+    D -->|Inventario Clientes| F[Procesa clientes y stock]
+    D -->|Garantia| G[Procesa casos de garantia]
+    E --> H[Normalizacion de datos]
+    F --> H
+    G --> H
+    H --> I[Validacion de columnas]
+    I --> J{Columnas validas}
+    J -->|No| K[Error: Formato no valido]
+    J -->|Si| L[Procesamiento transaccional]
+    L --> M{Existe registro}
+    M -->|Si| N[UPDATE]
+    M -->|No| O[INSERT]
+    N --> P[Commit transaccion]
+    O --> P
+    P --> Q[Generar resumen]
+    Q --> R[Fin]
 ```
 
 > [!NOTE]
@@ -269,53 +239,32 @@ FIN
 
 ## 6. Flujo de Autenticación
 
-```
-Cliente (Frontend)                    Servidor (Backend)
-     │                                          │
-     │  POST /auth/login                        │
-     │  (email + password)                      │
-     │─────────────────────────────────────────>│
-     │                                          │  Buscar usuario por email
-     │                                          │  Verificar password (bcrypt)
-     │                                          │  Generar access_token (8h)
-     │                                          │  Generar refresh_token (7d)
-     │                                          │  Registrar sesión en BD
-     │  {access_token,                          │
-     │     refresh_token,                       │
-     │     user}                                │
-     │<─────────────────────────────────────────│
-     │                                          │
-     │  Almacenar tokens en localStorage        │
-     │  Redirigir a /dashboard                  │
-     │                                          │
-     │  GET /auth/me                            │
-     │  (Bearer access_token)                   │
-     │─────────────────────────────────────────>│  Decodificar JWT
-     │                                          │  Verificar expiración
-     │  {user data}                             │
-     │<─────────────────────────────────────────│
-     │                                          │
-     │  ...operaciones normales...              │
-     │                                          │
-     │  (access_token EXPIRA a las 8h)          │
-     │                                          │
-     │  POST /auth/refresh                      │
-     │  (refresh_token)                         │
-     │─────────────────────────────────────────>│  Verificar refresh token
-     │                                          │  Generar NUEVO access_token
-     │  {new access_token}                      │
-     │<─────────────────────────────────────────│
-     │                                          │
-     │  Reintentar petición original            │
-     │  con nuevo access_token                  │
-     │                                          │
-     │  ...operaciones normales...              │
-     │                                          │
-     │  (refresh_token EXPIRA a los 7d)         │
-     │                                          │
-     │  Intenta renovar → FALLA                 │
-     │  Redirigir a /login                      │
-     │                                          │
+<div align="center">
+
+![Flujo de Autenticacion](images/flow_6.png)
+
+*Diagrama de secuencia del flujo de autenticación JWT*
+
+</div>
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend React
+    participant B as Backend FastAPI
+    participant D as Supabase PostgreSQL
+
+    U->>F: Ingresa email + password
+    F->>B: POST /api/v1/auth/login
+    B->>D: Buscar usuario por email
+    D-->>B: Datos del usuario
+    B->>B: Verificar password (bcrypt)
+    B->>B: Generar access_token (8h)
+    B->>B: Generar refresh_token (7d)
+    B->>D: Registrar sesion
+    B-->>F: {access_token, refresh_token, user}
+    F->>F: Almacenar en sessionStorage
+    F-->>U: Redirigir a Dashboard
 ```
 
 > [!TIP]
@@ -325,45 +274,30 @@ Cliente (Frontend)                    Servidor (Backend)
 
 ## 7. Flujo de Registro de Usuario (Admin)
 
-```
-INICIO
-  │
-  ▼
-Administrador navega a Usuarios > "Nuevo Usuario"
-  │
-  ▼
-Completa formulario:
-  ├── Nombre completo
-  ├── Email corporativo
-  ├── Rol (ADMIN, TECNICO, TECNICO_LABORATORIO)
-  ├── Regional (ciudad)
-  ├── Cédula
-  ├── Código de empleado
-  └── Contraseña temporal
-  │
-  ▼
-Backend valida:
-  ├── ¿Email único? NO → Error "Email ya registrado"
-  ├── ¿Cédula única? NO → Error "Cédula ya registrada"
-  ├── ¿Código empleado único? NO → Error "Código ya registrado"
-  ├── ¿Rol válido? NO → Error
-  └── TODO OK → Continuar
-  │
-  ▼
-Backend crea usuario:
-  ├── Hash de contraseña (bcrypt)
-  ├── is_active = true
-  ├── created_at = now
-  └── Registra en audit_logs (CREATE)
-  │
-  ▼
-Frontend muestra confirmación
-  │
-  ▼
-(Pendiente v1.1.0) Enviar credenciales por email
-  │
-  ▼
-FIN
+<div align="center">
+
+![Flujo de Registro de Usuario](images/flow_7.png)
+
+*Diagrama de flujo del proceso de registro de usuario por parte del administrador*
+
+</div>
+
+```mermaid
+flowchart TD
+    A[Admin navega a Usuarios > Nuevo Usuario] --> B[Completa formulario]
+    B --> C[Backend valida datos]
+    C --> D{Email unico}
+    D -->|No| E[Error: Email ya registrado]
+    D -->|Si| F{Cedula unica}
+    F -->|No| G[Error: Cedula ya registrada]
+    F -->|Si| H{Codigo empleado unico}
+    H -->|No| I[Error: Codigo ya registrado]
+    H -->|Si| J[Hash de password bcrypt]
+    J --> K[Crear usuario en BD]
+    K --> L[Registrar en audit_logs]
+    L --> M[Frontend muestra confirmacion]
+    M --> N[(Pendiente v1.1) Email automático]
+    N --> O[Fin]
 ```
 
 > [!WARNING]

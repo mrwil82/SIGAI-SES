@@ -3,98 +3,88 @@ title: "Gestion de Alertas -- Inventario_SE (PROYECTO_SECURITAS)"
 ---
 
 
-# Gestion de Alertas -- Inventario_SE (PROYECTO_SECURITAS)
+# Gestion de Alertas -- SIGAI-SES
 
-![Version](https://img.shields.io/badge/Version-2.0.0-blue)
+![Version](https://img.shields.io/badge/Version-1.0.0-blue)
 ![Status](https://img.shields.io/badge/Status-En%20Produccion-green)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688)
-![Flet](https://img.shields.io/badge/Flet-0.27+-blueviolet)
-![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-009688)
+![React](https://img.shields.io/badge/React-18-61DAFB)
+![PostgreSQL](https://img.shields.io/badge/Supabase-3FCF8E)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB)
 
-> Guia completa de arquitectura, UX y mejores practicas para el modulo de alertas de la aplicacion de inventario.
+> Guia completa de arquitectura, UX y mejores practicas para el modulo de alertas de SIGAI-SES.
 
 ---
 
 ## 1. Arquitectura del modulo de alertas
 
-### 1.1 Estructura recomendada (FastAPI + Flet)
-
-<details>
-<summary><b>Ver estructura del proyecto</b></summary>
+### 1.1 Estructura actual (FastAPI + React + SQLAlchemy)
 
 ```
-inventario_se/
-+-- backend/
-|   +-- alerts/
-|   |   +-- models.py          # Modelo Alert en SQLAlchemy
-|   |   +-- schemas.py         # Esquemas Pydantic
-|   |   +-- rules.py           # Motor de reglas (evaluacion automatica)
-|   |   +-- router.py          # Endpoints REST /alerts
-|   |   +-- notifications.py   # Envio de notificaciones
-+-- frontend/
-|   +-- views/
-|   |   +-- alert_dashboard.py # Vista principal del panel
-|   +-- components/
-|   |   +-- alert_table.py     # Tabla de alertas con filtros
-|   |   +-- alert_badge.py     # Badge de conteo (sidebar)
-|   |   +-- alert_card.py      # Tarjeta de alerta individual
-|   |   +-- alert_toast.py     # Notificacion flotante tipo toast
-```
+Backend/
+└── app/
+    ├── models/alerts.py          # Modelos Alert y AlertRule (SQLAlchemy)
+    ├── schemas/alerts.py         # Schemas Pydantic (AlertRead, AlertUpdate)
+    ├── api/endpoints/alerts.py   # Endpoints REST /api/v1/alerts
+    └── crud/crud_alerts.py       # Logica de BD para alertas
 
-</details>
+Frontend/src/
+├── services/alerts.ts            # API service (list, update, delete, evaluar)
+├── hooks/useAlerts.ts            # React Query hooks
+└── pages/Alerts.tsx              # Centro de alertas (tabla + tarjetas)
+```
 
 ---
 
 ## 2. Modelo de datos
 
-### 2.1 Tabla `alerts` en MySQL
+### 2.1 Tabla `alerts` en PostgreSQL (Supabase)
 
 <details open>
 <summary><b>Ver DDL de la tabla <code>alerts</code></b></summary>
 
 ```sql
 CREATE TABLE alerts (
-    id            INT AUTO_INCREMENT PRIMARY KEY,
-    created_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    DATETIME    ON UPDATE CURRENT_TIMESTAMP,
-    resolved_at   DATETIME    NULL,
-    tipo          VARCHAR(50) NOT NULL,  -- 'stock_bajo', 'vencimiento', 'sin_movimiento', 'sobrestock', 'discrepancia'
-    prioridad     ENUM('critica','alta','media','baja') NOT NULL,
-    estado        ENUM('activa','reconocida','resuelta','ignorada') NOT NULL DEFAULT 'activa',
+    id            SERIAL PRIMARY KEY,
+    created_at    TIMESTAMP DEFAULT NOW(),
+    updated_at    TIMESTAMP,
+    resolved_at   TIMESTAMP,
+    tipo          VARCHAR(50) NOT NULL,
+    prioridad     alerta_prioridad NOT NULL DEFAULT 'media',
+    estado        alerta_estado NOT NULL DEFAULT 'activa',
     titulo        VARCHAR(200) NOT NULL,
     descripcion   TEXT,
-    item_id       INT         NOT NULL,
+    item_id       INTEGER NOT NULL REFERENCES items(id_item),
     item_nombre   VARCHAR(200),
     valor_actual  DECIMAL(10,2),
     valor_umbral  DECIMAL(10,2),
     unidad        VARCHAR(20),
-    asignado_a    INT         NULL,      -- FK a users
-    notas         TEXT        NULL,
-    FOREIGN KEY (item_id) REFERENCES items(id),
-    INDEX idx_estado_prioridad (estado, prioridad),
-    INDEX idx_tipo (tipo),
-    INDEX idx_created_at (created_at)
+    asignado_a    INTEGER REFERENCES usuarios(id_usuario),
+    solucion      TEXT
 );
+
+CREATE INDEX idx_alerts_estado ON alerts(estado);
+CREATE INDEX idx_alerts_tipo ON alerts(tipo);
+CREATE INDEX idx_alerts_prioridad ON alerts(prioridad);
 ```
 
 </details>
 
 ### 2.2 Tabla `alert_rules` (reglas configurables)
 
-<details>
+<details open>
 <summary><b>Ver DDL de la tabla <code>alert_rules</code></b></summary>
 
 ```sql
 CREATE TABLE alert_rules (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
+    id          SERIAL PRIMARY KEY,
     nombre      VARCHAR(100) NOT NULL,
-    tipo        VARCHAR(50)  NOT NULL,
-    activa      BOOLEAN      NOT NULL DEFAULT TRUE,
-    prioridad   ENUM('critica','alta','media','baja') NOT NULL,
-    condicion   JSON         NOT NULL,  -- {"campo": "cantidad", "operador": "lt", "valor": "stock_minimo"}
+    tipo        VARCHAR(50) NOT NULL,
+    activa      BOOLEAN NOT NULL DEFAULT TRUE,
+    prioridad   regla_prioridad NOT NULL,
+    condicion   TEXT NOT NULL,
     descripcion TEXT,
-    cooldown_h  INT          DEFAULT 24  -- Horas antes de re-disparar la misma alerta
+    cooldown_h  INTEGER DEFAULT 24
 );
 ```
 
@@ -104,39 +94,31 @@ CREATE TABLE alert_rules (
 
 ## 3. Motor de reglas
 
-**Archivo:** `backend/alerts/rules.py`
+**Archivo:** `Backend/app/crud/crud_alerts.py` — función `evaluar_alertas()`
 
 > [!NOTE]
-> El motor recorre todos los items activos y evalua cada regla. Solo crea una alerta si **no existe ya una activa o reconocida** para el mismo item y tipo.
+> El motor recorre todos los items activos y evalua las reglas predefinidas. Solo crea una alerta si **no existe ya una activa o reconocida** para el mismo item.
 
 <details open>
 <summary><b>Ver implementacion del motor de reglas</b></summary>
 
 ```python
-from datetime import datetime, timedelta
-from app.db import SessionLocal
-from app.items.models import Item
-from app.alerts.models import Alert
+# Reglas evaluadas por el motor:
 
-REGLAS = [
-    {
-        "tipo": "stock_bajo",
-        "prioridad": "critica",
-        "titulo": "Stock critico: {nombre}",
-        "condicion": lambda item: item.cantidad < item.stock_minimo,
-        "descripcion": "Cantidad {actual} menor al minimo {umbral}",
-    },
-    {
-        "tipo": "vencimiento",
-        "prioridad": "alta",
-        "titulo": "Proximo a vencer: {nombre}",
-        "condicion": lambda item: item.fecha_vencimiento and
-                     item.fecha_vencimiento <= datetime.now() + timedelta(days=30),
-        "descripcion": "Vence el {fecha}",
-    },
-    {
-        "tipo": "sin_movimiento",
-        "prioridad": "media",
+REGLAS_ACTIVAS = [
+    {"tipo": "stock_bajo", "prioridad": "critica",
+     "titulo": "Stock crítico: {nombre}",
+     "descripcion": "Stock actual ({actual}) por debajo del mínimo ({umbral})"},
+
+    {"tipo": "stock_bajo", "prioridad": "alta",
+     "titulo": "Stock por agotarse: {nombre}",
+     "descripcion": "Quedan {actual} unidades (mínimo: {umbral})"},
+
+    {"tipo": "garantia_estancada", "prioridad": "media",
+     "titulo": "Garantía estancada: {nombre}",
+     "descripcion": "Sin avance por más de 15 días en garantía {id}"},
+]
+```
         "titulo": "Sin movimiento: {nombre}",
         "condicion": lambda item: item.ultima_transaccion and
                      item.ultima_transaccion < datetime.now() - timedelta(days=90),
@@ -155,29 +137,7 @@ def evaluar_alertas():
     """Corre el motor de reglas. Llamar desde un scheduler periodico."""
     db = SessionLocal()
     items = db.query(Item).filter(Item.activo == True).all()
-    nuevas = 0
-    for item in items:
-        for regla in REGLAS:
-            if regla["condicion"](item):
-                existe = db.query(Alert).filter(
-                    Alert.item_id == item.id,
-                    Alert.tipo == regla["tipo"],
-                    Alert.estado.in_(["activa", "reconocida"])
-                ).first()
-                if not existe:
-                    alerta = Alert(
-                        tipo=regla["tipo"],
-                        prioridad=regla["prioridad"],
-                        titulo=regla["titulo"].format(nombre=item.nombre),
-                        item_id=item.id,
-                        item_nombre=item.nombre,
-                        valor_actual=item.cantidad,
-                        valor_umbral=item.stock_minimo,
-                    )
-                    db.add(alerta)
-                    nuevas += 1
     db.commit()
-    db.close()
     return nuevas
 ```
 
@@ -188,173 +148,89 @@ def evaluar_alertas():
 ## 4. Endpoints REST (FastAPI)
 
 > [!TIP]
-> Todos los endpoints viven bajo el prefijo `/alerts` y retornan respuestas en formato JSON estandar.
+> Todos los endpoints viven bajo el prefijo `/api/v1/alerts` y retornan respuestas en formato JSON estandar.
 
 <details open>
-<summary><b>Ver endpoints del router</b></summary>
+<summary><b>Ver endpoints disponibles</b></summary>
 
-```python
-# GET /alerts?estado=activa&prioridad=critica&tipo=stock_bajo&page=1&limit=20
-@router.get("/alerts", response_model=AlertListResponse)
-async def listar_alertas(
-    estado: Optional[str] = None,
-    prioridad: Optional[str] = None,
-    tipo: Optional[str] = None,
-    page: int = 1,
-    limit: int = 20,
-    db: Session = Depends(get_db)
-):
-    ...
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| `GET` | `/api/v1/alerts/` | Lista alertas (paginated, filtrable por estado/prioridad/tipo) |
+| `GET` | `/api/v1/alerts/summary` | Conteo de alertas agrupadas (dashboard) |
+| `PATCH` | `/api/v1/alerts/{id}/estado` | Cambia estado: reconocida, resuelta, ignorada |
+| `DELETE` | `/api/v1/alerts/{id}` | Elimina alerta |
+| `POST` | `/api/v1/alerts/evaluar` | Disparo manual del motor de reglas |
+| `POST` | `/api/v1/alerts/` | Crear alerta manual |
 
-# PATCH /alerts/{id}/estado
-@router.patch("/alerts/{id}/estado")
-async def cambiar_estado(id: int, body: AlertEstadoUpdate, db: Session = Depends(get_db)):
-    # Actualiza a 'reconocida', 'resuelta', 'ignorada'
-    ...
+**Ejemplo de respuesta `GET /alerts/summary`:**
 
-# GET /alerts/resumen
-@router.get("/alerts/resumen")
-async def resumen_alertas(db: Session = Depends(get_db)):
-    # Devuelve conteos por prioridad y tipo para las metricas del dashboard
-    ...
-
-# POST /alerts/evaluar
-@router.post("/alerts/evaluar")
-async def forzar_evaluacion():
-    # Dispara evaluar_alertas() manualmente
-    nuevas = evaluar_alertas()
-    return {"nuevas_alertas": nuevas}
+```json
+{
+  "total": 8,
+  "critica": 3,
+  "alta": 2,
+  "media": 2,
+  "baja": 1,
+  "por_estado": { "activa": 5, "reconocida": 2, "resuelta": 1 }
+}
 ```
 
 </details>
 
 ---
 
-## 5. Panel de alertas en Flet (frontend)
+## 5. Panel de alertas en React (frontend)
 
-### 5.1 Vista principal
+### 5.1 Pagina Alerts.tsx
 
-<details open>
-<summary><b>Ver codigo del dashboard</b></summary>
+El centro de alertas se encuentra en `Frontend/src/pages/Alerts.tsx`. Incluye:
 
-```python
-import flet as ft
-from app.services.alert_service import AlertService
+- **Vista mixta**: tabla paginada + tarjetas de resumen
+- **Filtros**: por estado (activa/reconocida/resuelta/ignorada) y prioridad
+- **Acciones**: reconocer, resolver, ignorar, reasignar
+- **Busqueda**: por titulo o tipo de alerta
+- **Colores**: codificados por prioridad segun el tema activo
 
-class AlertDashboard(ft.View):
-    def __init__(self, page: ft.Page):
-        super().__init__()
-        self.page = page
-        self.service = AlertService()
-        self.filtro_prioridad = "todas"
-
-    def build(self):
-        resumen = self.service.get_resumen()
-
-        # Tarjetas de metricas
-        metricas = ft.Row([
-            self._metric_card("Activas", resumen["total"], ft.colors.RED_400),
-            self._metric_card("Criticas", resumen["critica"], ft.colors.RED_700),
-            self._metric_card("Altas", resumen["alta"], ft.colors.ORANGE_400),
-            self._metric_card("Resueltas hoy", resumen["resueltas_hoy"], ft.colors.GREEN_400),
-        ], spacing=12)
-
-        # Filtros
-        filtros = ft.Row([
-            ft.ElevatedButton("Todas", on_click=lambda e: self._filtrar("todas")),
-            ft.ElevatedButton("Criticas", on_click=lambda e: self._filtrar("critica")),
-            ft.ElevatedButton("Altas", on_click=lambda e: self._filtrar("alta")),
-            ft.ElevatedButton("Medias", on_click=lambda e: self._filtrar("media")),
-        ])
-
-        # Tabla de alertas
-        tabla = self._build_tabla()
-
-        return ft.Column([metricas, filtros, tabla], spacing=16, expand=True)
-
-    def _metric_card(self, label, valor, color):
-        return ft.Container(
-            content=ft.Column([
-                ft.Text(label, size=12, color=ft.colors.GREY_600),
-                ft.Text(str(valor), size=24, weight=ft.FontWeight.W_500, color=color),
-            ], spacing=4),
-            padding=16,
-            bgcolor=ft.colors.SURFACE_VARIANT,
-            border_radius=8,
-            expand=True,
-        )
-
-    def _build_tabla(self):
-        alertas = self.service.get_alertas(prioridad=self.filtro_prioridad)
-        colores_prio = {
-            "critica": ft.colors.RED_100,
-            "alta": ft.colors.ORANGE_100,
-            "media": ft.colors.BLUE_100,
-            "baja": ft.colors.GREEN_100,
-        }
-        filas = [
-            ft.DataRow(cells=[
-                ft.DataCell(ft.Text(a.titulo, size=13)),
-                ft.DataCell(ft.Container(
-                    ft.Text(a.prioridad.upper(), size=11, weight=ft.FontWeight.BOLD),
-                    bgcolor=colores_prio[a.prioridad], padding=4, border_radius=8)),
-                ft.DataCell(ft.Text(a.estado)),
-                ft.DataCell(ft.Text(a.tipo.replace("_", " ").title())),
-                ft.DataCell(ft.IconButton(
-                    ft.icons.CHECK_CIRCLE_OUTLINE,
-                    on_click=lambda e, id=a.id: self._resolver(id))),
-            ])
-            for a in alertas
-        ]
-        return ft.DataTable(
-            columns=[
-                ft.DataColumn(ft.Text("Alerta")),
-                ft.DataColumn(ft.Text("Prioridad")),
-                ft.DataColumn(ft.Text("Estado")),
-                ft.DataColumn(ft.Text("Tipo")),
-                ft.DataColumn(ft.Text("Accion")),
-            ],
-            rows=filas,
-            expand=True,
-        )
+```tsx
+// Estructura simplificada del componente Alertas
+<DashboardLayout>
+  <SectionTitle icon={Bell} title="Centro de Alertas" />
+  <SummaryCards data={summary} />
+  <FiltersBar />
+  <AlertTable data={alerts} onAction={handleAction} />
+</DashboardLayout>
 ```
 
-</details>
+### 5.2 Badge en el Navbar
 
-### 5.2 Badge en el sidebar
+El conteo de alertas activas se muestra en el Navbar (dentro de Fusion.tsx) como un badge rojo sobre el icono de campana:
 
-<details>
-<summary><b>Ver codigo del badge</b></summary>
-
-```python
-# En el sidebar, mostrar conteo de alertas activas
-alerta_badge = ft.Stack([
-    ft.Icon(ft.icons.NOTIFICATIONS_OUTLINED),
-    ft.Container(
-        ft.Text(str(total_alertas_criticas), size=10, color=ft.colors.WHITE),
-        bgcolor=ft.colors.RED,
-        border_radius=99,
-        padding=ft.padding.symmetric(horizontal=4, vertical=1),
-        right=0, top=0,
-    )
-])
+```tsx
+<button className="relative">
+  <Bell size={20} />
+  {alertasActivas > 0 && (
+    <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger
+                     text-white text-[10px] font-bold rounded-full
+                     flex items-center justify-center">
+      {alertasActivas > 9 ? '9+' : alertasActivas}
+    </span>
+  )}
+</button>
 ```
 
-</details>
+### 5.3 Dashboard summary
 
-### 5.3 Toast de nueva alerta
+Las alertas se muestran en el Dashboard principal como tarjetas de resumen que enlazan al centro de alertas:
 
-<details>
-<summary><b>Ver codigo del toast</b></summary>
-
-```python
-def mostrar_toast_alerta(page, mensaje, prioridad="alta"):
-    colores = {"critica": ft.colors.RED_400, "alta": ft.colors.ORANGE_400, "media": ft.colors.BLUE_400}
-    snack = ft.SnackBar(
-        content=ft.Row([
-            ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.WHITE),
-            ft.Text(mensaje, color=ft.colors.WHITE),
-        ]),
+```tsx
+<StatCard
+  title="Alertas Críticas"
+  value={alertasCriticas}
+  icon={AlertTriangle}
+  color="danger"
+  onClick={() => navigate('/alerts')}
+/>
+```
         bgcolor=colores.get(prioridad, ft.colors.GREY_700),
         duration=5000,
         action="Ver",

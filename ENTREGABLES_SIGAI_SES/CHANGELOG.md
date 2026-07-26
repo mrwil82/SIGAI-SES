@@ -25,8 +25,22 @@
 ## v1.0.0 (Julio 2026)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/STATUS-RELEASE%20CANDIDATE-success?style=for-the-badge&logo=checkmarx" alt="RC">
+  <img src="https://img.shields.io/badge/STATUS-PRODUCCI%C3%93N-success?style=for-the-badge&logo=checkmarx" alt="Produccion">
 </p>
+
+### Novedades de la Version
+
+| Area | Cambio | Detalle |
+|------|--------|---------|
+| **Base de Datos** | Migracion a Supabase (PostgreSQL) | Cambio de MySQL a PostgreSQL gestionado, 14 migraciones Alembic |
+| **Despliegue** | Render + Supabase | Reemplazo de Railway + Vercel + TiDB Cloud |
+| **CI/CD** | GitHub Actions | Pipeline automatico: 32 tests backend + ESLint frontend |
+| **Temas UI** | Sistema de 3 temas | Verde (default), Azul Cobalto, Blanco Hueso — CSS variables |
+| **Avatar** | Almacenamiento en BD (Base64) | Persistente en cualquier entorno, sin depender del disco |
+| **PWA** | Service Worker + Manifest | Instalable como app, cache de API, actualizacion automatica |
+| **Capacitor** | Build APK Android | App nativa Android desde el mismo codigo React |
+| **Builds** | EXE + Instalador Windows | PyInstaller + Inno Setup para despliegue on-premise |
+| **Documentacion** | Actualizacion completa | Stack actualizado, deployment, alertas, arquitectura |
 
 ### Documentacion
 
@@ -37,7 +51,7 @@
 |---|---|
 | Fusion | Documentos de `DOCUMENTOS/` y `ENTREGABLES_SIGAI_SES/` unificados |
 | README principal | Informacion detallada del stack, modulos y metricas |
-| README tecnico | Estructura completa de backend y frontend |
+| README tecnico | Estructura completa de backend y frontend, stack actualizado |
 | Arquitectura | ADRs, patrones de diseno y tabla de permisos |
 | Diagramas de flujo | 7 flujos detallados (garantias, actas, importacion, autenticacion, usuarios) |
 | Requisitos | Unificados: 24 RF (antes 13), 5 RNF, roadmap 6 sprints |
@@ -55,6 +69,7 @@
 | 3 | `08_CATALOGO_ERRORES_API.md` | Catalogo completo de errores HTTP por endpoint |
 | 4 | `09_GUIA_MIGRACION_DATOS.md` | Migracion desde Excel legacy a SIGAI-SES |
 | 5 | `10_PLAN_CAPACITACION.md` | Plan de capacitacion con modulos por perfil |
+| 6 | `11_GESTION_ALERTAS.md` | Gestion de alertas (actualizado a FastAPI + React) |
 
 ### Correcciones Detectadas y Aplicadas
 
@@ -66,6 +81,11 @@
 | UX inconsistente | ConfirmModal centralizado en Fusion.tsx | [CORREGIDO] |
 | Logs/debug | `console.log` eliminados de Users.tsx | [CORREGIDO] |
 | Lazy loading | `selectinload` en crud_deliveries | [CORREGIDO] |
+| Avatars 404 en produccion | Almacenamiento en BD como Base64 | [CORREGIDO] |
+| Tema Arena duplicado | Eliminado, fusionado con Blanco Hueso | [CORREGIDO] |
+| Colores hardcodeados | Reemplazados con variables CSS del tema | [CORREGIDO] |
+| CI fallaba por YAML | Corregido quoting de variables de entorno | [CORREGIDO] |
+| Columna avatar_url VARCHAR(255) | Migrada a TEXT para Base64 | [CORREGIDO] |
 
 ---
 

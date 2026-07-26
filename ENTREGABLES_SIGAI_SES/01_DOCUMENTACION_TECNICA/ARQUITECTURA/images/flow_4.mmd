@@ -1,0 +1,19 @@
+flowchart TD
+    A[Inicio] --> B[Seleccionar tipo de acta]
+    B --> C{Tipo de acta}
+    C -->|ENTREGA_EPP| D[Seleccionar EPP]
+    C -->|ENTREGA_HERRAMIENTA| E[Seleccionar herramienta]
+    C -->|DESPACHO_PROYECTO| F[Seleccionar proyecto]
+    C -->|DEVOLUCION| G[Seleccionar activo]
+    C -->|INGRESO_DESMONTE| H[Seleccionar equipo desmontado]
+    D --> I[Seleccionar tecnico responsable]
+    E --> I
+    F --> I
+    G --> I
+    H --> I
+    I --> J[Agregar items/activos al acta]
+    J --> K[Capturar firma digital]
+    K --> L[Generar PDF del acta]
+    L --> M[Registrar en BD]
+    M --> N[Actualizar kardex]
+    N --> O[Fin]

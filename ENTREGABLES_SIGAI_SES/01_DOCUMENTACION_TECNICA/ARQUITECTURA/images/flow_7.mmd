@@ -1,0 +1,14 @@
+flowchart TD
+    A[Admin navega a Usuarios > Nuevo Usuario] --> B[Completa formulario]
+    B --> C[Backend valida datos]
+    C --> D{Email unico}
+    D -->|No| E[Error: Email ya registrado]
+    D -->|Si| F{Cedula unica}
+    F -->|No| G[Error: Cedula ya registrada]
+    F -->|Si| H{Codigo empleado unico}
+    H -->|No| I[Error: Codigo ya registrado]
+    H -->|Si| J[Hash de password bcrypt]
+    J --> K[Crear usuario en BD]
+    K --> L[Registrar en audit_logs]
+    L --> M[Frontend muestra confirmacion]
+    M --> N[Fin]

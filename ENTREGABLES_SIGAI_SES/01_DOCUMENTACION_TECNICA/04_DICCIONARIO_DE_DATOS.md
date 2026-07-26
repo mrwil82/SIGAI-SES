@@ -47,6 +47,8 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 9 | `regional` | `VARCHAR(100)` | — | Nombre de regional (campo auxiliar) |
 | 10 | `is_active` | `BOOLEAN` | — | Indica si la cuenta está activa |
 | 11 | `created_at` | `TIMESTAMP` | — | Fecha de creación del registro |
+| 12 | `config` | `VARCHAR(1024)` | — | Preferencias de usuario en JSON (tema, etc.) |
+| 13 | `avatar_url` | `TEXT` | — | Avatar en formato Base64 (data:image/...) |
 
 #### `regionales`
 

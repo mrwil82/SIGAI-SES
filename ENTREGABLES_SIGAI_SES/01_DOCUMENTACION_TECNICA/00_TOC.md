@@ -6,7 +6,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 <p align="center">
   <img src="https://img.shields.io/badge/Estado-Completo-2ea44f?style=for-the-badge&logo=markdown" alt="Estado">
-  <img src="https://img.shields.io/badge/Documentos-29%20archivos-0078D4?style=for-the-badge&logo=readthedocs" alt="Documentos">
+  <img src="https://img.shields.io/badge/Documentos-30%20archivos-0078D4?style=for-the-badge&logo=readthedocs" alt="Documentos">
   <img src="https://img.shields.io/badge/Actualizado-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualizado">
   <img src="https://img.shields.io/badge/Idioma-Espa%C3%B1ol-FF0000?style=for-the-badge&logo=googletranslate" alt="Idioma">
 </p>
@@ -36,7 +36,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Documento | Descripción | Enlace |
 |---|---|---|
-| `Guía Instalación Backend` | FastAPI + MySQL/MariaDB | [Leer](02_GUIA_INSTALACION_BACKEND.md) |
+| `Guía Instalación Backend` | FastAPI + Supabase/PostgreSQL | [Leer](02_GUIA_INSTALACION_BACKEND.md) |
 | `Guía Instalación Frontend` | React + Vite + TypeScript | [Leer](03_GUIA_INSTALACION_FRONTEND.md) |
 
 ---
@@ -53,7 +53,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Documento | Descripción | Enlace |
 |---|---|---|
-| `Guía Despliegue Producción (Cloud)` | Railway + Vercel + TiDB Cloud | [Leer](05_GUIA_DESPLIEGUE_PRODUCCION.md) |
+| `Guía Despliegue Producción (Cloud)` | Render + Supabase + GitHub Actions | [Leer](05_GUIA_DESPLIEGUE_PRODUCCION.md) |
 | `Guía Despliegue On-Premise` | Nginx + Systemd + Let's Encrypt | [Leer](06_GUIA_ON_PREMISE.md) |
 
 ---
@@ -147,14 +147,16 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Métrica | Valor |
 |---|---|
-| **Total de documentos** | **29 archivos** |
-| **Módulos del sistema** | 12 secciones |
+| **Total de documentos** | **30 archivos** |
+| **Módulos del sistema** | 14 rutas, 10 modulos API |
 | **Endpoints API** | 60+ REST |
-| **Tablas BD** | 18 |
+| **Tablas BD** | 18 (14 migraciones Alembic) |
 | **Historias de Usuario** | 24 |
 | **Requisitos Funcionales** | 24 |
 | **Preguntas FAQ** | 30+ |
 | **Flujos de negocio** | 7 |
+| **Temas UI** | 3 (Verde, Azul Cobalto, Blanco Hueso) |
+| **Builds** | Web PWA + APK Android + EXE Windows |
 
 </details>
 

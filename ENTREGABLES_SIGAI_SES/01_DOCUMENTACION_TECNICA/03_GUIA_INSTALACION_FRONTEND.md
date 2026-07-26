@@ -88,6 +88,7 @@ npm run build
 | `npm run build` | | Genera build de producción optimizado |
 | `npm run preview` | | Previsualiza el build de producción |
 | `npm run lint` | | Ejecuta linter de código |
+| `npm run cap:apk` | | Genera APK Android (requiere Capacitor + Android SDK) |
 
 ---
 
@@ -111,14 +112,24 @@ Frontend/src/
 
 | Componente | Ruta | Propósito |
 |---|---|---|
-| `Fusion.tsx` | `components/` | Design System (Sidebar, Card, Modal, Button, Table, NeoInput) |
+| `Fusion.tsx` | `components/` | Design System (Sidebar, Navbar, Card, Modal, Button, Table, NeoInput, AvatarImg) |
+| `DashboardComponents.tsx` | `components/` | StatCard, QuickAccessBtn, NotificationItem |
 | `ProtectedRoute.tsx` | `components/` | Ruta protegida (requiere token) |
 | `RoleProtectedRoute.tsx` | `components/` | Ruta protegida por rol |
 | `Toaster.tsx` | `components/` | Portal de notificaciones toast |
 | `ExportMenu.tsx` | `components/` | Exportación PDF/Excel |
-| `UserSettingsModal.tsx` | `components/` | Modal de preferencias |
+| `UserSettingsModal.tsx` | `components/` | Modal de avatar + cambio de contraseña |
+| `SearchableSelect.tsx` | `components/` | Select con busqueda tipo combobox |
+| `Skeleton.tsx` | `components/` | Placeholders de carga (TableSkeleton, CardSkeleton) |
+| `ErrorBoundary.tsx` | `components/` | Captura de errores React con UI de fallback |
 | `AuthContext.tsx` | `context/` | Contexto de autenticación JWT |
-| `useInventory.ts` | `hooks/` | Hook personalizado (React Query) |
+| `ThemeContext.tsx` | `context/` | Contexto de temas (green/blue/bone) con CSS variables |
+| `useInventory.ts` | `hooks/` | Hook inventario (React Query) |
+| `useUsers.ts` | `hooks/` | CRUD usuarios |
+| `useProjects.ts` | `hooks/` | CRUD proyectos |
+| `useGuarantees.ts` | `hooks/` | CRUD garantias |
+| `useClients.ts` | `hooks/` | CRUD clientes |
+| `useAlerts.ts` | `hooks/` | CRUD alertas |
 
 </details>
 
@@ -127,18 +138,22 @@ Frontend/src/
 ## 5. Páginas Disponibles
 
 | Ruta | Página | Descripción | Acceso |
-|---|---|---|---|
+|---|---|---|---|---|
 | `/login` | **Inicio de sesión** | Pantalla de login con credenciales | Público |
 | `/` | **Dashboard** | Panel principal con KPIs y gráficos | Autenticados |
 | `/inventory` | **Inventario** | CRUD + importación de inventario | Autenticados |
 | `/clients` | **Clientes** | Directorio de clientes | Autenticados |
+| `/clients/:id` | **Detalle Cliente** | Vista de un cliente especifico | Autenticados |
 | `/projects` | **Proyectos** | Gestión de proyectos | Autenticados |
+| `/projects/:id` | **Detalle Proyecto** | Vista de un proyecto especifico | Autenticados |
 | `/guarantees` | **Garantías** | Seguimiento de garantías | Autenticados |
+| `/guarantees/:id` | **Detalle Garantía** | Vista de una garantia especifica | Autenticados |
 | `/alerts` | **Alertas** | Centro de alertas del sistema | Autenticados |
 | `/desmontes` | **Desmontes** | Triage de equipos desmontados | Autenticados |
+| `/settings` | **Configuración** | Avatar, contraseña, selector de tema | Autenticados |
 | `/users` | **Usuarios** | Administración de usuarios | Solo ADMIN |
 | `/audit` | **Auditoría** | Bitácora de auditoría | Solo ADMIN |
-| `/deliveries` | **Entregas** | Actas de entrega | Solo ADMIN |
+| `/deliveries` | **Entregas** | Actas de entrega con firma digital | Solo ADMIN |
 
 ### Leyenda de Accesos
 
@@ -160,6 +175,38 @@ Frontend/src/
 - [ ] **Navegue** por los módulos de **Inventario**
 - [ ] **Explore** el módulo de **Clientes**
 - [ ] **Revise** el módulo de **Garantías**
+- [ ] **Cambie el tema** en Configuración (Verde/Azul/Blanco Hueso)
+- [ ] **Sube tu foto** de avatar desde Configuración
+
+---
+
+## 7. PWA (Progressive Web App)
+
+El frontend incluye soporte PWA via `vite-plugin-pwa`:
+
+| Caracteristica | Detalle |
+|---|---|
+| **Service Worker** | Generado automaticamente con Workbox |
+| **Manifest** | `manifest.webmanifest` con iconos 512x512 |
+| **Cache** | NetworkFirst para `/api/*` con expiracion de 1 hora |
+| **Instalable** | Navegador muestra "Instalar app" |
+| **Actualizaciones** | Auto-update al detectar nuevo SW |
+
+## 8. APK Android (Capacitor)
+
+Se puede generar un APK nativo desde el mismo codigo:
+
+```bash
+cd Frontend
+npx cap init SIGAI-SES com.securitas.sigaises
+npx cap add android
+npx cap copy
+npx cap sync
+cd android
+./gradlew assembleDebug
+```
+
+**Requisito:** Android Studio con SDK 34+, Gradle 8+
 
 ---
 
