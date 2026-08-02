@@ -1,6 +1,6 @@
 from typing import List, Optional, Any, cast
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, func
+from sqlalchemy import select, update, func, String
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 from app.models.inventory import (
@@ -57,7 +57,7 @@ async def get_items(
                 | (Item.referencia.ilike(search_filter))
                 | (Item.marca.ilike(search_filter))
                 | (Item.codigo_item_interno.ilike(search_filter))
-                | (Item.categoria.ilike(search_filter))
+                | (Item.categoria.cast(String).ilike(search_filter))
                 | (Item.sub_categoria.ilike(search_filter))
             )
 
