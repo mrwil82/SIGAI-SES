@@ -36,6 +36,7 @@ export const useAlerts = (params: AlertParams = {}) => {
       const response = await api.get('/alerts/', { params });
       return response.data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 };
 

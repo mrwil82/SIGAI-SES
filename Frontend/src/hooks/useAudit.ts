@@ -10,5 +10,6 @@ export const useAuditLogs = (
   return useQuery({
     queryKey: ["audit", page, pageSize, search || "", accion || ""],
     queryFn: () => getAuditLogs(page, pageSize, search, accion),
+    staleTime: 5 * 60 * 1000,
   });
 };

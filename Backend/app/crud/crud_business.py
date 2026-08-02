@@ -67,7 +67,12 @@ async def create_cliente(
             getattr(db_cliente, "id_cliente"),
             nuevo=cliente.model_dump(),
         )
-        return db_cliente
+        result = await db.execute(
+            select(Cliente)
+            .options(joinedload(Cliente.regional_rel))
+            .filter(Cliente.id_cliente == db_cliente.id_cliente)
+        )
+        return result.scalars().first()
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating cliente: {e}", exc_info=True)
@@ -102,7 +107,12 @@ async def update_cliente(
             anterior=old_data,
             nuevo=update_data,
         )
-        return db_cliente
+        result = await db.execute(
+            select(Cliente)
+            .options(joinedload(Cliente.regional_rel))
+            .filter(Cliente.id_cliente == db_cliente.id_cliente)
+        )
+        return result.scalars().first()
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating cliente {id_cliente}: {e}", exc_info=True)
@@ -278,7 +288,15 @@ async def create_proyecto(
             getattr(db_proyecto, "id_proyecto"),
             nuevo=proyecto.model_dump(),
         )
-        return db_proyecto
+        result = await db.execute(
+            select(Proyecto)
+            .options(
+                joinedload(Proyecto.cliente),
+                joinedload(Proyecto.regional_rel),
+            )
+            .filter(Proyecto.id_proyecto == db_proyecto.id_proyecto)
+        )
+        return result.scalars().first()
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating proyecto: {e}", exc_info=True)
@@ -318,7 +336,15 @@ async def update_proyecto(
             anterior=old_data,
             nuevo=update_data,
         )
-        return db_proyecto
+        result = await db.execute(
+            select(Proyecto)
+            .options(
+                joinedload(Proyecto.cliente),
+                joinedload(Proyecto.regional_rel),
+            )
+            .filter(Proyecto.id_proyecto == db_proyecto.id_proyecto)
+        )
+        return result.scalars().first()
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating proyecto {id_proyecto}: {e}", exc_info=True)

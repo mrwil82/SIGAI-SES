@@ -10,6 +10,7 @@ import { ToastProvider } from "./components/Toaster";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { DataPrefetcher } from "./components/DataPrefetcher";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
@@ -29,6 +30,7 @@ import Settings from "./pages/Settings";
 function App() {
   return (
     <AuthProvider>
+      <DataPrefetcher />
       <ThemeProvider>
         <ToastProvider>
           <Router>
