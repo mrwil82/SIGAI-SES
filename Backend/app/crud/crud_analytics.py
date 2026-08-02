@@ -317,19 +317,31 @@ async def get_predictions(db: AsyncSession) -> Dict[str, Any]:
         "mensaje": "No hay suficiente historial de movimientos para calcular la tendencia.",
         "semanas": [],
     }
-    res_sem = await db.execute(
-        select(
-            func.date_format(MovimientoInventario.fecha_movimiento, "%Y-%u"),
-            func.sum(MovimientoInventario.cantidad),
+    dialect = getattr(db.bind, "dialect", None)
+    dialect_name = getattr(dialect, "name", "sqlite")
+    if dialect_name == "postgresql":
+        semana_expr = func.to_char(
+            MovimientoInventario.fecha_movimiento, "IYYY-IW"
         )
+    elif dialect_name == "mysql":
+        semana_expr = func.date_format(
+            MovimientoInventario.fecha_movimiento, "%Y-%u"
+        )
+    else:
+        semana_expr = func.strftime(
+            "%Y-%W", MovimientoInventario.fecha_movimiento
+        )
+
+    res_sem = await db.execute(
+        select(semana_expr, func.sum(MovimientoInventario.cantidad))
         .where(
             MovimientoInventario.fecha_movimiento >= since_8w,
             MovimientoInventario.tipo_movimiento.in_(
                 ["SALIDA_INSTALACION", "BAJA_DAÑO", "TRASLADO"]
             ),
         )
-        .group_by(func.date_format(MovimientoInventario.fecha_movimiento, "%Y-%u"))
-        .order_by(func.date_format(MovimientoInventario.fecha_movimiento, "%Y-%u"))
+        .group_by(semana_expr)
+        .order_by(semana_expr)
     )
     semanas = [(row[0], float(row[1])) for row in res_sem.all()]
     if semanas:
