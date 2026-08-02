@@ -25,6 +25,7 @@ import {
   TR,
   TD,
   Alert,
+  Modal,
   ConfirmModal,
 } from "../components/Fusion";
 import { ExportMenu } from "../components/ExportMenu";
@@ -40,6 +41,7 @@ import {
 } from "../services/business";
 import { getUsers } from "../services/users";
 import { getInventoryItems } from "../services/inventory";
+import { getRegionales, createRegional } from "../services/regionales";
 import { useAuth, type User } from "../hooks/useAuth";
 import ItemModal from "./deliveries/ItemModal";
 import EditActaModal from "./deliveries/EditActaModal";
@@ -63,19 +65,28 @@ interface ClienteRow {
   nombre: string;
 }
 
+interface RegionalRow {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
+}
+
 interface ActaListRow extends Acta {
   id_acta: number;
   fecha_entrega?: string | null;
 }
 
 const initFormData = (user?: User): ActaFormData => ({
+  numero_acta: "",
   id_usuario_tecnico: 0,
   id_usuario_representante: user?.id_usuario || 0,
   nombre_tecnico: "",
   cedula: "",
   codigo: "",
   regional: user?.regional || "SES BARRANQUILLA",
+  id_regional: "",
   fecha: new Date().toISOString().split("T")[0],
+  estado_acta: "BORRADOR",
   observaciones_generales: "",
   nombre_representante: user?.nombre || "",
   cedula_representante: user?.cedula || "",
@@ -100,6 +111,36 @@ const normalizeError = (err: unknown, fallback: string): string => {
 const Deliveries: React.FC = () => {
   const { user: currentUser } = useAuth();
   const toast = useToast();
+
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      setError("El nombre de la regional es obligatorio.");
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegional({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      const reg = await getRegionales();
+      setRegionales(reg || []);
+      setFormData((prev) => ({
+        ...prev,
+        id_regional: String(regional.id_regional),
+        regional: regional.nombre,
+      }));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      toast.success("Regional creada correctamente.");
+    } catch (err) {
+      logger.error("Error creando regional:", err);
+      setError("Error al crear la regional.");
+    } finally {
+      setCreatingRegional(false);
+    }
+  };
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +152,7 @@ const Deliveries: React.FC = () => {
   const [items, setItems] = useState<ActaItem[]>([]);
   const [projects, setProjects] = useState<ProyectoRow[]>([]);
   const [clients, setClients] = useState<ClienteRow[]>([]);
+  const [regionales, setRegionales] = useState<RegionalRow[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [representatives, setRepresentatives] = useState<User[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
@@ -126,6 +168,10 @@ const Deliveries: React.FC = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmActaId, setConfirmActaId] = useState<number | null>(null);
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
 
   const loadActas = useCallback(async (page?: number) => {
     try {
@@ -144,15 +190,17 @@ const Deliveries: React.FC = () => {
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const [p, c, u, inv] = await Promise.all([
+      const [p, c, u, inv, reg] = await Promise.all([
         getProyectos(0, 1000),
         getClientes(0, 1000),
         getUsers(),
         getInventoryItems(0, 5000, undefined, true),
+        getRegionales(),
       ]);
       const allUsers = u.items || [];
       setProjects(p.items || []);
       setClients(c.items || []);
+      setRegionales(reg || []);
       setUsers(
         allUsers.filter((x: User) =>
           ["TECNICO", "TECNICO_LABORATORIO"].includes(x.rol),
@@ -196,6 +244,14 @@ const Deliveries: React.FC = () => {
     setError(null);
   };
 
+  const matchRegionalId = (name?: string | null) => {
+    if (!name) return "";
+    const found = regionales.find(
+      (r) => r.nombre.toLowerCase() === name.trim().toLowerCase(),
+    );
+    return found ? String(found.id_regional) : "";
+  };
+
   const handleUserSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const userId = e.target.value;
     if (!userId) {
@@ -206,6 +262,7 @@ const Deliveries: React.FC = () => {
         cedula: "",
         codigo: "",
         regional: currentUser?.regional || "SES BARRANQUILLA",
+        id_regional: matchRegionalId(currentUser?.regional),
       });
       return;
     }
@@ -218,6 +275,7 @@ const Deliveries: React.FC = () => {
         cedula: u.cedula || "",
         codigo: u.codigo_empleado || "",
         regional: u.regional || "SES BARRANQUILLA",
+        id_regional: matchRegionalId(u.regional),
       });
   };
 
@@ -289,6 +347,8 @@ const Deliveries: React.FC = () => {
     setError(null);
     try {
       await saveActa({
+        numero_acta: formData.numero_acta || null,
+        estado_acta: formData.estado_acta,
         id_usuario_tecnico: formData.id_usuario_tecnico,
         id_usuario_representante:
           formData.id_usuario_representante || currentUser?.id_usuario || 1,
@@ -296,6 +356,9 @@ const Deliveries: React.FC = () => {
           ? parseInt(formData.id_proyecto)
           : null,
         id_cliente: formData.id_cliente ? parseInt(formData.id_cliente) : null,
+        id_regional: formData.id_regional
+          ? parseInt(formData.id_regional)
+          : null,
         tipo_acta: formData.tipo_acta,
         observaciones: formData.observaciones_generales,
         detalles: items.map((it) => ({
@@ -537,13 +600,37 @@ const Deliveries: React.FC = () => {
               </FormGroup>
             </div>
             <FormGroup label="Regional" htmlFor="regional">
-              <NeoInput
-                id="regional"
-                value={formData.regional}
-                onChange={(e) =>
-                  setFormData({ ...formData, regional: e.target.value })
-                }
-              />
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 min-w-0">
+                  <SearchableSelect
+                    options={regionales.map((r) => ({
+                      value: String(r.id_regional),
+                      label: r.nombre,
+                    }))}
+                    value={formData.id_regional}
+                    onChange={(val) => {
+                      const reg = regionales.find(
+                        (r) => String(r.id_regional) === val,
+                      );
+                      setFormData({
+                        ...formData,
+                        id_regional: val,
+                        regional: reg ? reg.nombre : formData.regional,
+                      });
+                    }}
+                    placeholder="Escriba para buscar regional..."
+                  />
+                </div>
+                <Button
+                  variant="neo"
+                  type="button"
+                  className="h-10 px-2.5 shrink-0 text-[10px]"
+                  onClick={() => setRegionalModalOpen(true)}
+                  title="Crear nueva regional"
+                >
+                  <Plus size={14} />
+                </Button>
+              </div>
             </FormGroup>
             <FormGroup label="Fecha de Entrega" htmlFor="fecha">
               <NeoInput
@@ -597,6 +684,31 @@ const Deliveries: React.FC = () => {
                 ))}
               </NeoSelect>
             </FormGroup>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormGroup label="Número de Acta" htmlFor="numero_acta">
+                <NeoInput
+                  id="numero_acta"
+                  value={formData.numero_acta}
+                  onChange={(e) =>
+                    setFormData({ ...formData, numero_acta: e.target.value })
+                  }
+                  placeholder="Ej: SES-ACT-2024-001 (opcional)"
+                />
+              </FormGroup>
+              <FormGroup label="Estado del Acta" htmlFor="estado_acta">
+                <NeoSelect
+                  id="estado_acta"
+                  value={formData.estado_acta}
+                  onChange={(e) =>
+                    setFormData({ ...formData, estado_acta: e.target.value })
+                  }
+                >
+                  <option value="BORRADOR">Borrador</option>
+                  <option value="FIRMADA">Firmada</option>
+                  <option value="ANULADA">Anulada</option>
+                </NeoSelect>
+              </FormGroup>
+            </div>
           </Card>
 
           <Card>
@@ -822,7 +934,8 @@ const Deliveries: React.FC = () => {
                 <TH>Número</TH>
                 <TH className="hidden sm:table-cell">Tipo</TH>
                 <TH className="hidden md:table-cell">Proyecto</TH>
-                <TH className="hidden lg:table-cell">Técnico</TH>
+                <TH className="hidden lg:table-cell">Regional</TH>
+                <TH className="hidden xl:table-cell">Técnico</TH>
                 <TH>Estado</TH>
                 <TH className="hidden sm:table-cell">Fecha</TH>
                 <TH className="w-32">Acciones</TH>
@@ -830,7 +943,7 @@ const Deliveries: React.FC = () => {
               <TBody>
                 {filteredActas.length === 0 ? (
                   <TR>
-                    <TD colSpan={8} className="text-center py-8">
+                    <TD colSpan={9} className="text-center py-8">
                       No hay actas guardadas
                     </TD>
                   </TR>
@@ -854,6 +967,11 @@ const Deliveries: React.FC = () => {
                         </p>
                       </TD>
                       <TD className="hidden lg:table-cell">
+                        <p className="text-xs">
+                          {a.regional_rel?.nombre || "—"}
+                        </p>
+                      </TD>
+                      <TD className="hidden xl:table-cell">
                         <p className="text-xs">
                           {getUserName(a.id_usuario_tecnico)}
                         </p>
@@ -977,6 +1095,38 @@ const Deliveries: React.FC = () => {
         }}
         onConfirm={() => performDeleteActa(confirmActaId)}
       />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRegionalModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL RESIDENCIAL"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Medellín"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };

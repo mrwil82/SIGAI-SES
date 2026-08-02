@@ -80,6 +80,7 @@ class ActivoBase(BaseModel):
     responsable_sitio: Optional[str] = None
     ubicacion_fisica: Optional[str] = None
     id_proyecto_actual: Optional[int] = None
+    id_cliente_actual: Optional[int] = None
     id_proveedor_compra: Optional[int] = None
     numero_factura_compra: Optional[str] = None
     fecha_compra: Optional[date] = None
@@ -99,6 +100,12 @@ class ActivoUpdate(BaseModel):
     responsable_sitio: Optional[str] = None
     ubicacion_fisica: Optional[str] = None
     id_proyecto_actual: Optional[int] = None
+    id_cliente_actual: Optional[int] = None
+    id_proveedor_compra: Optional[int] = None
+    numero_factura_compra: Optional[str] = None
+    fecha_compra: Optional[date] = None
+    activo_fijo_securitas: Optional[str] = None
+    credenciales_tecnicas: Optional[str] = None
     observaciones: Optional[str] = None
     calificacion_tecnica: Optional[str] = None
 

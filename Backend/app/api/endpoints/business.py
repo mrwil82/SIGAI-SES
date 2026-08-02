@@ -40,7 +40,14 @@ async def list_actas(
     current_user = Depends(get_current_user)
 ):
     from app.models.deliveries import ActaEntrega as ActaModel
-    query = select(ActaModel).options(selectinload(ActaModel.detalles)).order_by(ActaModel.id_acta.desc())
+    query = (
+        select(ActaModel)
+        .options(
+            selectinload(ActaModel.detalles),
+            selectinload(ActaModel.regional_rel),
+        )
+        .order_by(ActaModel.id_acta.desc())
+    )
     items, total = await paginate(db, query, page=page, page_size=page_size)
     return PaginatedResponse.create(items, total, page, page_size)
 
@@ -322,6 +329,9 @@ async def generate_acta_by_id(
 
     fecha_entrega = getattr(acta, 'fecha_entrega', None)
 
+    acta_regional = getattr(acta, 'regional_rel', None)
+    acta_regional_nombre = getattr(acta_regional, 'nombre', None) or ''
+
     data = {
         'id_acta': acta.id_acta,
         'numero_acta': acta.numero_acta,
@@ -332,7 +342,7 @@ async def generate_acta_by_id(
         'cedula': getattr(tecnico, 'cedula', '') or '',
         'codigo': getattr(tecnico, 'codigo_empleado', '') or '',
         'fecha': fecha_entrega.strftime("%d/%m/%Y") if fecha_entrega else datetime.now().strftime("%d/%m/%Y"),
-        'regional': getattr(tecnico, 'regional', 'BOGOTÁ').upper(),
+        'regional': (acta_regional_nombre or getattr(tecnico, 'regional', 'BOGOTÁ')).upper(),
         'items': items,
         'observaciones_generales': getattr(acta, 'observaciones', '') or '',
     }

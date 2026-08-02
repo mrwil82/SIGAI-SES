@@ -3,6 +3,8 @@ from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 
+from app.schemas.inventory import Regional
+
 
 class DetalleActaBase(BaseModel):
     id_item: int
@@ -24,6 +26,7 @@ class ActaEntregaBase(BaseModel):
     id_usuario_tecnico: int
     id_usuario_representante: int
     id_proyecto: Optional[int] = None
+    id_regional: Optional[int] = None
     tipo_acta: str
     estado_acta: str = "BORRADOR"
     observaciones: Optional[str] = None
@@ -39,4 +42,5 @@ class ActaEntrega(ActaEntregaBase):
     fecha_entrega: datetime
     detalles: List[DetalleActa] = []
     url_pdf: Optional[str] = None
+    regional_rel: Optional[Regional] = None
     model_config = ConfigDict(from_attributes=True)

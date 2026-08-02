@@ -31,14 +31,20 @@ async def get_clientes(db: AsyncSession, skip: int = 0, limit: int = 100):
     )
     total = total_result.scalar() or 0
     result = await db.execute(
-        select(Cliente).filter(Cliente.deleted_at == None).offset(skip).limit(limit)
+        select(Cliente)
+        .options(joinedload(Cliente.regional_rel))
+        .filter(Cliente.deleted_at == None)
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all(), total
 
 
 async def get_cliente_by_id(db: AsyncSession, id_cliente: int):
     result = await db.execute(
-        select(Cliente).filter(
+        select(Cliente)
+        .options(joinedload(Cliente.regional_rel))
+        .filter(
             Cliente.id_cliente == id_cliente, Cliente.deleted_at == None
         )
     )
@@ -233,7 +239,13 @@ async def get_proyectos(db: AsyncSession, skip: int = 0, limit: int = 100):
     total_result = await db.execute(select(func.count()).select_from(Proyecto))
     total = total_result.scalar() or 0
     result = await db.execute(
-        select(Proyecto).options(joinedload(Proyecto.cliente)).offset(skip).limit(limit)
+        select(Proyecto)
+        .options(
+            joinedload(Proyecto.cliente),
+            joinedload(Proyecto.regional_rel),
+        )
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all(), total
 
@@ -241,7 +253,10 @@ async def get_proyectos(db: AsyncSession, skip: int = 0, limit: int = 100):
 async def get_proyecto_by_id(db: AsyncSession, id_proyecto: int):
     result = await db.execute(
         select(Proyecto)
-        .options(joinedload(Proyecto.cliente))
+        .options(
+            joinedload(Proyecto.cliente),
+            joinedload(Proyecto.regional_rel),
+        )
         .filter(Proyecto.id_proyecto == id_proyecto)
     )
     return result.scalars().first()

@@ -42,11 +42,13 @@ import {
   updateProyecto,
 } from "../services/business";
 import { downloadTemplate } from "../services/inventory";
+import { getRegionales, createRegional } from "../services/regionales";
 import { logger } from "../lib/logger";
 
 interface ProyectoRow {
   id_proyecto: number;
   id_cliente?: number;
+  id_regional?: number | null;
   nombre_proyecto: string;
   centro_costos?: string;
   estado?: string;
@@ -56,6 +58,7 @@ interface ProyectoRow {
   fecha_cierre_real?: string | null;
   descripcion?: string;
   cliente?: { nombre?: string };
+  regional_rel?: { nombre?: string } | null;
 }
 
 interface ClienteRow {
@@ -63,9 +66,16 @@ interface ClienteRow {
   nombre: string;
 }
 
+interface RegionalRow {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
+}
+
 interface ProyectoFormValues {
   nombre_proyecto: string;
   id_cliente: string;
+  id_regional: string;
   centro_costos: string;
   estado: string;
   ubicacion: string;
@@ -79,6 +89,7 @@ const Projects: React.FC = () => {
   const navigate = useNavigate();
   const [proyectos, setProyectos] = useState<ProyectoRow[]>([]);
   const [clientes, setClientes] = useState<ClienteRow[]>([]);
+  const [regionales, setRegionales] = useState<RegionalRow[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,6 +100,10 @@ const Projects: React.FC = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
 
   useEffect(() => {
     if (alert) {
@@ -114,12 +129,14 @@ const Projects: React.FC = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [projData, cliData] = await Promise.all([
+      const [projData, cliData, regData] = await Promise.all([
         getProyectos(0, 1000),
         getClientes(0, 1000),
+        getRegionales(),
       ]);
       setProyectos(projData.items || []);
       setClientes(cliData.items || []);
+      setRegionales(regData || []);
     } catch (error) {
       logger.error("Failed to fetch projects data", error);
     } finally {
@@ -151,6 +168,7 @@ const Projects: React.FC = () => {
       proj.fecha_cierre_real ? proj.fecha_cierre_real.split("T")[0] : "",
     );
     setValue("descripcion", proj.descripcion || "");
+    setValue("id_regional", proj.id_regional ? String(proj.id_regional) : "");
     setIsModalOpen(true);
   };
 
@@ -181,11 +199,38 @@ const Projects: React.FC = () => {
     reset();
   };
 
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      setAlert({ type: "error", message: "El nombre de la regional es obligatorio." });
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegional({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      const regionalesData = await getRegionales();
+      setRegionales(regionalesData || []);
+      setValue("id_regional", String(regional.id_regional));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      setAlert({ type: "success", message: "Regional creada correctamente." });
+    } catch (error) {
+      logger.error("Error creando regional:", error);
+      setAlert({ type: "error", message: "Error al crear la regional." });
+    } finally {
+      setCreatingRegional(false);
+    }
+  };
+
   const onSubmit = async (data: ProyectoFormValues) => {
     try {
       const payload: Record<string, unknown> = {
         ...data,
         id_cliente: data.id_cliente ? parseInt(data.id_cliente) : null,
+        id_regional: data.id_regional ? parseInt(data.id_regional) : null,
         fecha_inicio: data.fecha_inicio || null,
         fecha_fin_estimada: data.fecha_fin_estimada || null,
         fecha_cierre_real: data.fecha_cierre_real || null,
@@ -279,15 +324,16 @@ const Projects: React.FC = () => {
           <THead>
             <TH>Nombre del Proyecto</TH>
             <TH className="hidden md:table-cell">Cliente Asociado</TH>
+            <TH className="hidden lg:table-cell">Regional</TH>
             <TH className="hidden sm:table-cell">CECO / Centro Costos</TH>
-            <TH className="hidden lg:table-cell">Ubicación</TH>
+            <TH className="hidden xl:table-cell">Ubicación</TH>
             <TH>Estado</TH>
             <TH></TH>
           </THead>
           <TBody>
             {isLoading ? (
               <TR>
-                <TD colSpan={6} className="text-center py-20">
+                <TD colSpan={7} className="text-center py-20">
                   <div className="w-10 h-10 border-2 border-chart-blue/30 border-t-chart-blue rounded-full animate-spin mx-auto mb-3" />
                   <span className="text-chart-blue uppercase tracking-widest font-bold text-[10px]">
                     Cargando Proyectos...
@@ -315,6 +361,14 @@ const Projects: React.FC = () => {
                       </span>
                     </div>
                   </TD>
+                  <TD className="hidden lg:table-cell">
+                    <div className="flex items-center gap-2">
+                      <Building2 size={12} className="text-content-muted" />
+                      <span className="text-[11px] text-content-secondary">
+                        {proj.regional_rel?.nombre || "---"}
+                      </span>
+                    </div>
+                  </TD>
                   <TD className="hidden sm:table-cell">
                     <Badge
                       label={proj.centro_costos || "S.C."}
@@ -322,7 +376,7 @@ const Projects: React.FC = () => {
                       bg="rgba(0,163,255,0.05)"
                     />
                   </TD>
-                  <TD className="hidden lg:table-cell">
+                  <TD className="hidden xl:table-cell">
                     <div className="flex items-center gap-2">
                       <MapPin size={12} className="text-content-muted" />
                       <span className="text-[11px] text-content-secondary truncate max-w-[150px]">
@@ -426,6 +480,31 @@ const Projects: React.FC = () => {
             />
           </FormGroup>
 
+          <FormGroup label="Regional">
+            <div className="flex gap-2 items-start">
+              <div className="flex-1 min-w-0">
+                <SearchableSelect
+                  options={regionales.map((r) => ({
+                    value: String(r.id_regional),
+                    label: r.nombre,
+                  }))}
+                  value={watch("id_regional") || ""}
+                  onChange={(val) => setValue("id_regional", val)}
+                  placeholder="Escriba para buscar regional..."
+                />
+              </div>
+              <Button
+                variant="neo"
+                type="button"
+                className="h-10 px-2.5 shrink-0 text-[10px]"
+                onClick={() => setRegionalModalOpen(true)}
+                title="Crear nueva regional"
+              >
+                <Plus size={14} />
+              </Button>
+            </div>
+          </FormGroup>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormGroup label="Centro de Costos">
               <NeoInput
@@ -476,6 +555,38 @@ const Projects: React.FC = () => {
         onCancel={() => setConfirmOpen(false)}
         onConfirm={performDelete}
       />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRegionalModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL PORTUARIA"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Cartagena"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };

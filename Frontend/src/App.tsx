@@ -31,9 +31,7 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <ToastProvider>
-          <Router
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-          >
+          <Router>
             <ErrorBoundary>
               <Routes>
                 <Route path="/login" element={<Login />} />

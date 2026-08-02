@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime, date
 
+from app.schemas.inventory import Regional
+
 
 class ClienteBase(BaseModel):
     nombre: str
@@ -14,6 +16,7 @@ class ClienteBase(BaseModel):
     departamento: Optional[str] = None
     tipo_cliente: str = "CORPORATIVO"
     ceco_asociado: Optional[str] = None
+    id_regional: Optional[int] = None
 
 
 class ClienteCreate(ClienteBase):
@@ -31,16 +34,19 @@ class ClienteUpdate(BaseModel):
     departamento: Optional[str] = None
     tipo_cliente: Optional[str] = None
     ceco_asociado: Optional[str] = None
+    id_regional: Optional[int] = None
 
 
 class Cliente(ClienteBase):
     id_cliente: int
     created_at: datetime
+    regional_rel: Optional[Regional] = None
     model_config = ConfigDict(from_attributes=True)
 
 
 class ProyectoBase(BaseModel):
     id_cliente: Optional[int] = None
+    id_regional: Optional[int] = None
     nombre_proyecto: str
     centro_costos: Optional[str] = None
     ubicacion: Optional[str] = None
@@ -56,6 +62,7 @@ class ProyectoCreate(ProyectoBase):
 
 
 class ProyectoUpdate(BaseModel):
+    id_regional: Optional[int] = None
     nombre_proyecto: Optional[str] = None
     centro_costos: Optional[str] = None
     ubicacion: Optional[str] = None
@@ -69,6 +76,7 @@ class ProyectoUpdate(BaseModel):
 class Proyecto(ProyectoBase):
     id_proyecto: int
     created_at: datetime
+    regional_rel: Optional[Regional] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -137,7 +145,7 @@ class GarantiaUpdate(BaseModel):
     tipo_resolucion: Optional[str] = None
 
 
-from app.schemas.inventory import Activo
+from app.schemas.inventory import Activo, Regional
 
 
 class Garantia(GarantiaBase):

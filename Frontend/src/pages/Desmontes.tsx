@@ -22,6 +22,7 @@ import {
   TD,
   Alert,
   NeoSelect,
+  NeoTextarea,
   Modal,
   FormGroup,
 } from "../components/Fusion";
@@ -367,6 +368,7 @@ const Desmontes: React.FC = () => {
             <TH className="hidden sm:table-cell">Equipo</TH>
             <TH className="hidden md:table-cell">Origen</TH>
             <TH>Calificación</TH>
+            <TH className="hidden lg:table-cell min-w-[200px]">Observaciones</TH>
             <TH className="text-right">Acción</TH>
           </THead>
           <TBody>
@@ -438,6 +440,23 @@ const Desmontes: React.FC = () => {
                       <option value="RECUPERABLE">Recuperable</option>
                       <option value="DESECHO">Desecho</option>
                     </NeoSelect>
+                  </TD>
+                  <TD className="min-w-[200px]">
+                    <NeoTextarea
+                      rows={1}
+                      className="text-xs"
+                      placeholder="Observaciones (opcional)"
+                      value={triajeData[activo.id_activo]?.observaciones || ""}
+                      onChange={(e) =>
+                        setTriajeData((prev) => ({
+                          ...prev,
+                          [activo.id_activo]: {
+                            ...prev[activo.id_activo],
+                            observaciones: e.target.value,
+                          },
+                        }))
+                      }
+                    />
                   </TD>
                   <TD className="text-right">
                     <div className="flex items-center justify-end gap-1.5">

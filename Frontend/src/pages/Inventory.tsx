@@ -35,7 +35,10 @@ import {
   deleteInventoryItem,
   importInventory,
   downloadTemplate,
+  createActivo,
 } from "../services/inventory";
+import { getClientes, getProyectos, getProveedores } from "../services/business";
+import { SearchableSelect } from "../components/SearchableSelect";
 import { ExportMenu } from "../components/ExportMenu";
 import { useInventory } from "../hooks/useInventory";
 
@@ -70,6 +73,32 @@ interface InventoryFormValues {
   compra_maxima: number;
   cantidad_inicial: number;
   ubicacion: string;
+}
+
+interface ActivoFormValues {
+  id_item: string;
+  serial: string;
+  estado_actual: string;
+  condicion_fisica: string;
+  area_asignada: string;
+  responsable_sitio: string;
+  ubicacion_fisica: string;
+  id_proyecto_actual: string;
+  id_cliente_actual: string;
+  id_proveedor_compra: string;
+  numero_factura_compra: string;
+  fecha_compra: string;
+  activo_fijo_securitas: string;
+  credenciales_tecnicas: string;
+  observaciones: string;
+}
+
+interface SimpleRow {
+  id_cliente?: number;
+  id_proyecto?: number;
+  id_proveedor?: number;
+  nombre?: string;
+  nombre_proyecto?: string;
 }
 
 const UBICACIONES = [
@@ -124,6 +153,11 @@ const Inventory: React.FC = () => {
   const [filterStockStatus, setFilterStockStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItemRow | null>(null);
+  const [isActivoModalOpen, setIsActivoModalOpen] = useState(false);
+  const [creatingActivo, setCreatingActivo] = useState(false);
+  const [clientes, setClientes] = useState<SimpleRow[]>([]);
+  const [proyectos, setProyectos] = useState<SimpleRow[]>([]);
+  const [proveedores, setProveedores] = useState<SimpleRow[]>([]);
 
   const [alert, setAlert] = useState<{
     type: "success" | "error";
@@ -141,6 +175,89 @@ const Inventory: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string>("");
+
+  const {
+    register: registerActivo,
+    handleSubmit: handleSubmitActivo,
+    reset: resetActivo,
+    watch: watchActivo,
+  } = useForm<ActivoFormValues>({
+    defaultValues: {
+      estado_actual: "DISPONIBLE",
+      condicion_fisica: "NUEVO",
+    },
+  });
+
+  useEffect(() => {
+    Promise.all([getClientes(), getProyectos(), getProveedores()])
+      .then(([c, p, prov]) => {
+        setClientes(c.items || []);
+        setProyectos(p.items || []);
+        setProveedores(prov.items || []);
+      })
+      .catch(() => {
+        setAlert({
+          type: "error",
+          message: "Error al cargar datos auxiliares del formulario de activos.",
+        });
+      });
+  }, [setAlert]);
+
+  const closeActivoModal = () => {
+    setIsActivoModalOpen(false);
+    resetActivo();
+  };
+
+  const onSubmitActivo = async (data: ActivoFormValues) => {
+    if (!data.id_item || !data.serial.trim()) {
+      toast.error("Debe seleccionar un ítem y escribir el serial.");
+      return;
+    }
+    setCreatingActivo(true);
+    try {
+      const payload = {
+        id_item: parseInt(data.id_item),
+        serial: data.serial.trim(),
+        estado_actual: data.estado_actual,
+        condicion_fisica: data.condicion_fisica,
+        area_asignada: data.area_asignada || null,
+        responsable_sitio: data.responsable_sitio || null,
+        ubicacion_fisica: data.ubicacion_fisica || null,
+        id_proyecto_actual: data.id_proyecto_actual
+          ? parseInt(data.id_proyecto_actual)
+          : null,
+        id_cliente_actual: data.id_cliente_actual
+          ? parseInt(data.id_cliente_actual)
+          : null,
+        id_proveedor_compra: data.id_proveedor_compra
+          ? parseInt(data.id_proveedor_compra)
+          : null,
+        numero_factura_compra: data.numero_factura_compra || null,
+        fecha_compra: data.fecha_compra || null,
+        activo_fijo_securitas: data.activo_fijo_securitas || null,
+        credenciales_tecnicas: data.credenciales_tecnicas || null,
+        observaciones: data.observaciones || null,
+      };
+      await createActivo(payload);
+      toast.success("Activo creado exitosamente.");
+      closeActivoModal();
+    } catch (error) {
+      const detail = (
+        error as { response?: { data?: { detail?: unknown } } }
+      ).response?.data?.detail;
+      const msg = Array.isArray(detail)
+        ? detail
+            .map((e: { msg?: string }) => e.msg)
+            .filter(Boolean)
+            .join("; ")
+        : typeof detail === "string"
+          ? detail
+          : "Error al crear el activo.";
+      toast.error(msg);
+    } finally {
+      setCreatingActivo(false);
+    }
+  };
 
   const {
     register,
@@ -301,6 +418,15 @@ const Inventory: React.FC = () => {
           >
             <Plus size={16} />
             Nuevo Registro
+          </Button>
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => setIsActivoModalOpen(true)}
+            title="Crear un activo serializado individual"
+          >
+            <Plus size={16} />
+            Nuevo Activo
           </Button>
         </div>
       </div>
@@ -780,6 +906,174 @@ const Inventory: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <Modal
+        isOpen={isActivoModalOpen}
+        onClose={closeActivoModal}
+        title="Nuevo Activo Serializado"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeActivoModal}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSubmitActivo(onSubmitActivo)}
+              disabled={creatingActivo}
+            >
+              {creatingActivo ? "Creando..." : "Crear Activo"}
+            </Button>
+          </>
+        }
+      >
+        <form
+          onSubmit={handleSubmitActivo(onSubmitActivo)}
+          className="space-y-4 text-[11px] md:text-xs"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Ítem (Equipo)">
+              <SearchableSelect
+                options={items.map((i) => ({
+                  value: String(i.id_item),
+                  label: `${i.nombre_equipo} - ${i.referencia || ""}`.trim(),
+                }))}
+                value={watchActivo("id_item") || ""}
+                onChange={(val) => resetActivo({ ...watchActivo(), id_item: val })}
+                placeholder="Escriba para buscar ítem..."
+              />
+            </FormGroup>
+            <FormGroup label="Serial *">
+              <NeoInput
+                {...registerActivo("serial")}
+                placeholder="Ej: SN-2024-000123"
+              />
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Estado Actual">
+              <NeoSelect {...registerActivo("estado_actual")}>
+                <option value="DISPONIBLE">Disponible</option>
+                <option value="INSTALADO">Instalado</option>
+                <option value="EN_GARANTIA">En Garantía</option>
+                <option value="REPARADO">Reparado</option>
+                <option value="LABORATORIO">Laboratorio</option>
+                <option value="DESMONTE">Desmonte</option>
+                <option value="BAJA">Baja</option>
+                <option value="OBSOLETO">Obsoleto</option>
+              </NeoSelect>
+            </FormGroup>
+            <FormGroup label="Condición Física">
+              <NeoSelect {...registerActivo("condicion_fisica")}>
+                <option value="NUEVO">Nuevo</option>
+                <option value="USADO_BUENO">Usado Bueno</option>
+                <option value="PARA_REPARAR">Para Reparar</option>
+                <option value="SULFATADO">Sulfatado</option>
+                <option value="SIN_CONTRAPESOS">Sin Contrapesos</option>
+                <option value="DAÑADO">Dañado</option>
+              </NeoSelect>
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Área Asignada">
+              <NeoInput
+                {...registerActivo("area_asignada")}
+                placeholder="Ej: Bodega Principal"
+              />
+            </FormGroup>
+            <FormGroup label="Responsable en Sitio">
+              <NeoInput
+                {...registerActivo("responsable_sitio")}
+                placeholder="Ej: Juan Pérez"
+              />
+            </FormGroup>
+          </div>
+
+          <FormGroup label="Ubicación Física">
+            <NeoInput
+              {...registerActivo("ubicacion_fisica")}
+              placeholder="Ej: Estante B2 / Sitio Cliente"
+            />
+          </FormGroup>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Proyecto Actual">
+              <SearchableSelect
+                options={proyectos.map((p) => ({
+                  value: String(p.id_proyecto),
+                  label: p.nombre_proyecto || "",
+                }))}
+                value={watchActivo("id_proyecto_actual") || ""}
+                onChange={(val) =>
+                  resetActivo({ ...watchActivo(), id_proyecto_actual: val })
+                }
+                placeholder="Opcional..."
+              />
+            </FormGroup>
+            <FormGroup label="Cliente Actual">
+              <SearchableSelect
+                options={clientes.map((c) => ({
+                  value: String(c.id_cliente),
+                  label: c.nombre || "",
+                }))}
+                value={watchActivo("id_cliente_actual") || ""}
+                onChange={(val) =>
+                  resetActivo({ ...watchActivo(), id_cliente_actual: val })
+                }
+                placeholder="Opcional..."
+              />
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Proveedor de Compra">
+              <SearchableSelect
+                options={proveedores.map((p) => ({
+                  value: String(p.id_proveedor),
+                  label: p.nombre || "",
+                }))}
+                value={watchActivo("id_proveedor_compra") || ""}
+                onChange={(val) =>
+                  resetActivo({ ...watchActivo(), id_proveedor_compra: val })
+                }
+                placeholder="Opcional..."
+              />
+            </FormGroup>
+            <FormGroup label="Número Factura Compra">
+              <NeoInput
+                {...registerActivo("numero_factura_compra")}
+                placeholder="Ej: FAC-1002"
+              />
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Fecha de Compra">
+              <NeoInput type="date" {...registerActivo("fecha_compra")} />
+            </FormGroup>
+            <FormGroup label="Activo Fijo Securitas">
+              <NeoInput
+                {...registerActivo("activo_fijo_securitas")}
+                placeholder="Ej: AF-00991"
+              />
+            </FormGroup>
+          </div>
+
+          <FormGroup label="Credenciales Técnicas (IP / Claves)">
+            <NeoInput
+              {...registerActivo("credenciales_tecnicas")}
+              placeholder="Ej: 192.168.1.10 / admin:1234"
+            />
+          </FormGroup>
+
+          <FormGroup label="Observaciones">
+            <NeoInput
+              {...registerActivo("observaciones")}
+              placeholder="Notas adicionales..."
+            />
+          </FormGroup>
+        </form>
+      </Modal>
     </DashboardLayout>
   );
 };

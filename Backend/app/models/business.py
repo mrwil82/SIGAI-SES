@@ -20,8 +20,11 @@ class Cliente(Base):
         default="CORPORATIVO",
     )
     ceco_asociado = Column(String(20))
+    id_regional = Column(Integer, ForeignKey("regionales.id_regional"))
     created_at = Column(TIMESTAMP, server_default=func.now())
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    regional_rel = relationship("Regional")
 
 
 # Modelos para gestión de proveedores
@@ -55,6 +58,7 @@ class Proyecto(Base):
     __tablename__ = "proyectos"
     id_proyecto = Column(Integer, primary_key=True, index=True)
     id_cliente = Column(Integer, ForeignKey("clientes.id_cliente"))
+    id_regional = Column(Integer, ForeignKey("regionales.id_regional"))
     nombre_proyecto = Column(String(200), nullable=False)
     centro_costos = Column(String(50))
     ubicacion = Column(String(200))
@@ -69,3 +73,4 @@ class Proyecto(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     cliente = relationship("Cliente")
+    regional_rel = relationship("Regional")

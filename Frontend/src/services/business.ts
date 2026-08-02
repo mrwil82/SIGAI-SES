@@ -75,6 +75,11 @@ export const getProveedores = async () => {
   return response.data;
 };
 
+export const createProveedor = async (proveedorData: object) => {
+  const response = await api.post("/business/proveedores", proveedorData);
+  return response.data;
+};
+
 // --- MOVIMIENTOS ---
 export const getMovimientos = async () => {
   const response = await api.get("/business/movimientos");

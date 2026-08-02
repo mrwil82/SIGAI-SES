@@ -156,3 +156,52 @@ async def delete_user(db: AsyncSession, user_id: int, current_user_id: int):
 async def get_regionales(db: AsyncSession):
     result = await db.execute(select(Regional))
     return result.scalars().all()
+
+
+async def create_regional(db: AsyncSession, nombre: str, ciudad: str = None):
+    try:
+        db_regional = Regional(nombre=nombre, ciudad=ciudad)
+        db.add(db_regional)
+        await db.commit()
+        await db.refresh(db_regional)
+        return db_regional
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error creating regional: {e}", exc_info=True)
+        raise
+
+
+async def update_regional(
+    db: AsyncSession, id_regional: int, nombre: str = None, ciudad: str = None
+):
+    result = await db.execute(select(Regional).filter(Regional.id_regional == id_regional))
+    db_regional = result.scalars().first()
+    if not db_regional:
+        return None
+    try:
+        if nombre is not None:
+            db_regional.nombre = nombre
+        if ciudad is not None:
+            db_regional.ciudad = ciudad
+        await db.commit()
+        await db.refresh(db_regional)
+        return db_regional
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error updating regional {id_regional}: {e}", exc_info=True)
+        raise
+
+
+async def delete_regional(db: AsyncSession, id_regional: int):
+    result = await db.execute(select(Regional).filter(Regional.id_regional == id_regional))
+    db_regional = result.scalars().first()
+    if not db_regional:
+        return None
+    try:
+        await db.delete(db_regional)
+        await db.commit()
+        return db_regional
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error deleting regional {id_regional}: {e}", exc_info=True)
+        raise

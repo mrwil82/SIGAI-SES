@@ -39,18 +39,23 @@ export interface Acta {
   estado_acta?: string;
   observaciones?: string;
   id_proyecto?: number | null;
+  id_regional?: number | null;
   id_usuario_tecnico?: number | null;
   detalles?: ActaDetalle[];
+  regional_rel?: { nombre?: string } | null;
 }
 
 export interface ActaFormData {
+  numero_acta: string;
   id_usuario_tecnico: number;
   id_usuario_representante: number;
   nombre_tecnico: string;
   cedula: string;
   codigo: string;
   regional: string;
+  id_regional: string;
   fecha: string;
+  estado_acta: string;
   observaciones_generales: string;
   nombre_representante: string;
   cedula_representante: string;

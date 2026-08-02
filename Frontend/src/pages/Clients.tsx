@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { SearchableSelect } from "../components/SearchableSelect";
 import {
   Card,
   Button,
@@ -39,6 +40,7 @@ import {
   deleteCliente,
 } from "../services/business";
 import { downloadTemplate } from "../services/inventory";
+import { getRegionales, createRegional } from "../services/regionales";
 import { logger } from "../lib/logger";
 
 interface Cliente {
@@ -53,6 +55,8 @@ interface Cliente {
   ciudad?: string | null;
   departamento?: string | null;
   ceco_asociado?: string | null;
+  id_regional?: number | null;
+  regional_rel?: { nombre: string } | null;
 }
 
 interface ClienteFormValues {
@@ -66,6 +70,13 @@ interface ClienteFormValues {
   direccion?: string;
   ciudad?: string;
   departamento?: string;
+  id_regional?: string;
+}
+
+interface Regional {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
 }
 
 interface ApiError {
@@ -75,6 +86,7 @@ interface ApiError {
 const Clients: React.FC = () => {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [regionales, setRegionales] = useState<Regional[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,6 +95,10 @@ const Clients: React.FC = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
 
   useEffect(() => {
     if (alert) {
@@ -96,14 +112,19 @@ const Clients: React.FC = () => {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ClienteFormValues>();
 
   const fetchClientes = async () => {
     setIsLoading(true);
     try {
-      const data = await getClientes();
-      setClientes(data.items || []);
+      const [clientesData, regionalesData] = await Promise.all([
+        getClientes(),
+        getRegionales(),
+      ]);
+      setClientes(clientesData.items || []);
+      setRegionales(regionalesData || []);
     } catch (error) {
       logger.error("Failed to fetch clients", error);
     } finally {
@@ -127,6 +148,7 @@ const Clients: React.FC = () => {
     setValue("direccion", cliente.direccion ?? "");
     setValue("ciudad", cliente.ciudad ?? "");
     setValue("departamento", cliente.departamento ?? "");
+    setValue("id_regional", cliente.id_regional ? String(cliente.id_regional) : "");
     setIsModalOpen(true);
   };
 
@@ -160,15 +182,19 @@ const Clients: React.FC = () => {
   };
 
   const onSubmit = async (data: ClienteFormValues) => {
+    const payload = {
+      ...data,
+      id_regional: data.id_regional ? parseInt(data.id_regional, 10) : null,
+    };
     try {
       if (editingCliente) {
-        await updateCliente(editingCliente.id_cliente, data);
+        await updateCliente(editingCliente.id_cliente, payload);
         setAlert({
           type: "success",
           message: "Cliente actualizado exitosamente.",
         });
       } else {
-        await createCliente(data);
+        await createCliente(payload);
         setAlert({
           type: "success",
           message: "Cliente registrado exitosamente.",
@@ -192,6 +218,32 @@ const Clients: React.FC = () => {
     setIsModalOpen(false);
     setEditingCliente(null);
     reset();
+  };
+
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      setAlert({ type: "error", message: "El nombre de la regional es obligatorio." });
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegional({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      const regionalesData = await getRegionales();
+      setRegionales(regionalesData || []);
+      setValue("id_regional", String(regional.id_regional));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      setAlert({ type: "success", message: "Regional creada correctamente." });
+    } catch (error) {
+      logger.error("Error creando regional:", error);
+      setAlert({ type: "error", message: "Error al crear la regional." });
+    } finally {
+      setCreatingRegional(false);
+    }
   };
 
   const filteredClientes = clientes.filter(
@@ -262,14 +314,15 @@ const Clients: React.FC = () => {
             <TH>Cliente / Empresa</TH>
             <TH className="hidden sm:table-cell">NIT / ID</TH>
             <TH>Tipo</TH>
-            <TH className="hidden md:table-cell">Contacto Principal</TH>
-            <TH className="hidden lg:table-cell">CECO</TH>
+            <TH className="hidden md:table-cell">Regional</TH>
+            <TH className="hidden lg:table-cell">Contacto Principal</TH>
+            <TH className="hidden xl:table-cell">CECO</TH>
             <TH></TH>
           </THead>
           <TBody>
             {isLoading ? (
               <TR>
-                <TD colSpan={6} className="text-center py-20">
+                <TD colSpan={7} className="text-center py-20">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-10 h-10 border-2 border-chart-purple/30 border-t-chart-purple rounded-full animate-spin" />
                     <span className="text-chart-purple uppercase tracking-[0.2em] font-bold text-[10px]">
@@ -313,6 +366,11 @@ const Clients: React.FC = () => {
                     />
                   </TD>
                   <TD className="hidden md:table-cell">
+                    <span className="text-xs text-content-secondary">
+                      {cliente.regional_rel?.nombre || "---"}
+                    </span>
+                  </TD>
+                  <TD className="hidden md:table-cell">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-content-primary font-bold">
                         <Users size={12} className="text-chart-purple" />
@@ -328,7 +386,7 @@ const Clients: React.FC = () => {
                       </div>
                     </div>
                   </TD>
-                  <TD className="hidden lg:table-cell">
+                  <TD className="hidden xl:table-cell">
                     <span className="font-mono text-content-primary font-bold text-xs">
                       {cliente.ceco_asociado || "---"}
                     </span>
@@ -418,6 +476,31 @@ const Clients: React.FC = () => {
             </FormGroup>
           </div>
 
+          <FormGroup label="Regional">
+            <div className="flex gap-2 items-start">
+              <div className="flex-1 min-w-0">
+                <SearchableSelect
+                  options={regionales.map((r) => ({
+                    value: String(r.id_regional),
+                    label: r.nombre,
+                  }))}
+                  value={watch("id_regional") || ""}
+                  onChange={(val) => setValue("id_regional", val)}
+                  placeholder="Buscar regional..."
+                />
+              </div>
+              <Button
+                variant="neo"
+                type="button"
+                className="h-10 px-2.5 shrink-0 text-[10px]"
+                onClick={() => setRegionalModalOpen(true)}
+                title="Crear nueva regional"
+              >
+                <Plus size={14} />
+              </Button>
+            </div>
+          </FormGroup>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormGroup label="Nombre de Contacto">
               <NeoInput
@@ -473,6 +556,38 @@ const Clients: React.FC = () => {
         onCancel={closeConfirm}
         onConfirm={() => performDelete(confirmId)}
       />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRegionalModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL RESIDENCIAL"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Medellín"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };

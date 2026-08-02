@@ -20,6 +20,7 @@ class ActaEntrega(Base):
     id_usuario_tecnico = Column(Integer, ForeignKey("usuarios.id_usuario"))
     id_usuario_representante = Column(Integer, ForeignKey("usuarios.id_usuario"))
     id_proyecto = Column(Integer, ForeignKey("proyectos.id_proyecto"))
+    id_regional = Column(Integer, ForeignKey("regionales.id_regional"))
     tipo_acta = Column(
         Enum(
             "ENTREGA_EPP",
@@ -45,6 +46,7 @@ class ActaEntrega(Base):
         "app.models.user.Usuario", foreign_keys=[id_usuario_representante]
     )
     proyecto = relationship("app.models.business.Proyecto")
+    regional_rel = relationship("Regional")
     detalles = relationship("DetalleActaEntrega", back_populates="acta")
 
 

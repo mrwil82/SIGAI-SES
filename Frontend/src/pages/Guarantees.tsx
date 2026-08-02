@@ -37,6 +37,7 @@ import {
   getGarantias,
   createGarantia,
   getProveedores,
+  createProveedor,
   updateGarantia,
   deleteGarantia,
 } from "../services/business";
@@ -58,6 +59,9 @@ interface GarantiaRow {
   comentarios_proceso?: string;
   fecha_envio?: string | null;
   fecha_limite_estimada?: string | null;
+  fecha_inicio_garantia?: string | null;
+  meses_garantia?: number | null;
+  tipo_resolucion?: string;
   fecha_recibido_reparado?: string | null;
   activo?: {
     serial?: string;
@@ -84,11 +88,14 @@ interface GarantiaFormValues {
   numero_factura_compra: string;
   fecha_envio: string;
   fecha_limite_estimada: string;
+  fecha_inicio_garantia: string;
+  meses_garantia: string;
+  fecha_recibido_reparado: string;
   falla_reportada: string;
   estado_proceso: string;
+  tipo_resolucion: string;
   area_origen: string;
   credenciales_equipo: string;
-  fecha_recibido_reparado: string;
   id_acta_devolucion: string;
   comentarios_proceso: string;
 }
@@ -108,6 +115,11 @@ const Guarantees: React.FC = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [provModalOpen, setProvModalOpen] = useState(false);
+  const [newProvNombre, setNewProvNombre] = useState("");
+  const [newProvNit, setNewProvNit] = useState("");
+  const [newProvTelefono, setNewProvTelefono] = useState("");
+  const [creatingProv, setCreatingProv] = useState(false);
 
   useEffect(() => {
     if (alert) {
@@ -120,6 +132,34 @@ const Guarantees: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string>("");
+
+  const handleCreateProveedor = async () => {
+    if (!newProvNombre.trim()) {
+      setAlert({ type: "error", message: "El nombre del proveedor es obligatorio." });
+      return;
+    }
+    setCreatingProv(true);
+    try {
+      const prov = await createProveedor({
+        nombre: newProvNombre.trim(),
+        nit: newProvNit.trim() || undefined,
+        telefono: newProvTelefono.trim() || undefined,
+      });
+      const provData = await getProveedores();
+      setProveedores(provData.items || []);
+      setValue("id_proveedor", String(prov.id_proveedor));
+      setProvModalOpen(false);
+      setNewProvNombre("");
+      setNewProvNit("");
+      setNewProvTelefono("");
+      toast.success("Proveedor creado correctamente.");
+    } catch (error) {
+      logger.error("Error creando proveedor:", error);
+      setAlert({ type: "error", message: "Error al crear el proveedor." });
+    } finally {
+      setCreatingProv(false);
+    }
+  };
 
   const {
     register,
@@ -167,6 +207,12 @@ const Guarantees: React.FC = () => {
     setValue("fecha_limite_estimada", gar.fecha_limite_estimada ?? "");
     setValue("falla_reportada", gar.falla_reportada ?? "");
     setValue("estado_proceso", gar.estado_proceso ?? "");
+    setValue("tipo_resolucion", gar.tipo_resolucion ?? "");
+    setValue("fecha_inicio_garantia", gar.fecha_inicio_garantia ?? "");
+    setValue(
+      "meses_garantia",
+      gar.meses_garantia != null ? String(gar.meses_garantia) : "",
+    );
     setValue("area_origen", gar.area_origen || "");
     setValue("credenciales_equipo", gar.credenciales_equipo || "");
     setValue("fecha_recibido_reparado", gar.fecha_recibido_reparado || "");
@@ -211,9 +257,15 @@ const Guarantees: React.FC = () => {
         "fecha_envio",
         "fecha_limite_estimada",
         "fecha_recibido_reparado",
+        "fecha_inicio_garantia",
       ].forEach((f) => {
         if (!payload[f]) delete payload[f];
       });
+      if (payload.meses_garantia !== undefined && payload.meses_garantia !== "") {
+        payload.meses_garantia = Number(payload.meses_garantia);
+      } else {
+        delete payload.meses_garantia;
+      }
       if (editingGarantia) {
         await updateGarantia(editingGarantia.id_garantia, payload);
         setAlert({
@@ -525,7 +577,7 @@ const Guarantees: React.FC = () => {
         }
       >
         <form className="space-y-4 text-[11px] md:text-xs">
-          {editingGarantia && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormGroup label="Estado del Proceso">
               <NeoSelect {...register("estado_proceso")}>
                 <option value="REGISTRADO">Registrado</option>
@@ -539,7 +591,15 @@ const Guarantees: React.FC = () => {
                 <option value="ENTREGADO_CLIENTE">Entregado a Cliente</option>
               </NeoSelect>
             </FormGroup>
-          )}
+            <FormGroup label="Tipo de Resolución">
+              <NeoSelect {...register("tipo_resolucion")}>
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="REPARADO">Reparado</option>
+                <option value="REEMPLAZADO">Reemplazado</option>
+                <option value="SIN_COBERTURA">Sin Cobertura</option>
+              </NeoSelect>
+            </FormGroup>
+          </div>
 
           <FormGroup
             label="Activo (Serial)"
@@ -560,15 +620,28 @@ const Guarantees: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormGroup label="Proveedor de Garantía">
-              <SearchableSelect
-                options={proveedores.map((p) => ({
-                  value: String(p.id_proveedor),
-                  label: p.nombre,
-                }))}
-                value={String(watch("id_proveedor") || "")}
-                onChange={(val) => setValue("id_proveedor", val)}
-                placeholder="Escriba para buscar proveedor..."
-              />
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 min-w-0">
+                  <SearchableSelect
+                    options={proveedores.map((p) => ({
+                      value: String(p.id_proveedor),
+                      label: p.nombre,
+                    }))}
+                    value={String(watch("id_proveedor") || "")}
+                    onChange={(val) => setValue("id_proveedor", val)}
+                    placeholder="Escriba para buscar proveedor..."
+                  />
+                </div>
+                <Button
+                  variant="neo"
+                  type="button"
+                  className="h-10 px-2.5 shrink-0 text-[10px]"
+                  onClick={() => setProvModalOpen(true)}
+                  title="Crear nuevo proveedor"
+                >
+                  <Plus size={14} />
+                </Button>
+              </div>
             </FormGroup>
             <FormGroup label="Número de Caso Interno">
               <NeoInput
@@ -618,6 +691,20 @@ const Guarantees: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Inicio de Garantía">
+              <NeoInput type="date" {...register("fecha_inicio_garantia")} />
+            </FormGroup>
+            <FormGroup label="Meses de Garantía">
+              <NeoInput
+                type="number"
+                min={0}
+                {...register("meses_garantia")}
+                placeholder="Ej: 12"
+              />
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormGroup label="Fecha Retorno (Reparado)">
               <NeoInput type="date" {...register("fecha_recibido_reparado")} />
             </FormGroup>
@@ -652,6 +739,47 @@ const Guarantees: React.FC = () => {
         onCancel={() => setConfirmOpen(false)}
         onConfirm={performDelete}
       />
+      <Modal
+        isOpen={provModalOpen}
+        onClose={() => setProvModalOpen(false)}
+        title="Crear Proveedor"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setProvModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateProveedor} disabled={creatingProv}>
+              {creatingProv ? "Creando..." : "Crear Proveedor"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre del Proveedor">
+            <NeoInput
+              value={newProvNombre}
+              onChange={(e) => setNewProvNombre(e.target.value)}
+              placeholder="Ej: LG Electronics Colombia"
+            />
+          </FormGroup>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="NIT (opcional)">
+              <NeoInput
+                value={newProvNit}
+                onChange={(e) => setNewProvNit(e.target.value)}
+                placeholder="Ej: 900123456-1"
+              />
+            </FormGroup>
+            <FormGroup label="Teléfono (opcional)">
+              <NeoInput
+                value={newProvTelefono}
+                onChange={(e) => setNewProvTelefono(e.target.value)}
+                placeholder="+57 300..."
+              />
+            </FormGroup>
+          </div>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };

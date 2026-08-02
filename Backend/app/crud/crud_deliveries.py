@@ -27,6 +27,7 @@ async def create_acta(
             id_usuario_tecnico=acta_in.id_usuario_tecnico,
             id_usuario_representante=acta_in.id_usuario_representante,
             id_proyecto=acta_in.id_proyecto,
+            id_regional=acta_in.id_regional,
             tipo_acta=acta_in.tipo_acta,
             estado_acta=acta_in.estado_acta,
             observaciones=acta_in.observaciones,
@@ -92,6 +93,7 @@ async def get_acta_by_id(db: AsyncSession, acta_id: int) -> ActaEntrega:
             selectinload(ActaEntrega.tecnico),
             selectinload(ActaEntrega.representante),
             selectinload(ActaEntrega.proyecto),
+            selectinload(ActaEntrega.regional_rel),
         )
         .where(ActaEntrega.id_acta == acta_id)
     )

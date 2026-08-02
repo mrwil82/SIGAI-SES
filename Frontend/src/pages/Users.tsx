@@ -37,7 +37,7 @@ import {
   deleteUser,
   checkUniqueField,
 } from "../services/users";
-import { getRegionales } from "../services/regionales";
+import { getRegionales, createRegional } from "../services/regionales";
 import { useToast } from "../lib/toast";
 
 interface UserRow {
@@ -94,6 +94,10 @@ const UsersPage: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string>("");
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
 
   const {
     register,
@@ -194,6 +198,32 @@ const UsersPage: React.FC = () => {
     setIsModalOpen(false);
     setEditingUser(null);
     reset();
+  };
+
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      toastError("El nombre de la regional es obligatorio.");
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegional({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      const regionalesData = await getRegionales();
+      setRegionales(regionalesData || []);
+      setValue("id_regional", String(regional.id_regional));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      toastSuccess("Regional creada correctamente.");
+    } catch (error) {
+      console.error("Error creando regional:", error);
+      toastError("Error al crear la regional.");
+    } finally {
+      setCreatingRegional(false);
+    }
   };
 
   const onSubmit = async (data: UserFormValues) => {
@@ -504,15 +534,28 @@ const UsersPage: React.FC = () => {
               />
             </FormGroup>
             <FormGroup label="Regional">
-              <SearchableSelect
-                options={regionales.map((r) => ({
-                  value: String(r.id_regional),
-                  label: r.nombre,
-                }))}
-                value={watch("id_regional") || ""}
-                onChange={(val) => setValue("id_regional", val)}
-                placeholder="Buscar regional..."
-              />
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 min-w-0">
+                  <SearchableSelect
+                    options={regionales.map((r) => ({
+                      value: String(r.id_regional),
+                      label: r.nombre,
+                    }))}
+                    value={watch("id_regional") || ""}
+                    onChange={(val) => setValue("id_regional", val)}
+                    placeholder="Buscar regional..."
+                  />
+                </div>
+                <Button
+                  variant="neo"
+                  type="button"
+                  className="h-10 px-2.5 shrink-0 text-[10px]"
+                  onClick={() => setRegionalModalOpen(true)}
+                  title="Crear nueva regional"
+                >
+                  <Plus size={14} />
+                </Button>
+              </div>
             </FormGroup>
           </div>
 
@@ -586,6 +629,41 @@ const UsersPage: React.FC = () => {
         onCancel={() => setConfirmOpen(false)}
         onConfirm={performDelete}
       />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setRegionalModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL INDUSTRIAL"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Barranquilla"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 };
