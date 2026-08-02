@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ExportMenu } from "../components/ExportMenu";
 import {
   ClipboardCheck,
@@ -30,18 +30,21 @@ import { ConfirmModal } from "../components/Fusion";
 import { SearchableSelect } from "../components/SearchableSelect";
 import { useToast } from "../lib/toast";
 import {
-  getActivosParaTriaje,
-  actualizarTriajeActivo,
   getActivoById,
-  deleteActivo,
 } from "../services/desmontes";
 import {
-  getInventoryItems,
-  crearDesmonteBulk,
   importInventory,
   downloadTemplate,
 } from "../services/inventory";
-import { getProyectos, getClientes } from "../services/business";
+import {
+  useActivosTriaje,
+  useActualizarTriaje,
+  useCrearDesmonteBulk,
+  useDeleteActivoTriaje,
+} from "../hooks/useDesmontes";
+import { useInventoryItems } from "../hooks/useActivos";
+import { useProyectos } from "../hooks/useProjects";
+import { useClientes } from "../hooks/useClients";
 
 interface ActivoTriaje {
   id_activo: number;
@@ -83,22 +86,46 @@ const errorDetail = (err: unknown): unknown => {
 };
 
 const Desmontes: React.FC = () => {
-  const [activos, setActivos] = useState<ActivoTriaje[]>([]);
-  const [triajeData, setTriajeData] = useState<
+  const { data: triajeData, isLoading } = useActivosTriaje();
+  const activos = useMemo(
+    () => (triajeData?.items || []) as ActivoTriaje[],
+    [triajeData],
+  );
+  const { refetch: refetchTriaje } = useActivosTriaje();
+  const actualizarTriajeMut = useActualizarTriaje();
+  const crearDesmonteMut = useCrearDesmonteBulk();
+  const deleteTriajeMut = useDeleteActivoTriaje();
+  const { data: inventoryData } = useInventoryItems();
+  const items = (inventoryData?.items || []) as ItemCatalogo[];
+  const { data: projectsData } = useProyectos(0, 100);
+  const projects = (projectsData?.items ||
+    (Array.isArray(projectsData) ? projectsData : []) ||
+    []) as ProyectoCatalogo[];
+  const { data: clientesData } = useClientes(0, 100);
+  const clientes = (clientesData?.items ||
+    (Array.isArray(clientesData) ? clientesData : []) ||
+    []) as ClienteCatalogo[];
+
+  const [triajeValues, setTriajeValues] = useState<
     Record<number, { calificacion: string; observaciones: string }>
   >({});
   const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Estados para Registro de Desmonte
-  const [isDesmonteModalOpen, setIsDesmonteModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [items, setItems] = useState<ItemCatalogo[]>([]);
-  const [projects, setProjects] = useState<ProyectoCatalogo[]>([]);
-  const [clientes, setClientes] = useState<ClienteCatalogo[]>([]);
+  useEffect(() => {
+    const initialData: Record<
+      number,
+      { calificacion: string; observaciones: string }
+    > = {};
+    activos.forEach((a) => {
+      initialData[a.id_activo] = {
+        calificacion: a.calificacion_tecnica || "BUENO",
+        observaciones: a.observaciones || "",
+      };
+    });
+    setTriajeValues(initialData);
+  }, [activos]);
 
   const [selectedProjectId, setSelectedProjectId] = useState<
     number | undefined
@@ -112,50 +139,9 @@ const Desmontes: React.FC = () => {
   >({});
   const [desmonteSearch, setDesmonteSearch] = useState("");
   const [desmonteCatFilter, setDesmonteCatFilter] = useState("all");
-
-  useEffect(() => {
-    cargarActivos();
-    cargarCatalogos();
-  }, []);
-
-  const cargarActivos = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getActivosParaTriaje();
-      const itemsList = data.items || [];
-      setActivos(itemsList);
-      const initialData: Record<
-        number,
-        { calificacion: string; observaciones: string }
-      > = {};
-      itemsList.forEach((a: ActivoTriaje) => {
-        initialData[a.id_activo] = {
-          calificacion: a.calificacion_tecnica || "BUENO",
-          observaciones: a.observaciones || "",
-        };
-      });
-      setTriajeData(initialData);
-    } catch (err) {
-      setError("Error al cargar activos en laboratorio");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const cargarCatalogos = async () => {
-    try {
-      const [itemsData, projectsData, clientesData] = await Promise.all([
-        getInventoryItems(0, 1000, undefined, true),
-        getProyectos(0, 100),
-        getClientes(0, 100),
-      ]);
-      setItems(itemsData.items || []);
-      setProjects(projectsData.items || projectsData || []);
-      setClientes(clientesData.items || clientesData || []);
-    } catch (err) {
-      console.error("Error cargando catálogos", err);
-    }
-  };
+  const [isDesmonteModalOpen, setIsDesmonteModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const procesarTriaje = async (id: number) => {
     // Abrir confirm modal
@@ -183,14 +169,13 @@ const Desmontes: React.FC = () => {
     if (!id) return closeConfirm();
     setLoading(true);
     try {
-      const { calificacion, observaciones } = triajeData[id];
-      await actualizarTriajeActivo(id, {
-        calificacion_tecnica: calificacion,
-        observaciones: observaciones,
+      const { calificacion, observaciones } = triajeValues[id];
+      await actualizarTriajeMut.mutateAsync({
+        id,
+        data: { calificacion_tecnica: calificacion, observaciones },
       });
       setSuccess(`Evaluación técnica guardada exitosamente.`);
       toast.success("Evaluación guardada");
-      await cargarActivos();
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError("Error al guardar triaje");
@@ -228,11 +213,10 @@ const Desmontes: React.FC = () => {
   const performDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await deleteActivo(deleteTarget);
+      await deleteTriajeMut.mutateAsync(deleteTarget);
       toast.success("Activo eliminado de la lista de triaje");
       setDeleteConfirmOpen(false);
       setDeleteTarget(null);
-      cargarActivos();
     } catch (err) {
       toast.error("Error al eliminar activo");
     }
@@ -276,7 +260,7 @@ const Desmontes: React.FC = () => {
 
     try {
       setLoading(true);
-      const result = await crearDesmonteBulk({
+      const result = await crearDesmonteMut.mutateAsync({
         items: itemsPayload,
         id_proyecto: selectedProjectId,
         id_cliente: selectedClienteId,
@@ -288,7 +272,6 @@ const Desmontes: React.FC = () => {
       setDesmonteSelections({});
       setDesmonteSearch("");
       setDesmonteCatFilter("all");
-      cargarActivos();
     } catch (error) {
       const detail = errorDetail(error);
       setError(
@@ -424,10 +407,10 @@ const Desmontes: React.FC = () => {
                     <NeoSelect
                       className="text-xs"
                       value={
-                        triajeData[activo.id_activo]?.calificacion || "BUENO"
+                        triajeValues[activo.id_activo]?.calificacion || "BUENO"
                       }
                       onChange={(e) =>
-                        setTriajeData((prev) => ({
+                        setTriajeValues((prev) => ({
                           ...prev,
                           [activo.id_activo]: {
                             ...prev[activo.id_activo],
@@ -446,9 +429,9 @@ const Desmontes: React.FC = () => {
                       rows={1}
                       className="text-xs"
                       placeholder="Observaciones (opcional)"
-                      value={triajeData[activo.id_activo]?.observaciones || ""}
+                      value={triajeValues[activo.id_activo]?.observaciones || ""}
                       onChange={(e) =>
-                        setTriajeData((prev) => ({
+                        setTriajeValues((prev) => ({
                           ...prev,
                           [activo.id_activo]: {
                             ...prev[activo.id_activo],
@@ -493,7 +476,7 @@ const Desmontes: React.FC = () => {
                     <Button
                       variant="neo"
                       className="mt-6"
-                      onClick={cargarActivos}
+                      onClick={() => refetchTriaje()}
                     >
                       <RotateCcw size={14} className="mr-2" /> Refrescar
                     </Button>
@@ -833,7 +816,7 @@ const Desmontes: React.FC = () => {
                       selectedClienteId,
                     );
                     setSuccess(res.mensaje);
-                    cargarActivos();
+                    refetchTriaje();
                     setIsImportModalOpen(false);
                   } catch (error) {
                     const detail = errorDetail(error);

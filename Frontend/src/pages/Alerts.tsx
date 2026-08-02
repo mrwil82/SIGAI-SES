@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   DashboardLayout, Card, TableContainer, THead, TBody, TH, TR, TD, Badge,
   NeoSelect, Button, Modal, FormGroup, NeoTextarea, NeoInput, ConfirmModal
@@ -6,8 +6,14 @@ import {
 import { useToast } from '../lib/toast';
 import { ExportMenu } from '../components/ExportMenu';
 import { Check, AlertTriangle, Trash2, Plus, Edit2 } from 'lucide-react';
-import api from '../services/api';
 import { logger } from '../lib/logger';
+import api from '../services/api';
+import {
+  useAlerts,
+  useUpdateAlertEstado,
+  useDeleteAlert,
+  useCreateAlert,
+} from '../hooks/useAlerts';
 
 interface AlertRow {
   id: number;
@@ -29,12 +35,9 @@ interface UpdateEstadoPayload {
 }
 
 const Alerts: React.FC = () => {
-  const [alerts, setAlerts] = useState<AlertRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [estado, setEstado] = useState('activa');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
-  const [totalAlerts, setTotalAlerts] = useState(0);
 
   // Modal de gestión
 
@@ -50,26 +53,12 @@ const Alerts: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newAlert, setNewAlert] = useState({ titulo: '', prioridad: 'media', notas: '' });
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.get('/alerts/', {
-        params: { estado, page: currentPage, page_size: pageSize },
-      });
-      const responseData = response.data as { items?: AlertRow[]; total?: number };
-      setAlerts(responseData?.items || []);
-      setTotalAlerts(responseData?.total || 0);
-    } catch (err) {
-      logger.error('Error fetching alerts:', err);
-      setAlerts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [estado, currentPage, pageSize]);
-
-  useEffect(() => {
-    fetchData();
-  }, [estado, currentPage, fetchData]);
+  const { data: alertsData, isLoading } = useAlerts({ estado, page: currentPage, page_size: pageSize });
+  const alerts = (alertsData?.items || []) as AlertRow[];
+  const totalAlerts = alertsData?.total || 0;
+  const updateAlertEstadoMut = useUpdateAlertEstado();
+  const deleteAlertMut = useDeleteAlert();
+  const createAlertMut = useCreateAlert();
 
   const handleOpenModal = (alert: AlertRow) => {
     setSelectedAlert(alert);
@@ -88,9 +77,9 @@ const Alerts: React.FC = () => {
       };
       if (valorActual !== '') payload.valor_actual = valorActual;
       if (solucion && solucion.trim().length > 0) payload.solucion = solucion;
-      await api.patch(`/alerts/${id}/estado`, payload);
+      await updateAlertEstadoMut.mutateAsync({ id, payload });
       setIsModalOpen(false);
-      fetchData();
+      setCurrentPage(1);
     } catch (err) {
       logger.error(err);
     } finally {
@@ -104,10 +93,14 @@ const Alerts: React.FC = () => {
 
   const createAlerta = async () => {
     try {
-      await api.post('/alerts/', newAlert);
+      await createAlertMut.mutateAsync({
+        titulo: newAlert.titulo,
+        prioridad: newAlert.prioridad,
+        notas: newAlert.notas,
+      } as never);
       setIsCreateModalOpen(false);
       setNewAlert({ titulo: '', prioridad: 'media', notas: '' });
-      fetchData();
+      setCurrentPage(1);
     } catch (err) {
       logger.error(err);
     }
@@ -123,9 +116,9 @@ const Alerts: React.FC = () => {
   const performDelete = async (id: number | null) => {
     if (!id) return closeConfirm();
     try {
-      await api.delete(`/alerts/${id}`);
+      await deleteAlertMut.mutateAsync(id);
       toast.success('Alerta eliminada');
-      fetchData();
+      setCurrentPage(1);
       setIsModalOpen(false);
     } catch (err) {
       toast.error('Error eliminando alerta');
@@ -163,7 +156,7 @@ const Alerts: React.FC = () => {
           <Button variant="neo" className="flex items-center gap-2" onClick={() => setIsCreateModalOpen(true)}>
             <Plus size={16}/> Nueva Alerta
           </Button>
-          <Button variant="neo" className="flex items-center gap-2" onClick={async () => { try { await api.post('/alerts/evaluar'); toast.success('Alertas evaluadas'); fetchData(); } catch { toast.error('Error al evaluar alertas'); } }}>
+          <Button variant="neo" className="flex items-center gap-2" onClick={async () => { try { await api.post('/alerts/evaluar'); toast.success('Alertas evaluadas'); setCurrentPage(1); } catch { toast.error('Error al evaluar alertas'); } }}>
             <AlertTriangle size={14}/> Evaluar
           </Button>
         </div>

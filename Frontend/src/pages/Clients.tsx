@@ -34,13 +34,13 @@ import {
 } from "../components/Fusion";
 import { useToast } from "../lib/toast";
 import {
-  getClientes,
-  createCliente,
-  updateCliente,
-  deleteCliente,
-} from "../services/business";
+  useClientes,
+  useCreateCliente,
+  useUpdateCliente,
+  useDeleteCliente,
+} from "../hooks/useClients";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
 import { downloadTemplate } from "../services/inventory";
-import { getRegionales, createRegional } from "../services/regionales";
 import { logger } from "../lib/logger";
 
 interface Cliente {
@@ -85,10 +85,7 @@ interface ApiError {
 
 const Clients: React.FC = () => {
   const navigate = useNavigate();
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [regionales, setRegionales] = useState<Regional[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
   const [alert, setAlert] = useState<{
@@ -99,6 +96,15 @@ const Clients: React.FC = () => {
   const [newRegionalNombre, setNewRegionalNombre] = useState("");
   const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
   const [creatingRegional, setCreatingRegional] = useState(false);
+
+  const { data: clientesData, isLoading } = useClientes();
+  const clientes = (clientesData?.items || []) as Cliente[];
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as Regional[];
+  const createClienteMut = useCreateCliente();
+  const updateClienteMut = useUpdateCliente();
+  const deleteClienteMut = useDeleteCliente();
+  const createRegionalMut = useCreateRegional();
 
   useEffect(() => {
     if (alert) {
@@ -115,26 +121,6 @@ const Clients: React.FC = () => {
     watch,
     formState: { errors },
   } = useForm<ClienteFormValues>();
-
-  const fetchClientes = async () => {
-    setIsLoading(true);
-    try {
-      const [clientesData, regionalesData] = await Promise.all([
-        getClientes(),
-        getRegionales(),
-      ]);
-      setClientes(clientesData.items || []);
-      setRegionales(regionalesData || []);
-    } catch (error) {
-      logger.error("Failed to fetch clients", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClientes();
-  }, []);
 
   const handleEdit = (cliente: Cliente) => {
     setEditingCliente(cliente);
@@ -171,9 +157,8 @@ const Clients: React.FC = () => {
   const performDelete = async (id: number | null) => {
     if (!id) return closeConfirm();
     try {
-      await deleteCliente(id);
+      await deleteClienteMut.mutateAsync(id);
       toast.success("Cliente eliminado correctamente.");
-      fetchClientes();
     } catch (error) {
       toast.error("Error al eliminar el cliente.");
     } finally {
@@ -188,20 +173,22 @@ const Clients: React.FC = () => {
     };
     try {
       if (editingCliente) {
-        await updateCliente(editingCliente.id_cliente, payload);
+        await updateClienteMut.mutateAsync({
+          id: editingCliente.id_cliente,
+          data: payload,
+        });
         setAlert({
           type: "success",
           message: "Cliente actualizado exitosamente.",
         });
       } else {
-        await createCliente(payload);
+        await createClienteMut.mutateAsync(payload);
         setAlert({
           type: "success",
           message: "Cliente registrado exitosamente.",
         });
       }
       closeModal();
-      fetchClientes();
     } catch (error) {
       const detail = (error as ApiError).response?.data?.detail;
       const msg = Array.isArray(detail)
@@ -227,12 +214,10 @@ const Clients: React.FC = () => {
     }
     setCreatingRegional(true);
     try {
-      const regional = await createRegional({
+      const regional = await createRegionalMut.mutateAsync({
         nombre: newRegionalNombre.trim(),
         ciudad: newRegionalCiudad.trim() || undefined,
       });
-      const regionalesData = await getRegionales();
-      setRegionales(regionalesData || []);
       setValue("id_regional", String(regional.id_regional));
       setRegionalModalOpen(false);
       setNewRegionalNombre("");
@@ -480,7 +465,7 @@ const Clients: React.FC = () => {
             <div className="flex gap-2 items-start">
               <div className="flex-1 min-w-0">
                 <SearchableSelect
-                  options={regionales.map((r) => ({
+                  options={regionalesList.map((r) => ({
                     value: String(r.id_regional),
                     label: r.nombre,
                   }))}

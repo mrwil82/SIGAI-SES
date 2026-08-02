@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { ExportMenu } from "../components/ExportMenu";
 import {
   Search,
@@ -31,13 +31,16 @@ import {
 import { SearchableSelect } from "../components/SearchableSelect";
 import { ConfirmModal } from "../components/Fusion";
 import {
-  getUsers,
-  createUser,
-  updateUser,
-  deleteUser,
   checkUniqueField,
 } from "../services/users";
-import { getRegionales, createRegional } from "../services/regionales";
+import {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  type UserPayload,
+} from "../hooks/useUsers";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
 import { useToast } from "../lib/toast";
 
 interface UserRow {
@@ -78,14 +81,10 @@ interface ApiError {
 }
 
 const UsersPage: React.FC = () => {
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [regionales, setRegionales] = useState<Regional[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -98,6 +97,17 @@ const UsersPage: React.FC = () => {
   const [newRegionalNombre, setNewRegionalNombre] = useState("");
   const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
   const [creatingRegional, setCreatingRegional] = useState(false);
+
+  const effectivePageSize = debouncedSearch ? 1000 : pageSize;
+  const { data: usersData, isLoading } = useUsers(currentPage, effectivePageSize);
+  const users = (usersData?.items || []) as UserRow[];
+  const totalUsers = usersData?.total || 0;
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as Regional[];
+  const createUserMut = useCreateUser();
+  const updateUserMut = useUpdateUser();
+  const deleteUserMut = useDeleteUser();
+  const createRegionalMut = useCreateRegional();
 
   const {
     register,
@@ -117,34 +127,6 @@ const UsersPage: React.FC = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  const effectivePageSize = debouncedSearch ? 1000 : pageSize;
-
-  const fetchData = useCallback(
-    async (page?: number) => {
-      const targetPage = page ?? currentPage;
-      setIsLoading(true);
-      try {
-        const [usersData, regionalesData] = await Promise.all([
-          getUsers(targetPage, effectivePageSize),
-          getRegionales(),
-        ]);
-        setUsers(usersData.items || []);
-        setTotalUsers(usersData.total || 0);
-        setRegionales(regionalesData || []);
-      } catch (error) {
-        console.error("Failed to fetch data", error);
-        toastError("Error al cargar los datos.");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [currentPage, effectivePageSize, toastError],
-  );
-
-  useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, debouncedSearch, fetchData]);
 
   const handleEdit = (user: UserRow) => {
     setEditingUser(user);
@@ -168,10 +150,9 @@ const UsersPage: React.FC = () => {
   const performDelete = async () => {
     if (confirmId == null) return;
     try {
-      await deleteUser(confirmId);
+      await deleteUserMut.mutateAsync(confirmId);
       toastSuccess("Usuario desactivado correctamente.");
       setCurrentPage(1);
-      fetchData(1);
     } catch (error) {
       const detail = (error as ApiError).response?.data?.detail;
       toastError("Error al desactivar el usuario", { description: detail });
@@ -207,12 +188,10 @@ const UsersPage: React.FC = () => {
     }
     setCreatingRegional(true);
     try {
-      const regional = await createRegional({
+      const regional = await createRegionalMut.mutateAsync({
         nombre: newRegionalNombre.trim(),
         ciudad: newRegionalCiudad.trim() || undefined,
       });
-      const regionalesData = await getRegionales();
-      setRegionales(regionalesData || []);
       setValue("id_regional", String(regional.id_regional));
       setRegionalModalOpen(false);
       setNewRegionalNombre("");
@@ -232,17 +211,7 @@ const UsersPage: React.FC = () => {
       return;
     }
 
-    const payload: {
-      nombre: string;
-      email: string;
-      rol: string;
-      cedula?: string;
-      codigo_empleado?: string;
-      regional?: string;
-      id_regional?: number | null;
-      is_active: boolean;
-      password?: string;
-    } = {
+    const payload: UserPayload = {
       nombre: data.nombre,
       email: data.email,
       rol: data.rol,
@@ -256,15 +225,17 @@ const UsersPage: React.FC = () => {
 
     try {
       if (editingUser) {
-        await updateUser(editingUser.id_usuario, payload);
+        await updateUserMut.mutateAsync({
+          id: editingUser.id_usuario,
+          data: payload,
+        });
         toastSuccess("Usuario actualizado exitosamente.");
       } else {
-        await createUser(payload);
+        await createUserMut.mutateAsync(payload);
         toastSuccess("Usuario creado exitosamente.");
       }
       closeModal();
       setCurrentPage(1);
-      fetchData(1);
     } catch (error) {
       console.error("Error:", error);
       const detail =
@@ -537,7 +508,7 @@ const UsersPage: React.FC = () => {
               <div className="flex gap-2 items-start">
                 <div className="flex-1 min-w-0">
                   <SearchableSelect
-                    options={regionales.map((r) => ({
+                    options={regionalesList.map((r) => ({
                       value: String(r.id_regional),
                       label: r.nombre,
                     }))}

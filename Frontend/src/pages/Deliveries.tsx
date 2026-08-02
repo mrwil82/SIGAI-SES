@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   FileText,
@@ -33,15 +33,13 @@ import { SearchableSelect } from "../components/SearchableSelect";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
 import api from "../services/api";
-import {
-  getProyectos,
-  saveActa,
-  getActas,
-  getClientes,
-} from "../services/business";
-import { getUsers } from "../services/users";
-import { getInventoryItems } from "../services/inventory";
-import { getRegionales, createRegional } from "../services/regionales";
+import { useQueryClient } from "@tanstack/react-query";
+import { useActas, useSaveActa } from "../hooks/useActas";
+import { useProyectos } from "../hooks/useProjects";
+import { useClientes } from "../hooks/useClients";
+import { useUsers } from "../hooks/useUsers";
+import { useInventoryItems } from "../hooks/useActivos";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
 import { useAuth, type User } from "../hooks/useAuth";
 import ItemModal from "./deliveries/ItemModal";
 import EditActaModal from "./deliveries/EditActaModal";
@@ -111,6 +109,7 @@ const normalizeError = (err: unknown, fallback: string): string => {
 const Deliveries: React.FC = () => {
   const { user: currentUser } = useAuth();
   const toast = useToast();
+  const qc = useQueryClient();
 
   const handleCreateRegional = async () => {
     if (!newRegionalNombre.trim()) {
@@ -119,12 +118,10 @@ const Deliveries: React.FC = () => {
     }
     setCreatingRegional(true);
     try {
-      const regional = await createRegional({
+      const regional = await createRegionalMut.mutateAsync({
         nombre: newRegionalNombre.trim(),
         ciudad: newRegionalCiudad.trim() || undefined,
       });
-      const reg = await getRegionales();
-      setRegionales(reg || []);
       setFormData((prev) => ({
         ...prev,
         id_regional: String(regional.id_regional),
@@ -150,15 +147,7 @@ const Deliveries: React.FC = () => {
     initFormData(currentUser ?? undefined),
   );
   const [items, setItems] = useState<ActaItem[]>([]);
-  const [projects, setProjects] = useState<ProyectoRow[]>([]);
-  const [clients, setClients] = useState<ClienteRow[]>([]);
-  const [regionales, setRegionales] = useState<RegionalRow[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [representatives, setRepresentatives] = useState<User[]>([]);
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [actas, setActas] = useState<ActaListRow[]>([]);
   const [actasPage, setActasPage] = useState(1);
-  const [actasTotal, setActasTotal] = useState(0);
   const actasPageSize = 50;
   const [searchActas, setSearchActas] = useState("");
   const [filterActaType, setFilterActaType] = useState("");
@@ -173,52 +162,26 @@ const Deliveries: React.FC = () => {
   const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
   const [creatingRegional, setCreatingRegional] = useState(false);
 
-  const loadActas = useCallback(async (page?: number) => {
-    try {
-      const res = await getActas(page ?? actasPage, actasPageSize);
-      setActas(res.items || []);
-      setActasTotal(res.total || 0);
-    } catch (err) {
-      logger.error("Error cargando actas:", err);
-    }
-  }, [actasPage]);
+  const { data: actasData } = useActas(actasPage, actasPageSize);
+  const actas = (actasData?.items || []) as ActaListRow[];
+  const actasTotal = actasData?.total || 0;
+  const saveActaMut = useSaveActa();
+  const { data: projectsData } = useProyectos(0, 1000);
+  const projects = (projectsData?.items || []) as ProyectoRow[];
+  const { data: clientsData } = useClientes(0, 1000);
+  const clients = (clientsData?.items || []) as ClienteRow[];
+  const { data: usersData } = useUsers(1, 1000);
+  const allUsers = (usersData?.items || []) as User[];
+  const users = allUsers.filter((x) =>
+    ["TECNICO", "TECNICO_LABORATORIO"].includes(x.rol),
+  );
+  const representatives = allUsers.filter((x) => ["ADMIN"].includes(x.rol));
+  const { data: inventoryData } = useInventoryItems();
+  const inventoryItems = (inventoryData?.items || []) as InventoryItem[];
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as RegionalRow[];
+  const createRegionalMut = useCreateRegional();
 
-  const refreshActas = useCallback(() => {
-    setActasPage(1);
-    loadActas(1);
-  }, [loadActas]);
-
-  const fetchInitialData = useCallback(async () => {
-    try {
-      const [p, c, u, inv, reg] = await Promise.all([
-        getProyectos(0, 1000),
-        getClientes(0, 1000),
-        getUsers(),
-        getInventoryItems(0, 5000, undefined, true),
-        getRegionales(),
-      ]);
-      const allUsers = u.items || [];
-      setProjects(p.items || []);
-      setClients(c.items || []);
-      setRegionales(reg || []);
-      setUsers(
-        allUsers.filter((x: User) =>
-          ["TECNICO", "TECNICO_LABORATORIO"].includes(x.rol),
-        ),
-      );
-      setRepresentatives(
-        allUsers.filter((x: User) => ["ADMIN"].includes(x.rol)),
-      );
-      setInventoryItems(inv.items || []);
-      refreshActas();
-    } catch (err) {
-      logger.error("Error cargando datos:", err);
-    }
-  }, [refreshActas]);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
   useEffect(() => {
     if (!currentUser) return;
     setFormData((prev) => ({
@@ -246,7 +209,7 @@ const Deliveries: React.FC = () => {
 
   const matchRegionalId = (name?: string | null) => {
     if (!name) return "";
-    const found = regionales.find(
+    const found = regionalesList.find(
       (r) => r.nombre.toLowerCase() === name.trim().toLowerCase(),
     );
     return found ? String(found.id_regional) : "";
@@ -346,7 +309,7 @@ const Deliveries: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      await saveActa({
+      await saveActaMut.mutateAsync({
         numero_acta: formData.numero_acta || null,
         estado_acta: formData.estado_acta,
         id_usuario_tecnico: formData.id_usuario_tecnico,
@@ -368,7 +331,6 @@ const Deliveries: React.FC = () => {
           notas_estado: it.observaciones,
         })),
       });
-      refreshActas();
       setSuccess("Acta guardada correctamente");
       resetForm();
       setTimeout(() => setSuccess(null), 5000);
@@ -467,7 +429,7 @@ const Deliveries: React.FC = () => {
       await api.delete(`/business/actas/${actaId}`);
       setSuccess("Acta eliminada correctamente");
       toast.success("Acta eliminada");
-      refreshActas();
+      qc.invalidateQueries({ queryKey: ["actas"] });
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       logger.error("Error eliminando acta:", err);
@@ -603,13 +565,13 @@ const Deliveries: React.FC = () => {
               <div className="flex gap-2 items-start">
                 <div className="flex-1 min-w-0">
                   <SearchableSelect
-                    options={regionales.map((r) => ({
+                    options={regionalesList.map((r) => ({
                       value: String(r.id_regional),
                       label: r.nombre,
                     }))}
                     value={formData.id_regional}
                     onChange={(val) => {
-                      const reg = regionales.find(
+                      const reg = regionalesList.find(
                         (r) => String(r.id_regional) === val,
                       );
                       setFormData({
@@ -1041,9 +1003,7 @@ const Deliveries: React.FC = () => {
             className="h-8 text-[10px] px-3"
             disabled={actasPage === 1}
             onClick={() => {
-              const p = actasPage - 1;
-              setActasPage(p);
-              loadActas(p);
+              setActasPage(actasPage - 1);
             }}
           >
             Anterior
@@ -1053,9 +1013,7 @@ const Deliveries: React.FC = () => {
             className="h-8 text-[10px] px-3"
             disabled={actasTotal <= actasPage * actasPageSize}
             onClick={() => {
-              const p = actasPage + 1;
-              setActasPage(p);
-              loadActas(p);
+              setActasPage(actasPage + 1);
             }}
           >
             Siguiente
@@ -1075,7 +1033,7 @@ const Deliveries: React.FC = () => {
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         acta={editActa ?? undefined}
-        onSaved={refreshActas}
+        onSaved={() => qc.invalidateQueries({ queryKey: ["actas"] })}
       />
       <ActaViewModal
         isOpen={viewModalOpen}

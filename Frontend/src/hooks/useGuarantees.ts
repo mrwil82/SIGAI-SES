@@ -7,7 +7,7 @@ import {
   deleteGarantia,
 } from "../services/business";
 
-interface GarantiaPayload {
+export interface GarantiaPayload {
   id_activo: number;
   id_proveedor?: number;
   id_acta_devolucion?: number;

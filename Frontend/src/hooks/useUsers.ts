@@ -6,7 +6,7 @@ import {
   deleteUser,
 } from "../services/users";
 
-interface UserPayload {
+export interface UserPayload {
   nombre: string;
   email: string;
   rol: string;

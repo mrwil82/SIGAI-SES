@@ -7,7 +7,7 @@ import {
   getClienteById,
 } from "../services/business";
 
-interface ClientePayload {
+export interface ClientePayload {
   nombre: string;
   nit?: string;
   contacto?: string;

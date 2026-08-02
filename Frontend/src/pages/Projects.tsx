@@ -35,14 +35,15 @@ import { SearchableSelect } from "../components/SearchableSelect";
 import { ConfirmModal } from "../components/Fusion";
 import { useToast } from "../lib/toast";
 import {
-  getProyectos,
-  createProyecto,
-  getClientes,
-  deleteProyecto,
-  updateProyecto,
-} from "../services/business";
+  useProyectos,
+  useCreateProyecto,
+  useUpdateProyecto,
+  useDeleteProyecto,
+  type ProyectoPayload,
+} from "../hooks/useProjects";
+import { useClientes } from "../hooks/useClients";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
 import { downloadTemplate } from "../services/inventory";
-import { getRegionales, createRegional } from "../services/regionales";
 import { logger } from "../lib/logger";
 
 interface ProyectoRow {
@@ -87,11 +88,7 @@ interface ProyectoFormValues {
 
 const Projects: React.FC = () => {
   const navigate = useNavigate();
-  const [proyectos, setProyectos] = useState<ProyectoRow[]>([]);
-  const [clientes, setClientes] = useState<ClienteRow[]>([]);
-  const [regionales, setRegionales] = useState<RegionalRow[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProyecto, setEditingProyecto] = useState<ProyectoRow | null>(
     null,
@@ -104,6 +101,17 @@ const Projects: React.FC = () => {
   const [newRegionalNombre, setNewRegionalNombre] = useState("");
   const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
   const [creatingRegional, setCreatingRegional] = useState(false);
+
+  const { data: proyData, isLoading } = useProyectos();
+  const proyectos = (proyData?.items || []) as ProyectoRow[];
+  const { data: cliData } = useClientes();
+  const clientes = (cliData?.items || []) as ClienteRow[];
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as RegionalRow[];
+  const createProyectoMut = useCreateProyecto();
+  const updateProyectoMut = useUpdateProyecto();
+  const deleteProyectoMut = useDeleteProyecto();
+  const createRegionalMut = useCreateRegional();
 
   useEffect(() => {
     if (alert) {
@@ -125,28 +133,6 @@ const Projects: React.FC = () => {
     watch,
     formState: { errors },
   } = useForm<ProyectoFormValues>();
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [projData, cliData, regData] = await Promise.all([
-        getProyectos(0, 1000),
-        getClientes(0, 1000),
-        getRegionales(),
-      ]);
-      setProyectos(projData.items || []);
-      setClientes(cliData.items || []);
-      setRegionales(regData || []);
-    } catch (error) {
-      logger.error("Failed to fetch projects data", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleEdit = (proj: ProyectoRow) => {
     setEditingProyecto(proj);
@@ -181,10 +167,9 @@ const Projects: React.FC = () => {
   const performDelete = async () => {
     if (confirmId == null) return;
     try {
-      await deleteProyecto(confirmId);
+      await deleteProyectoMut.mutateAsync(confirmId);
       toast.success("Proyecto eliminado correctamente.");
       setAlert(null);
-      fetchData();
     } catch (error) {
       toast.error("Error al eliminar el proyecto.");
     } finally {
@@ -206,12 +191,10 @@ const Projects: React.FC = () => {
     }
     setCreatingRegional(true);
     try {
-      const regional = await createRegional({
+      const regional = await createRegionalMut.mutateAsync({
         nombre: newRegionalNombre.trim(),
         ciudad: newRegionalCiudad.trim() || undefined,
       });
-      const regionalesData = await getRegionales();
-      setRegionales(regionalesData || []);
       setValue("id_regional", String(regional.id_regional));
       setRegionalModalOpen(false);
       setNewRegionalNombre("");
@@ -227,7 +210,7 @@ const Projects: React.FC = () => {
 
   const onSubmit = async (data: ProyectoFormValues) => {
     try {
-      const payload: Record<string, unknown> = {
+      const payload: ProyectoPayload = {
         ...data,
         id_cliente: data.id_cliente ? parseInt(data.id_cliente) : null,
         id_regional: data.id_regional ? parseInt(data.id_regional) : null,
@@ -238,20 +221,22 @@ const Projects: React.FC = () => {
       };
 
       if (editingProyecto) {
-        await updateProyecto(editingProyecto.id_proyecto, payload);
+        await updateProyectoMut.mutateAsync({
+          id: editingProyecto.id_proyecto,
+          data: payload,
+        });
         setAlert({
           type: "success",
           message: "Proyecto actualizado correctamente.",
         });
       } else {
-        await createProyecto(payload);
+        await createProyectoMut.mutateAsync(payload);
         setAlert({
           type: "success",
           message: "Proyecto creado correctamente.",
         });
       }
       closeModal();
-      fetchData();
     } catch {
       setAlert({ type: "error", message: "Error al procesar el proyecto." });
     }
@@ -470,8 +455,7 @@ const Projects: React.FC = () => {
 
           <FormGroup label="Cliente Responsable">
             <SearchableSelect
-              options={clientes.map((c) => ({
-                value: String(c.id_cliente),
+              options={clientes.map((c) => ({                value: String(c.id_cliente),
                 label: c.nombre,
               }))}
               value={watch("id_cliente") || ""}
@@ -484,7 +468,7 @@ const Projects: React.FC = () => {
             <div className="flex gap-2 items-start">
               <div className="flex-1 min-w-0">
                 <SearchableSelect
-                  options={regionales.map((r) => ({
+                  options={regionalesList.map((r) => ({
                     value: String(r.id_regional),
                     label: r.nombre,
                   }))}

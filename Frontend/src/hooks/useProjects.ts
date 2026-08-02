@@ -7,16 +7,17 @@ import {
   deleteProyecto,
 } from "../services/business";
 
-interface ProyectoPayload {
-  id_cliente?: number;
+export interface ProyectoPayload {
+  id_cliente?: number | null;
+  id_regional?: number | null;
   nombre_proyecto: string;
   centro_costos?: string;
   ubicacion?: string;
   estado?: string;
-  fecha_inicio?: string;
-  fecha_fin_estimada?: string;
-  fecha_cierre_real?: string;
-  descripcion?: string;
+  fecha_inicio?: string | null;
+  fecha_fin_estimada?: string | null;
+  fecha_cierre_real?: string | null;
+  descripcion?: string | null;
 }
 
 export const useProyectos = (skip = 0, limit = 1000) => {

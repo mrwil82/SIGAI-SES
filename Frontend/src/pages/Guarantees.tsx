@@ -34,14 +34,15 @@ import {
 import { SearchableSelect } from "../components/SearchableSelect";
 import { useToast } from "../lib/toast";
 import {
-  getGarantias,
-  createGarantia,
-  getProveedores,
-  createProveedor,
-  updateGarantia,
-  deleteGarantia,
-} from "../services/business";
-import { getActivos, downloadTemplate } from "../services/inventory";
+  useGarantias,
+  useCreateGarantia,
+  useUpdateGarantia,
+  useDeleteGarantia,
+  type GarantiaPayload,
+} from "../hooks/useGuarantees";
+import { useProveedores, useCreateProveedor } from "../hooks/useProveedores";
+import { useActivos } from "../hooks/useActivos";
+import { downloadTemplate } from "../services/inventory";
 import { logger } from "../lib/logger";
 
 interface GarantiaRow {
@@ -102,11 +103,7 @@ interface GarantiaFormValues {
 
 const Guarantees: React.FC = () => {
   const navigate = useNavigate();
-  const [garantias, setGarantias] = useState<GarantiaRow[]>([]);
-  const [proveedores, setProveedores] = useState<ProveedorRow[]>([]);
-  const [activos, setActivos] = useState<ActivoRow[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGarantia, setEditingGarantia] = useState<GarantiaRow | null>(
     null,
@@ -120,6 +117,17 @@ const Guarantees: React.FC = () => {
   const [newProvNit, setNewProvNit] = useState("");
   const [newProvTelefono, setNewProvTelefono] = useState("");
   const [creatingProv, setCreatingProv] = useState(false);
+
+  const { data: garData, isLoading } = useGarantias();
+  const garantias = (garData?.items || []) as GarantiaRow[];
+  const { data: provData } = useProveedores();
+  const proveedores = (provData?.items || []) as ProveedorRow[];
+  const { data: actData } = useActivos();
+  const activos = (actData?.items || []) as ActivoRow[];
+  const createGarantiaMut = useCreateGarantia();
+  const updateGarantiaMut = useUpdateGarantia();
+  const deleteGarantiaMut = useDeleteGarantia();
+  const createProveedorMut = useCreateProveedor();
 
   useEffect(() => {
     if (alert) {
@@ -140,13 +148,11 @@ const Guarantees: React.FC = () => {
     }
     setCreatingProv(true);
     try {
-      const prov = await createProveedor({
+      const prov = await createProveedorMut.mutateAsync({
         nombre: newProvNombre.trim(),
         nit: newProvNit.trim() || undefined,
         telefono: newProvTelefono.trim() || undefined,
       });
-      const provData = await getProveedores();
-      setProveedores(provData.items || []);
       setValue("id_proveedor", String(prov.id_proveedor));
       setProvModalOpen(false);
       setNewProvNombre("");
@@ -169,32 +175,6 @@ const Guarantees: React.FC = () => {
     watch,
     formState: { errors },
   } = useForm<GarantiaFormValues>();
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [garData, provData, actData] = await Promise.all([
-        getGarantias(),
-        getProveedores(),
-        getActivos(),
-      ]);
-      setGarantias(garData.items || []);
-      setProveedores(provData.items || []);
-      setActivos(actData.items || []);
-    } catch (error) {
-      logger.error("Failed to fetch guarantees data", error);
-      setAlert({
-        type: "error",
-        message: "Error al sincronizar datos con el servidor.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleEdit = (gar: GarantiaRow) => {
     setEditingGarantia(gar);
@@ -232,10 +212,9 @@ const Guarantees: React.FC = () => {
   const performDelete = async () => {
     if (confirmId == null) return;
     try {
-      await deleteGarantia(confirmId);
+      await deleteGarantiaMut.mutateAsync(confirmId);
       toast.success("Registro de garantía eliminado correctamente.");
       setAlert(null);
-      fetchData();
     } catch (error) {
       toast.error("Error al eliminar el registro.");
     } finally {
@@ -266,21 +245,24 @@ const Guarantees: React.FC = () => {
       } else {
         delete payload.meses_garantia;
       }
+      const body = payload as unknown as GarantiaPayload;
       if (editingGarantia) {
-        await updateGarantia(editingGarantia.id_garantia, payload);
+        await updateGarantiaMut.mutateAsync({
+          id: editingGarantia.id_garantia,
+          data: body,
+        });
         setAlert({
           type: "success",
           message: "Garantía actualizada correctamente.",
         });
       } else {
-        await createGarantia(payload);
+        await createGarantiaMut.mutateAsync(body);
         setAlert({
           type: "success",
           message: "Proceso de garantía iniciado correctamente.",
         });
       }
       closeModal();
-      fetchData();
     } catch (error) {
       const detail = (
         error as { response?: { data?: { detail?: unknown } } }

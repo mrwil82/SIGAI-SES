@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from app.models.user import Usuario, Regional
 from app.schemas.user import UsuarioCreate, UsuarioUpdate
 from app.core.security import get_password_hash
@@ -9,6 +9,17 @@ from app.crud.crud_audit import create_audit_log
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+async def _load_user_with_regional(
+    db: AsyncSession, user_id: int
+):
+    result = await db.execute(
+        select(Usuario)
+        .options(selectinload(Usuario.regional_rel))
+        .filter(Usuario.id_usuario == user_id)
+    )
+    return result.scalars().first()
 
 
 async def get_user_by_email(db: AsyncSession, email: str):
@@ -67,7 +78,7 @@ async def create_user(db: AsyncSession, user: UsuarioCreate, current_user_id: in
             nuevo=user.model_dump(exclude={"password"}),
         )
 
-        return db_user
+        return await _load_user_with_regional(db, getattr(db_user, "id_usuario"))
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating user: {e}", exc_info=True)
@@ -120,7 +131,7 @@ async def update_user(
             nuevo=update_data,
         )
 
-        return db_user
+        return await _load_user_with_regional(db, user_id)
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating user {user_id}: {e}", exc_info=True)
@@ -149,7 +160,7 @@ async def delete_user(db: AsyncSession, user_id: int, current_user_id: int):
             await db.rollback()
             logger.error(f"Error deleting user {user_id}: {e}", exc_info=True)
             raise
-    return db_user
+    return await _load_user_with_regional(db, user_id)
 
 
 # CRUD Regionales
