@@ -19,13 +19,22 @@ if db_url and "sqlite" in db_url:
     engine = create_async_engine(db_url, echo=False)
 elif db_url and "mysql" in db_url:
     engine = create_async_engine(
-        db_url, echo=False,
-        pool_size=10, max_overflow=20, pool_timeout=60, pool_recycle=1800,
+        db_url,
+        echo=False,
+        pool_size=10,
+        max_overflow=20,
+        pool_timeout=60,
+        pool_recycle=1800,
     )
 else:
     engine = create_async_engine(
-        db_url, echo=False, connect_args=connect_args,
-        pool_size=10, max_overflow=20, pool_timeout=60, pool_recycle=1800,
+        db_url,
+        echo=False,
+        connect_args=connect_args,
+        pool_size=10,
+        max_overflow=20,
+        pool_timeout=60,
+        pool_recycle=1800,
     )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -33,6 +42,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 Base = declarative_base()
+
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     try:

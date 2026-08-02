@@ -47,7 +47,7 @@ COLUMN_MAPS = {
 async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, str]) -> AsyncGenerator[Dict[str, Any], None]:
     """Generador asíncrono para obtener datos de la DB por lotes (Chunks)."""
     CHUNK_SIZE = 1000
-    
+
     if module == "inventory":
         from app.models.inventory import Item, StockBulk
         stmt = (
@@ -89,7 +89,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
                 "created_at": al.created_at.strftime("%Y-%m-%d %H:%M") if al.created_at else ""
             }
             yield {mapping.get(k, k): v for k, v in d.items() if k in mapping}
-            
+
     elif module == "guarantees":
         from app.models.guarantees import Garantia
         stmt = select(Garantia).execution_options(yield_per=CHUNK_SIZE)

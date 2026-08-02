@@ -15,7 +15,7 @@ from app.api.deps import get_current_user, require_roles
 
 router = APIRouter()
 
-#  EPP 
+#  EPP
 @router.post("/epp", response_model=EPPAssignacion)
 async def assign_epp(
     epp_in: EPPAssignacionCreate,
@@ -31,7 +31,7 @@ async def list_epp(
 ):
     return await crud_inventory.get_epp_assignments(db)
 
-# HISTORIAL UBICACIONES 
+# HISTORIAL UBICACIONES
 
 @router.get("/activos/{id_activo}/historial", response_model=List[HistorialUbicacion])
 async def get_activo_historial(
@@ -71,9 +71,9 @@ async def register_desmonte_bulk(
     try:
         items_data = [item.model_dump() for item in desmonte_in.items]
         return await crud_inventory.crear_desmonte_bulk(
-            db, 
+            db,
             items_data=items_data,
-            proyecto_id=desmonte_in.id_proyecto, 
+            proyecto_id=desmonte_in.id_proyecto,
             cliente_id=desmonte_in.id_cliente,
             current_user_id=current_user.id_usuario
         )
@@ -89,7 +89,7 @@ async def read_item(id_item: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/items", response_model=Item)
 async def create_item(
-    item_in: ItemCreate, 
+    item_in: ItemCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(require_roles("ADMIN","TECNICO","TECNICO_LABORATORIO"))
 ):
@@ -100,8 +100,8 @@ async def create_item(
 
 @router.put("/items/{id_item}", response_model=Item)
 async def update_item(
-    id_item: int, 
-    item_in: ItemUpdate, 
+    id_item: int,
+    item_in: ItemUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(require_roles("ADMIN"))
 ):
@@ -181,7 +181,7 @@ async def read_activo_by_serial(serial: str, db: AsyncSession = Depends(get_db))
 
 @router.post("/activos", response_model=Activo)
 async def create_activo(
-    activo_in: ActivoCreate, 
+    activo_in: ActivoCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(require_roles("ADMIN","TECNICO","TECNICO_LABORATORIO"))
 ):
@@ -192,8 +192,8 @@ async def create_activo(
 
 @router.put("/activos/{id_activo}", response_model=Activo)
 async def update_activo(
-    id_activo: int, 
-    activo_in: ActivoUpdate, 
+    id_activo: int,
+    activo_in: ActivoUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(require_roles("ADMIN"))
 ):
@@ -207,7 +207,7 @@ async def update_activo(
 
 @router.delete("/items/{id_item}")
 async def delete_item(
-    id_item: int, 
+    id_item: int,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(require_roles("ADMIN"))
 ):
@@ -221,7 +221,7 @@ async def delete_item(
 
 @router.delete("/activos/{id_activo}")
 async def delete_activo(
-    id_activo: int, 
+    id_activo: int,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(require_roles("ADMIN", "TECNICO_LABORATORIO"))
 ):

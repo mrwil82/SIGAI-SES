@@ -16,8 +16,8 @@ Plataforma empresarial para la gestión, control y trazabilidad de activos tecno
 
 ## Stack Tecnológico
 
-**Backend:** FastAPI (Python 3.12+) • SQLAlchemy asíncrono • MySQL/MariaDB • Alembic  
-**Frontend:** React + TypeScript • Vite • Tailwind CSS • Context API  
+**Backend:** FastAPI (Python 3.12+) • SQLAlchemy asíncrono • MySQL/MariaDB • Alembic
+**Frontend:** React + TypeScript • Vite • Tailwind CSS • Context API
 **Despliegue:** Docker Compose • Nginx
 
 ## Instalación Rápida

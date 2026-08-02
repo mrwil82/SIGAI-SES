@@ -109,12 +109,12 @@ graph LR
 <summary><b> Ver formato de solicitud sugerido</b></summary>
 
 ```
-Asunto: Ejercicio del derecho de [ACCESO / CONSULTA / RECTIFICACIÓN / 
+Asunto: Ejercicio del derecho de [ACCESO / CONSULTA / RECTIFICACIÓN /
  ACTUALIZACIÓN / SUPRESIÓN / REVOCACIÓN]
 
-Yo, [NOMBRE_COMPLETO], identificado con cédula de ciudadanía 
-No. [NÚMERO_CÉDULA], me dirijo a Securitas Colombia S.A. para 
-solicitar el ejercicio del derecho de [DERECHO] sobre mis datos 
+Yo, [NOMBRE_COMPLETO], identificado con cédula de ciudadanía
+No. [NÚMERO_CÉDULA], me dirijo a Securitas Colombia S.A. para
+solicitar el ejercicio del derecho de [DERECHO] sobre mis datos
 personales tratados en el sistema SIGAI-SES.
 
 Solicito específicamente: [DETALLE_DE_LO_SOLICITADO]
@@ -205,5 +205,3 @@ Al iniciar sesión, el usuario reconoce haber sido informado sobre el tratamient
 <p align="center">
  <sub>Aviso de Privacidad — SIGAI-SES · Securitas Colombia S.A. · Unidad de Seguridad Electrónica (SES)</sub>
 </p>
-
-

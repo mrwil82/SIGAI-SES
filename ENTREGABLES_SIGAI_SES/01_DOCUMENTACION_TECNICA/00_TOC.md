@@ -167,6 +167,3 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
    <b>Securitas Colombia S.A.</b> — Unidad de Seguridad Electrónica (SES)<br>
    v1.0.0 — Julio 2026
 </p>
-
-
-

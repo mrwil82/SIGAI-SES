@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.get("/summary")
 async def get_summary(
-    time_range: str = Query("hoy", regex="^(hoy|semana|mes)$"),
+    time_range: str = Query("hoy", pattern="^(hoy|semana|mes)$"),
     db: AsyncSession = Depends(get_db)
 ):
     return await crud_analytics.get_dashboard_stats(db, time_range=time_range)
@@ -21,3 +21,10 @@ async def quick_search(
 ):
     """Realiza una búsqueda global rápida en el sistema."""
     return await crud_analytics.global_search(db, query=q)
+
+@router.get("/predictions")
+async def get_predictions(
+    db: AsyncSession = Depends(get_db)
+):
+    """Análisis predictivo: agotamiento de stock, garantías por vencer y tendencia de consumo."""
+    return await crud_analytics.get_predictions(db)

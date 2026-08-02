@@ -1,7 +1,14 @@
 import os
 from io import BytesIO
 from datetime import datetime
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    Image as RLImage,
+)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -16,36 +23,36 @@ from openpyxl.worksheet.worksheet import Worksheet
 from typing import cast, List, Dict, Any, Generator, Iterable
 import xlsxwriter
 
-
 # ── PALETA (tema oscuro de la app) ──
 
-COLOR_DARK_HEADER   = "#0A0F0D"
-COLOR_EMERALD       = "#00C26A"
-COLOR_EMERALD_DEEP  = "#071F14"
+COLOR_DARK_HEADER = "#0A0F0D"
+COLOR_EMERALD = "#00C26A"
+COLOR_EMERALD_DEEP = "#071F14"
 COLOR_EMERALD_MUTED = "#0D3D26"
-COLOR_SURFACE       = "#101820"
-COLOR_CARD          = "#141F1A"
-COLOR_LIGHTGRAY     = "#F5F6F7"
-COLOR_BG_META       = "#F8F9FA"
-COLOR_BORDER        = "#DDE1E5"
-COLOR_TEXT_DARK     = "#1A1D1A"
-COLOR_TEXT_MUTED    = "#5A7A65"
-COLOR_WHITE         = "#FFFFFF"
+COLOR_SURFACE = "#101820"
+COLOR_CARD = "#141F1A"
+COLOR_LIGHTGRAY = "#F5F6F7"
+COLOR_BG_META = "#F8F9FA"
+COLOR_BORDER = "#DDE1E5"
+COLOR_TEXT_DARK = "#1A1D1A"
+COLOR_TEXT_MUTED = "#5A7A65"
+COLOR_WHITE = "#FFFFFF"
 
 ICON_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "static", "icon-app.png"
+    "static",
+    "icon-app.png",
 )
 
 MODULE_TITLES = {
-    "alerts"     : "REPORTE DE ALERTAS",
-    "inventory"  : "REPORTE DE INVENTARIO",
-    "guarantees" : "REPORTE DE GARANTÍAS",
-    "clientes"   : "REPORTE DE CLIENTES",
-    "projects"   : "REPORTE DE PROYECTOS",
-    "actas"      : "REPORTE DE ACTAS DE ENTREGA",
-    "acta"       : "ACTA DE ENTREGA DE HERRAMIENTA",
-    "default"    : "REPORTE SIGAI-SES",
+    "alerts": "REPORTE DE ALERTAS",
+    "inventory": "REPORTE DE INVENTARIO",
+    "guarantees": "REPORTE DE GARANTÍAS",
+    "clientes": "REPORTE DE CLIENTES",
+    "projects": "REPORTE DE PROYECTOS",
+    "actas": "REPORTE DE ACTAS DE ENTREGA",
+    "acta": "ACTA DE ENTREGA DE HERRAMIENTA",
+    "default": "REPORTE SIGAI-SES",
 }
 
 
@@ -70,12 +77,16 @@ def _build_logo_cell(
         rows.append([icon])
     rows.append([Paragraph("<b>SIGAI-SES</b>", sty_brand)])
     tbl = Table(rows, colWidths=[col_width * inch])
-    tbl.setStyle(TableStyle([
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 1),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-    ]))
+    tbl.setStyle(
+        TableStyle(
+            [
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 1),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+            ]
+        )
+    )
     return tbl
 
 
@@ -91,58 +102,83 @@ def _meta_column_spans(n_data_cols: int) -> List[int]:
 
 # ── PDF: Encabezado institucional ──
 
+
 def build_pdf_header(module: str, meta: dict | None = None) -> list:
     styles = getSampleStyleSheet()
     title = get_module_title(module)
     meta = meta or {}
 
     sty_title = ParagraphStyle(
-        "SecTitle", parent=styles["Normal"],
-        fontSize=16, fontName="Helvetica-Bold",
-        alignment=0, textColor=colors.white, leading=20,
+        "SecTitle",
+        parent=styles["Normal"],
+        fontSize=16,
+        fontName="Helvetica-Bold",
+        alignment=0,
+        textColor=colors.white,
+        leading=20,
     )
     sty_brand = ParagraphStyle(
-        "Brand", parent=styles["Normal"],
-        fontSize=8, fontName="Helvetica-Bold",
-        alignment=1, textColor=colors.HexColor(COLOR_EMERALD), leading=10,
+        "Brand",
+        parent=styles["Normal"],
+        fontSize=8,
+        fontName="Helvetica-Bold",
+        alignment=1,
+        textColor=colors.HexColor(COLOR_EMERALD),
+        leading=10,
     )
     sty_meta_label = ParagraphStyle(
-        "MetaLabel", parent=styles["Normal"],
-        fontSize=7, fontName="Helvetica-Bold",
-        textColor=colors.HexColor(COLOR_TEXT_MUTED), alignment=1,
+        "MetaLabel",
+        parent=styles["Normal"],
+        fontSize=7,
+        fontName="Helvetica-Bold",
+        textColor=colors.HexColor(COLOR_TEXT_MUTED),
+        alignment=1,
     )
     sty_meta_value = ParagraphStyle(
-        "MetaValue", parent=styles["Normal"],
-        fontSize=8, fontName="Helvetica",
-        textColor=colors.HexColor(COLOR_TEXT_DARK), alignment=1,
+        "MetaValue",
+        parent=styles["Normal"],
+        fontSize=8,
+        fontName="Helvetica",
+        textColor=colors.HexColor(COLOR_TEXT_DARK),
+        alignment=1,
     )
 
     # ── Fila 1: Icono + SIGAI-SES + Título ──
-    logo_cell = _build_logo_cell(sty_brand, icon_width=0.55, icon_height=0.55, col_width=1.6)
+    logo_cell = _build_logo_cell(
+        sty_brand, icon_width=0.55, icon_height=0.55, col_width=1.6
+    )
 
     t1 = Table(
         [[logo_cell, Paragraph(f"<b>{title}</b>", sty_title)]],
         colWidths=[1.6 * inch, 6.1 * inch],
     )
-    t1.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(COLOR_DARK_HEADER)),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 12),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ("NOSPLIT", (0, 0), (-1, -1)),
-    ]))
+    t1.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(COLOR_DARK_HEADER)),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("NOSPLIT", (0, 0), (-1, -1)),
+            ]
+        )
+    )
 
     # Línea decorativa esmeralda
     t_accent = Table([[""]], colWidths=[7.7 * inch])
-    t_accent.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(COLOR_EMERALD)),
-        ("TOPPADDING", (0, 0), (-1, -1), 2),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-    ]))
+    t_accent.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(COLOR_EMERALD)),
+                ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
 
     # ── Metadatos ──
     labels = ["MÓDULO", "FECHA DE GENERACIÓN", "CARGO", "GENERADO POR"]
@@ -160,23 +196,28 @@ def build_pdf_header(module: str, meta: dict | None = None) -> list:
         ],
         colWidths=[1.925 * inch] * 4,
     )
-    t2.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(COLOR_BG_META)),
-        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
-        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, 0), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 2),
-        ("TOPPADDING", (0, 1), (-1, 1), 3),
-        ("BOTTOMPADDING", (0, 1), (-1, 1), 5),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-    ]))
+    t2.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(COLOR_BG_META)),
+                ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
+                ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, 0), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 2),
+                ("TOPPADDING", (0, 1), (-1, 1), 3),
+                ("BOTTOMPADDING", (0, 1), (-1, 1), 5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
 
     return [t1, t_accent, Spacer(1, 6), t2, Spacer(1, 12)]
 
 
 # ── EXCEL (Streaming - XlsxWriter) ──
+
 
 def stream_excel_large(
     data_generator: Iterable[Dict[str, Any]],
@@ -185,41 +226,89 @@ def stream_excel_large(
     columns: List[str],
 ) -> bytes:
     output = BytesIO()
-    workbook = xlsxwriter.Workbook(output, {'constant_memory': True, 'in_memory': True})
+    workbook = xlsxwriter.Workbook(output, {"constant_memory": True, "in_memory": True})
     worksheet = workbook.add_worksheet(module[:31])
     n_cols = max(len(columns), 1)
 
-    fmt_header = workbook.add_format({
-        'bold': True, 'bg_color': COLOR_DARK_HEADER, 'font_color': 'white',
-        'border': 0, 'align': 'center', 'valign': 'vcenter',
-        'font_size': 9, 'font_name': 'Calibri',
-    })
-    fmt_cell = workbook.add_format({
-        'border': 1, 'border_color': COLOR_BORDER, 'font_size': 9,
-        'align': 'left', 'valign': 'vcenter', 'font_name': 'Calibri',
-    })
-    fmt_cell_alt = workbook.add_format({
-        'border': 1, 'border_color': COLOR_BORDER, 'font_size': 9,
-        'align': 'left', 'valign': 'vcenter', 'font_name': 'Calibri',
-        'bg_color': COLOR_LIGHTGRAY,
-    })
-    fmt_title = workbook.add_format({
-        'bold': True, 'font_size': 16, 'align': 'center', 'valign': 'vcenter',
-        'font_color': 'white', 'bg_color': COLOR_DARK_HEADER, 'font_name': 'Calibri',
-    })
-    fmt_brand = workbook.add_format({
-        'bold': True, 'font_size': 8, 'align': 'center', 'valign': 'vcenter',
-        'font_color': COLOR_EMERALD, 'bg_color': COLOR_DARK_HEADER, 'font_name': 'Calibri',
-    })
-    fmt_meta_lbl = workbook.add_format({
-        'bold': True, 'bg_color': COLOR_BG_META, 'font_color': COLOR_TEXT_MUTED,
-        'border': 1, 'border_color': COLOR_BORDER,
-        'align': 'center', 'valign': 'vcenter', 'font_size': 8, 'font_name': 'Calibri',
-    })
-    fmt_meta_val = workbook.add_format({
-        'bg_color': COLOR_BG_META, 'border': 1, 'border_color': COLOR_BORDER,
-        'align': 'center', 'valign': 'vcenter', 'font_size': 9, 'font_name': 'Calibri',
-    })
+    fmt_header = workbook.add_format(
+        {
+            "bold": True,
+            "bg_color": COLOR_DARK_HEADER,
+            "font_color": "white",
+            "border": 0,
+            "align": "center",
+            "valign": "vcenter",
+            "font_size": 9,
+            "font_name": "Calibri",
+        }
+    )
+    fmt_cell = workbook.add_format(
+        {
+            "border": 1,
+            "border_color": COLOR_BORDER,
+            "font_size": 9,
+            "align": "left",
+            "valign": "vcenter",
+            "font_name": "Calibri",
+        }
+    )
+    fmt_cell_alt = workbook.add_format(
+        {
+            "border": 1,
+            "border_color": COLOR_BORDER,
+            "font_size": 9,
+            "align": "left",
+            "valign": "vcenter",
+            "font_name": "Calibri",
+            "bg_color": COLOR_LIGHTGRAY,
+        }
+    )
+    fmt_title = workbook.add_format(
+        {
+            "bold": True,
+            "font_size": 16,
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": "white",
+            "bg_color": COLOR_DARK_HEADER,
+            "font_name": "Calibri",
+        }
+    )
+    fmt_brand = workbook.add_format(
+        {
+            "bold": True,
+            "font_size": 8,
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": COLOR_EMERALD,
+            "bg_color": COLOR_DARK_HEADER,
+            "font_name": "Calibri",
+        }
+    )
+    fmt_meta_lbl = workbook.add_format(
+        {
+            "bold": True,
+            "bg_color": COLOR_BG_META,
+            "font_color": COLOR_TEXT_MUTED,
+            "border": 1,
+            "border_color": COLOR_BORDER,
+            "align": "center",
+            "valign": "vcenter",
+            "font_size": 8,
+            "font_name": "Calibri",
+        }
+    )
+    fmt_meta_val = workbook.add_format(
+        {
+            "bg_color": COLOR_BG_META,
+            "border": 1,
+            "border_color": COLOR_BORDER,
+            "align": "center",
+            "valign": "vcenter",
+            "font_size": 9,
+            "font_name": "Calibri",
+        }
+    )
 
     # ── Fila 1: Icono + Título ──
     worksheet.set_row(0, 48)
@@ -229,8 +318,10 @@ def stream_excel_large(
 
     if os.path.exists(ICON_PATH):
         worksheet.insert_image(
-            0, 0, ICON_PATH,
-            {'x_scale': 0.035, 'y_scale': 0.035, 'x_offset': 4, 'y_offset': 2}
+            0,
+            0,
+            ICON_PATH,
+            {"x_scale": 0.035, "y_scale": 0.035, "x_offset": 4, "y_offset": 2},
         )
 
     # ── Filas 2-3: Metadatos (ocupan todo el ancho) ──
@@ -258,7 +349,9 @@ def stream_excel_large(
         col += span
 
     # Anchos de columna calculados del contenido real
-    all_data = list(data_generator) if not isinstance(data_generator, list) else data_generator
+    all_data = (
+        list(data_generator) if not isinstance(data_generator, list) else data_generator
+    )
     for ci in range(n_cols):
         col_name = str(columns[ci]) if ci < len(columns) else ""
         max_len = len(col_name) + 2
@@ -289,7 +382,9 @@ def stream_excel_large(
             if isinstance(val, (int, float)):
                 worksheet.write_number(current_row, ci, val, fmt)
             else:
-                worksheet.write(current_row, ci, str(val) if val is not None else "", fmt)
+                worksheet.write(
+                    current_row, ci, str(val) if val is not None else "", fmt
+                )
         current_row += 1
         row_count += 1
 
@@ -300,12 +395,16 @@ def stream_excel_large(
 
 # ── PDF: Exportación de datos ──
 
+
 def export_to_pdf(data: list, module: str, meta: dict | None = None) -> BytesIO:
     buffer = BytesIO()
     doc = SimpleDocTemplate(
-        buffer, pagesize=letter,
-        rightMargin=0.5 * inch, leftMargin=0.5 * inch,
-        topMargin=0.4 * inch, bottomMargin=0.5 * inch,
+        buffer,
+        pagesize=letter,
+        rightMargin=0.5 * inch,
+        leftMargin=0.5 * inch,
+        topMargin=0.4 * inch,
+        bottomMargin=0.5 * inch,
     )
 
     elements = build_pdf_header(module, meta)
@@ -314,12 +413,19 @@ def export_to_pdf(data: list, module: str, meta: dict | None = None) -> BytesIO:
     if data:
         df = pd.DataFrame(data)
         cell_sty = ParagraphStyle(
-            "C", parent=styles["Normal"], fontSize=7.5, leading=11,
+            "C",
+            parent=styles["Normal"],
+            fontSize=7.5,
+            leading=11,
             fontName="Helvetica",
         )
         hdr_sty = ParagraphStyle(
-            "H", parent=styles["Normal"], fontSize=8,
-            fontName="Helvetica-Bold", textColor=colors.white, alignment=1,
+            "H",
+            parent=styles["Normal"],
+            fontSize=8,
+            fontName="Helvetica-Bold",
+            textColor=colors.white,
+            alignment=1,
         )
 
         headers = [str(c) for c in df.columns]
@@ -327,8 +433,7 @@ def export_to_pdf(data: list, module: str, meta: dict | None = None) -> BytesIO:
 
         for row in df.astype(str).values:
             row_cells = [
-                Paragraph(str(v) if v and v != "nan" else "", cell_sty)
-                for v in row
+                Paragraph(str(v) if v and v != "nan" else "", cell_sty) for v in row
             ]
             table_data.append(row_cells)
 
@@ -363,6 +468,7 @@ def export_to_pdf(data: list, module: str, meta: dict | None = None) -> BytesIO:
 
 
 # ── EXCEL (OpenPyXL - datos pequeños) ──
+
 
 def export_to_excel(data: list, module: str, meta: dict | None = None) -> BytesIO:
     output = BytesIO()
@@ -417,7 +523,9 @@ def export_to_excel(data: list, module: str, meta: dict | None = None) -> BytesI
         except:
             cast(Cell, ws["A1"]).value = ""
     cast(Cell, ws["A1"]).value = "SIGAI-SES"
-    cast(Cell, ws["A1"]).font = Font(bold=True, size=7, color=COLOR_EMERALD, name="Calibri")
+    cast(Cell, ws["A1"]).font = Font(
+        bold=True, size=7, color=COLOR_EMERALD, name="Calibri"
+    )
     cast(Cell, ws["A1"]).fill = hdr_fill
     cast(Cell, ws["A1"]).alignment = Alignment(horizontal="center", vertical="bottom")
 
@@ -431,12 +539,18 @@ def export_to_excel(data: list, module: str, meta: dict | None = None) -> BytesI
         if span == 0:
             break
         if span > 1:
-            ws.merge_cells(start_row=2, start_column=col, end_row=2, end_column=col + span - 1)
-            ws.merge_cells(start_row=3, start_column=col, end_row=3, end_column=col + span - 1)
+            ws.merge_cells(
+                start_row=2, start_column=col, end_row=2, end_column=col + span - 1
+            )
+            ws.merge_cells(
+                start_row=3, start_column=col, end_row=3, end_column=col + span - 1
+            )
         c_lbl = cast(Cell, ws.cell(row=2, column=col))
         c_lbl.value = lbl
         c_lbl.fill = label_fill
-        c_lbl.font = Font(bold=True, color=COLOR_TEXT_MUTED.replace("#", ""), size=8, name="Calibri")
+        c_lbl.font = Font(
+            bold=True, color=COLOR_TEXT_MUTED.replace("#", ""), size=8, name="Calibri"
+        )
         c_lbl.alignment = Alignment(horizontal="center", vertical="center")
 
         c_val = cast(Cell, ws.cell(row=3, column=col))
@@ -484,80 +598,124 @@ def export_to_excel(data: list, module: str, meta: dict | None = None) -> BytesI
 
 # ── ACTA DE ENTREGA (PDF) ──
 
+
 def generate_pdf_acta(data: dict) -> BytesIO:
     buffer = BytesIO()
     doc = SimpleDocTemplate(
-        buffer, pagesize=letter,
-        leftMargin=0.6 * inch, rightMargin=0.6 * inch,
-        topMargin=0.5 * inch, bottomMargin=0.6 * inch,
+        buffer,
+        pagesize=letter,
+        leftMargin=0.6 * inch,
+        rightMargin=0.6 * inch,
+        topMargin=0.5 * inch,
+        bottomMargin=0.6 * inch,
     )
     styles = getSampleStyleSheet()
 
     style_header = ParagraphStyle(
-        'ActaHeader', parent=styles['Heading2'],
-        alignment=1, fontSize=13, spaceAfter=6,
-        textColor=colors.white, fontName='Helvetica-Bold',
+        "ActaHeader",
+        parent=styles["Heading2"],
+        alignment=1,
+        fontSize=13,
+        spaceAfter=6,
+        textColor=colors.white,
+        fontName="Helvetica-Bold",
     )
     style_section = ParagraphStyle(
-        'SectionTitle', parent=styles['Heading2'],
-        fontSize=10, spaceAfter=6, spaceBefore=4,
+        "SectionTitle",
+        parent=styles["Heading2"],
+        fontSize=10,
+        spaceAfter=6,
+        spaceBefore=4,
         textColor=colors.HexColor(COLOR_DARK_HEADER),
-        fontName='Helvetica-Bold',
+        fontName="Helvetica-Bold",
     )
     style_legal = ParagraphStyle(
-        'LegalStyle', parent=styles['Normal'],
-        fontSize=8, alignment=4, leading=11, fontName='Helvetica',
+        "LegalStyle",
+        parent=styles["Normal"],
+        fontSize=8,
+        alignment=4,
+        leading=11,
+        fontName="Helvetica",
     )
     style_label = ParagraphStyle(
-        'LabelStyle', parent=styles['Normal'],
-        fontSize=8, fontName='Helvetica-Bold',
+        "LabelStyle",
+        parent=styles["Normal"],
+        fontSize=8,
+        fontName="Helvetica-Bold",
         textColor=colors.HexColor(COLOR_TEXT_MUTED),
     )
     style_value = ParagraphStyle(
-        'ValueStyle', parent=styles['Normal'],
-        fontSize=9, fontName='Helvetica',
+        "ValueStyle",
+        parent=styles["Normal"],
+        fontSize=9,
+        fontName="Helvetica",
         textColor=colors.HexColor(COLOR_TEXT_DARK),
     )
     table_cell_style = ParagraphStyle(
-        'TableCell', parent=styles['Normal'],
-        fontSize=7.5, leading=10, fontName='Helvetica',
+        "TableCell",
+        parent=styles["Normal"],
+        fontSize=7.5,
+        leading=10,
+        fontName="Helvetica",
     )
     header_style = ParagraphStyle(
-        'TableHeader', parent=styles['Normal'],
-        fontSize=7.5, leading=10, fontName='Helvetica-Bold',
+        "TableHeader",
+        parent=styles["Normal"],
+        fontSize=7.5,
+        leading=10,
+        fontName="Helvetica-Bold",
         textColor=colors.white,
     )
     sty_brand = ParagraphStyle(
-        "Brand", parent=styles["Normal"],
-        fontSize=7, fontName="Helvetica-Bold",
-        alignment=1, textColor=colors.HexColor(COLOR_EMERALD), leading=9,
+        "Brand",
+        parent=styles["Normal"],
+        fontSize=7,
+        fontName="Helvetica-Bold",
+        alignment=1,
+        textColor=colors.HexColor(COLOR_EMERALD),
+        leading=9,
     )
 
     elements = []
 
     # ── Encabezado ──
-    logo_cell = _build_logo_cell(sty_brand, icon_width=0.5, icon_height=0.5, col_width=1.6)
+    logo_cell = _build_logo_cell(
+        sty_brand, icon_width=0.5, icon_height=0.5, col_width=1.6
+    )
 
-    header_data = [[logo_cell, Paragraph("<b>ACTA DE ENTREGA<br/>DE HERRAMIENTA</b>", style_header)]]
+    header_data = [
+        [
+            logo_cell,
+            Paragraph("<b>ACTA DE ENTREGA<br/>DE HERRAMIENTA</b>", style_header),
+        ]
+    ]
     t_header = Table(header_data, colWidths=[1.8 * inch, 5.4 * inch])
-    t_header.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor(COLOR_DARK_HEADER)),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 12),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-    ]))
+    t_header.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(COLOR_DARK_HEADER)),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
     elements.append(t_header)
 
     t_accent = Table([[""]], colWidths=[7.2 * inch])
-    t_accent.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor(COLOR_EMERALD)),
-        ('TOPPADDING', (0, 0), (-1, -1), 2),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-    ]))
+    t_accent.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(COLOR_EMERALD)),
+                ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
     elements.append(t_accent)
     elements.append(Spacer(1, 12))
 
@@ -566,67 +724,97 @@ def generate_pdf_acta(data: dict) -> BytesIO:
 
     tecnico_data = [
         [Paragraph("NOMBRE", style_label), Paragraph("FECHA DE ENTREGA", style_label)],
-        [Paragraph(f"<b>{data.get('nombre_tecnico', '').upper() or '—'}</b>", style_value),
-         Paragraph(data.get('fecha', datetime.now().strftime("%d/%m/%Y")), style_value)],
+        [
+            Paragraph(
+                f"<b>{data.get('nombre_tecnico', '').upper() or '—'}</b>", style_value
+            ),
+            Paragraph(
+                data.get("fecha", datetime.now().strftime("%d/%m/%Y")), style_value
+            ),
+        ],
         [Paragraph("REGIONAL", style_label), Paragraph("", style_label)],
-        [Paragraph(f"<b>{data.get('regional', 'BOGOTÁ').upper() or '—'}</b>", style_value),
-         Paragraph("", style_value)],
+        [
+            Paragraph(
+                f"<b>{data.get('regional', 'BOGOTÁ').upper() or '—'}</b>", style_value
+            ),
+            Paragraph("", style_value),
+        ],
     ]
 
     t_tecnico = Table(tecnico_data, colWidths=[3.6 * inch, 3.6 * inch])
-    t_tecnico.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(COLOR_BG_META)),
-        ('BACKGROUND', (0, 2), (-1, 2), colors.HexColor(COLOR_BG_META)),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-    ]))
+    t_tecnico.setStyle(
+        TableStyle(
+            [
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(COLOR_BG_META)),
+                ("BACKGROUND", (0, 2), (-1, 2), colors.HexColor(COLOR_BG_META)),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
     elements.append(t_tecnico)
     elements.append(Spacer(1, 12))
 
     # ── 2. Herramienta y/o Equipos ──
     elements.append(Paragraph("2. HERRAMIENTA Y/O EQUIPOS", style_section))
 
-    headers = ["ITEM", "DESCRIPCIÓN", "MARCA", "REFERENCIA", "SERIE", "CANT.", "OBSERVACIONES"]
+    headers = [
+        "ITEM",
+        "DESCRIPCIÓN",
+        "MARCA",
+        "REFERENCIA",
+        "SERIE",
+        "CANT.",
+        "OBSERVACIONES",
+    ]
     table_data = [[Paragraph(h, header_style) for h in headers]]
 
-    raw_items = data.get('items', [])
+    raw_items = data.get("items", [])
     for i in range(17):
         if i < len(raw_items):
             item = raw_items[i]
             row = [
                 str(i + 1),
-                item.get('descripcion', ''),
-                item.get('marca', ''),
-                item.get('referencia', ''),
-                item.get('serie', ''),
-                str(item.get('cantidad', 1)),
-                item.get('observaciones', ''),
+                item.get("descripcion", ""),
+                item.get("marca", ""),
+                item.get("referencia", ""),
+                item.get("serie", ""),
+                str(item.get("cantidad", 1)),
+                item.get("observaciones", ""),
             ]
         else:
-            row = [str(i + 1), '', '', '', '', '', '']
+            row = [str(i + 1), "", "", "", "", "", ""]
         table_data.append([Paragraph(safe_text(c), table_cell_style) for c in row])
 
     t_items = Table(
         table_data,
-        colWidths=[0.35 * inch, 2.4 * inch, 0.75 * inch, 0.85 * inch, 0.85 * inch, 0.4 * inch, 1.2 * inch],
+        colWidths=[
+            0.35 * inch,
+            2.4 * inch,
+            0.75 * inch,
+            0.85 * inch,
+            0.85 * inch,
+            0.4 * inch,
+            1.2 * inch,
+        ],
         repeatRows=1,
     )
     style_items = [
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(COLOR_DARK_HEADER)),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ('LEFTPADDING', (0, 0), (-1, -1), 3),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(COLOR_DARK_HEADER)),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING", (0, 0), (-1, -1), 3),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
     ]
     for ri in range(1, len(table_data)):
         if ri % 2 == 0:
             style_items.append(
-                ('BACKGROUND', (0, ri), (-1, ri), colors.HexColor(COLOR_LIGHTGRAY))
+                ("BACKGROUND", (0, ri), (-1, ri), colors.HexColor(COLOR_LIGHTGRAY))
             )
     t_items.setStyle(TableStyle(style_items))
     elements.append(t_items)
@@ -634,10 +822,10 @@ def generate_pdf_acta(data: dict) -> BytesIO:
 
     # ── 3. Observaciones ──
     elements.append(Paragraph("3. OBSERVACIONES", style_section))
-    obs_text = data.get('observaciones_generales', '')
-    elements.append(Paragraph(
-        safe_text(obs_text) if obs_text else "—", styles['Normal']
-    ))
+    obs_text = data.get("observaciones_generales", "")
+    elements.append(
+        Paragraph(safe_text(obs_text) if obs_text else "—", styles["Normal"])
+    )
     elements.append(Spacer(1, 15))
 
     # ── 4. Cláusula legal ──
@@ -655,25 +843,38 @@ def generate_pdf_acta(data: dict) -> BytesIO:
     # ── 5. Firmas ──
     firmas_data = [
         [
-            Paragraph("<b>____________________________</b><br/>REPRESENTANTE", styles['Normal']),
-            Paragraph("<b>____________________________</b><br/>TÉCNICO", styles['Normal']),
+            Paragraph(
+                "<b>____________________________</b><br/>REPRESENTANTE",
+                styles["Normal"],
+            ),
+            Paragraph(
+                "<b>____________________________</b><br/>TÉCNICO", styles["Normal"]
+            ),
         ],
         [Spacer(1, 0.6 * inch), Spacer(1, 0.6 * inch)],
         [
-            Paragraph("Nombre: ___________________<br/>CC: ___________________",
-                      ParagraphStyle('F1', parent=styles['Normal'], fontSize=8, alignment=1)),
-            Paragraph("Nombre: ___________________<br/>CC: ___________________",
-                      ParagraphStyle('F2', parent=styles['Normal'], fontSize=8, alignment=1)),
+            Paragraph(
+                "Nombre: ___________________<br/>CC: ___________________",
+                ParagraphStyle("F1", parent=styles["Normal"], fontSize=8, alignment=1),
+            ),
+            Paragraph(
+                "Nombre: ___________________<br/>CC: ___________________",
+                ParagraphStyle("F2", parent=styles["Normal"], fontSize=8, alignment=1),
+            ),
         ],
     ]
     t_firmas = Table(firmas_data, colWidths=[3.5 * inch, 3.5 * inch])
-    t_firmas.setStyle(TableStyle([
-        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-    ]))
+    t_firmas.setStyle(
+        TableStyle(
+            [
+                ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor(COLOR_BORDER)),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
     elements.append(t_firmas)
 
     doc.build(elements)

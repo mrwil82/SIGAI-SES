@@ -1,12 +1,12 @@
-import api from './api';
+import api from "./api";
 
 function isCapacitor(): boolean {
-  return !!(window as any).Capacitor;
+  return !!(window as unknown as { Capacitor?: unknown }).Capacitor;
 }
 
 async function downloadOnWeb(blob: Blob, filename: string): Promise<void> {
   const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
@@ -15,15 +15,18 @@ async function downloadOnWeb(blob: Blob, filename: string): Promise<void> {
   window.URL.revokeObjectURL(url);
 }
 
-async function downloadOnCapacitor(blob: Blob, filename: string): Promise<void> {
-  const { Filesystem, Directory } = await import('@capacitor/filesystem');
-  const { Share } = await import('@capacitor/share');
+async function downloadOnCapacitor(
+  blob: Blob,
+  filename: string,
+): Promise<void> {
+  const { Filesystem, Directory } = await import("@capacitor/filesystem");
+  const { Share } = await import("@capacitor/share");
 
   const reader = new FileReader();
   const base64 = await new Promise<string>((resolve, reject) => {
     reader.onload = () => {
       const result = reader.result as string;
-      resolve(result.split(',')[1]);
+      resolve(result.split(",")[1]);
     };
     reader.onerror = reject;
     reader.readAsDataURL(blob);
@@ -40,10 +43,10 @@ async function downloadOnCapacitor(blob: Blob, filename: string): Promise<void> 
       title: filename,
       text: `Descargar ${filename}`,
       url: savedFile.uri,
-      dialogTitle: 'Guardar archivo',
+      dialogTitle: "Guardar archivo",
     });
   } catch {
-    const anchor = document.createElement('a');
+    const anchor = document.createElement("a");
     anchor.href = savedFile.uri;
     anchor.download = filename;
     document.body.appendChild(anchor);
@@ -52,7 +55,10 @@ async function downloadOnCapacitor(blob: Blob, filename: string): Promise<void> 
   }
 }
 
-export async function downloadBlob(blob: Blob, filename: string): Promise<void> {
+export async function downloadBlob(
+  blob: Blob,
+  filename: string,
+): Promise<void> {
   if (isCapacitor()) {
     await downloadOnCapacitor(blob, filename);
   } else {
@@ -60,18 +66,28 @@ export async function downloadBlob(blob: Blob, filename: string): Promise<void> 
   }
 }
 
-export async function downloadFromApi(url: string, filename: string): Promise<void> {
-  const response = await api.get(url, { responseType: 'blob' });
+export async function downloadFromApi(
+  url: string,
+  filename: string,
+): Promise<void> {
+  const response = await api.get(url, { responseType: "blob" });
   await downloadBlob(response.data, filename);
 }
 
-export async function downloadPostBlob(url: string, body: any, filename: string): Promise<void> {
-  const response = await api.post(url, body, { responseType: 'blob' });
+export async function downloadPostBlob(
+  url: string,
+  body: object,
+  filename: string,
+): Promise<void> {
+  const response = await api.post(url, body, { responseType: "blob" });
   await downloadBlob(response.data, filename);
 }
 
-export async function downloadFromFetch(url: string, filename: string): Promise<void> {
-  const token = localStorage.getItem('token');
+export async function downloadFromFetch(
+  url: string,
+  filename: string,
+): Promise<void> {
+  const token = localStorage.getItem("token");
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });

@@ -6,7 +6,7 @@ pydantic-settings==2.14.1
 pydantic_core==2.46.4
 starlette==1.0.0
 
-# base de datos y migraciones 
+# base de datos y migraciones
 SQLAlchemy==2.0.49
 alembic==1.18.4
 PyMySQL==1.1.3
@@ -34,7 +34,7 @@ reportlab==4.5.1
 pillow==12.2.0
 et_xmlfile==2.0.0
 
-# utlidades 
+# utlidades
 python-dotenv==1.2.2
 email-validator==2.3.0
 python-dateutil==2.9.0.post0

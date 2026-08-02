@@ -1,4 +1,4 @@
-from typing import List, Tuple, Any
+from typing import Sequence, Tuple, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.sql import Select
@@ -9,7 +9,7 @@ async def paginate(
     page: int = 1,
     page_size: int = 50,
     max_page_size: int = 500,
-) -> Tuple[List[Any], int]:
+) -> Tuple[Sequence[Any], int]:
     page = max(1, page)
     page_size = min(max(1, page_size), max_page_size)
     offset = (page - 1) * page_size

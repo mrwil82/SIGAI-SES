@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -8,8 +8,10 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
+
 try:
     from app.core.scheduler import start_scheduler, stop_scheduler
+
     _scheduler_available = True
 except ModuleNotFoundError:
     _scheduler_available = False
@@ -19,14 +21,25 @@ except ModuleNotFoundError:
 
     def stop_scheduler():
         pass
+
+
 from app.api.endpoints import (
-    auth, users, inventory, business, analytics, 
-    reports, alerts, regionales, import_data, monitoring
+    auth,
+    users,
+    inventory,
+    business,
+    analytics,
+    reports,
+    alerts,
+    regionales,
+    import_data,
+    monitoring,
 )
 import sys
 import logging
 import logging.config
 import os
+from typing import cast
 from pathlib import Path
 import time
 import json
@@ -34,8 +47,8 @@ import uuid
 from datetime import datetime, timezone
 from app.core.logger import set_request_id, set_user_id
 
-if getattr(sys, 'frozen', False):
-    BASE_DIR = Path(sys._MEIPASS)
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(getattr(sys, "_MEIPASS", ""))
     APP_DIR = Path(sys.executable).parent
     try:
         test_file = APP_DIR / "logs" / ".write_test"
@@ -44,7 +57,11 @@ if getattr(sys, 'frozen', False):
         test_file.unlink()
         LOG_DIR = os.getenv("LOG_DIR", str(APP_DIR / "logs"))
     except (PermissionError, OSError):
-        fallback = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "SIGAI-SES" / "logs"
+        fallback = (
+            Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            / "SIGAI-SES"
+            / "logs"
+        )
         LOG_DIR = os.getenv("LOG_DIR", str(fallback))
 else:
     BASE_DIR = Path(__file__).parent.parent
@@ -97,7 +114,7 @@ LOGGING_CONFIG = {
     "formatters": {
         "json": {
             "format": "%(message)s",
-            "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "class": "pythonjsonlogger.json.JsonFormatter",
         },
         "standard": {
             "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -131,6 +148,7 @@ async def lifespan(app: FastAPI):
 
     try:
         from scripts.init_db import init_database
+
         await init_database()
     except Exception as e:
         logger.warning(f"No se pudo ejecutar init_db automaticamente: {e}")
@@ -143,6 +161,7 @@ async def lifespan(app: FastAPI):
     stop_scheduler()
     logger.info("Deteniendo SIGAI-SES API...")
 
+
 app = FastAPI(
     title="SIGAI-SES API",
     description="Sistema Integral de Gestion de Activos e Inventario - Seguridad Electronica Securitas",
@@ -150,17 +169,25 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-static_dir = os.path.join(str(BASE_DIR), 'app', 'static')
+
+def _rate_limit_handler(request: Request, exc: Exception) -> Response:
+    return _rate_limit_exceeded_handler(request, cast(RateLimitExceeded, exc))
+
+
+app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
+
+static_dir = os.path.join(str(BASE_DIR), "app", "static")
 if not os.path.exists(static_dir):
-    os.makedirs(os.path.join(static_dir, 'avatars'), exist_ok=True)
-    os.makedirs(os.path.join(static_dir, 'web'), exist_ok=True)
-app.mount('/static', StaticFiles(directory=static_dir), name='static')
+    os.makedirs(os.path.join(static_dir, "avatars"), exist_ok=True)
+    os.makedirs(os.path.join(static_dir, "web"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
-LOCAL_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^capacitor://localhost$|^file://$"
+LOCAL_ORIGIN_REGEX = (
+    r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^capacitor://localhost$|^file://$"
+)
 
 try:
     cors_env = getattr(settings, "CORS_ALLOWED_ORIGINS", None)
@@ -199,7 +226,12 @@ async def log_requests(request: Request, call_next):
         try:
             from jose import jwt
             from app.core.config import settings
-            payload = jwt.decode(auth_header.replace("Bearer ", ""), settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+
+            payload = jwt.decode(
+                auth_header.replace("Bearer ", ""),
+                settings.SECRET_KEY,
+                algorithms=[settings.ALGORITHM],
+            )
             user_email = payload.get("sub")
             if user_email:
                 logger.debug(f"Request from user {user_email}")
@@ -218,7 +250,7 @@ async def log_requests(request: Request, call_next):
 
     logger.log(
         getattr(logging, level),
-        f"REQUEST END | {method} {path} | Status: {status_code} | Duration: {duration:.3f}s | IP: {client_ip} | req_id: {request_id}"
+        f"REQUEST END | {method} {path} | Status: {status_code} | Duration: {duration:.3f}s | IP: {client_ip} | req_id: {request_id}",
     )
 
     response.headers["X-Request-ID"] = request_id
@@ -256,33 +288,36 @@ async def health_check():
 
 
 # ── Servir frontend compilado (cuando existe la carpeta web/) ──
-web_dir = os.path.join(static_dir, 'web')
-index_path = os.path.join(web_dir, 'index.html')
+web_dir = os.path.join(static_dir, "web")
+index_path = os.path.join(web_dir, "index.html")
 if os.path.exists(index_path):
     from fastapi.responses import FileResponse as FR
 
-    assets_dir = os.path.join(web_dir, 'assets')
+    assets_dir = os.path.join(web_dir, "assets")
     if os.path.exists(assets_dir):
-        app.mount('/assets', StaticFiles(directory=assets_dir), name='web_assets')
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="web_assets")
 
-    @app.get('/', include_in_schema=False)
+    @app.get("/", include_in_schema=False)
     async def serve_root():
         return FR(index_path)
 
-    @app.get('/{full_path:path}', include_in_schema=False)
+    @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_frontend(full_path: str):
-        if full_path.startswith(('api/', 'static/', 'docs', 'openapi')):
+        if full_path.startswith(("api/", "static/", "docs", "openapi")):
             from fastapi.responses import JSONResponse
+
             return JSONResponse({"detail": "Not Found"}, status_code=404)
         fp = os.path.join(web_dir, full_path)
         if os.path.isfile(fp):
             return FR(fp)
         return FR(index_path)
+
 else:
+
     @app.get("/")
     async def root():
         return {
             "message": "Bienvenido al API de SIGAI-SES",
             "status": "Running",
-            "version": "1.0.0"
+            "version": "1.0.0",
         }

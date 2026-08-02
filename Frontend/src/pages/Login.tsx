@@ -1,24 +1,29 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { login as loginService } from "../services/auth";
-import { Card, Button, Badge } from "../components/Fusion";
+import { Button } from "../components/Fusion";
 import { Lock, User, AlertCircle, Eye, EyeOff } from "lucide-react";
+
+interface LoginFormValues {
+  username: string;
+  password: string;
+}
 
 const Login: React.FC = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm<LoginFormValues>();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -33,21 +38,27 @@ const Login: React.FC = () => {
       } else {
         throw new Error("No access token received");
       }
-    } catch (err: any) {
+    } catch (err) {
+      const e = err as {
+        message?: string;
+        response?: { status?: number; data?: { detail?: unknown } };
+      };
       console.error("Login error:", err);
-      console.error("Login error string:", err.message);
-      console.error("Login error response:", err.response);
-      console.error("Login error response data:", err.response?.data);
-      const detail = err.response?.data?.detail;
-      const status = err.response?.status;
-      const errMsg = err.message || "desconocido";
+      console.error("Login error string:", e.message);
+      console.error("Login error response:", e.response);
+      console.error("Login error response data:", e.response?.data);
+      const detail = e.response?.data?.detail;
+      const status = e.response?.status;
+      const errMsg = e.message || "desconocido";
       setError(
         Array.isArray(detail)
           ? detail
-              .map((e: any) => e.msg)
+              .map((d: { msg?: string }) => d.msg)
               .filter(Boolean)
               .join("; ")
-          : detail || `Error (${status}): ${errMsg}`,
+          : typeof detail === "string"
+            ? detail
+            : `Error (${status}): ${errMsg}`,
       );
     } finally {
       setIsLoading(false);
@@ -55,7 +66,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-bg0 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Fondo con gradientes animados */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-primary/10 rounded-full blur-[120px]" />
@@ -65,13 +76,13 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10 relative">
           {/* Icono grande y brillante */}
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-primary/20 to-emerald-primary/5 flex items-center justify-center shadow-[0_0_40px_rgba(0,194,106,0.2)] mb-6 border border-emerald-primary/30 backdrop-blur-md">
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-primary/20 to-emerald-primary/5 flex items-center justify-center shadow-[0_0_40px_rgba(var(--emerald-primary),0.2)] mb-6 border border-emerald-primary/30 backdrop-blur-md">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="56"
               height="56"
               viewBox="0 0 32 32"
-              className="drop-shadow-[0_0_10px_rgba(0,194,106,0.5)]"
+              className="drop-shadow-[0_0_10px_rgba(var(--emerald-primary),0.5)]"
             >
               <rect
                 x="2"
@@ -81,7 +92,7 @@ const Login: React.FC = () => {
                 rx="7"
                 fill="none"
                 stroke="url(#loginAccent)"
-                stroke-width="1.5"
+                strokeWidth="1.5"
               />
               <g transform="translate(8,8)">
                 <rect
@@ -92,7 +103,7 @@ const Login: React.FC = () => {
                   rx="1.5"
                   fill="none"
                   stroke="url(#loginAccent)"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                 />
                 <rect
                   x="1"
@@ -106,16 +117,16 @@ const Login: React.FC = () => {
                 <path
                   d="M5 10l2 2 4-4"
                   fill="none"
-                  stroke="#0d1a12"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  stroke="rgb(var(--btn-primary-text))"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </g>
               <defs>
                 <linearGradient id="loginAccent" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="rgb(var(--emerald-primary))" />
-                  <stop offset="100%" stop-color="rgb(var(--emerald-deep))" />
+                  <stop offset="0%" stopColor="rgb(var(--emerald-primary))" />
+                  <stop offset="100%" stopColor="rgb(var(--emerald-deep))" />
                 </linearGradient>
               </defs>
             </svg>
@@ -150,12 +161,22 @@ const Login: React.FC = () => {
                 />
                 <input
                   {...register("username", {
-                    required: "El correo/usuario es requerido",
+                    required: "Debe ingresar su credencial de acceso",
                   })}
-                  className="w-full bg-bginput border border-bg3 rounded-xl py-3.5 pl-12 pr-4 text-sm text-content-primary placeholder:text-content-muted/50 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all"
+                  className={`w-full bg-bginput border rounded-xl py-3.5 pl-12 pr-4 text-sm text-content-primary placeholder:text-content-muted/50 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all ${
+                    errors.username
+                      ? "border-danger/60 focus:ring-danger/50"
+                      : "border-bg3"
+                  }`}
                   placeholder="nombre.apellido@securitas.com"
                 />
               </div>
+              {errors.username && (
+                <p className="flex items-center gap-1.5 text-xs text-danger mt-1 ml-1 font-medium animate-pulse">
+                  <AlertCircle size={13} className="shrink-0" />
+                  {errors.username.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -169,10 +190,14 @@ const Login: React.FC = () => {
                 />
                 <input
                   {...register("password", {
-                    required: "La contraseña es requerida",
+                    required: "Debe ingresar su contraseña",
                   })}
                   type={showPassword ? "text" : "password"}
-                  className="w-full bg-bginput border border-bg3 rounded-xl py-3.5 pl-12 pr-12 text-sm text-content-primary placeholder:text-content-muted/50 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all"
+                  className={`w-full bg-bginput border rounded-xl py-3.5 pl-12 pr-12 text-sm text-content-primary placeholder:text-content-muted/50 focus:ring-1 focus:ring-emerald-primary/50 outline-none transition-all ${
+                    errors.password
+                      ? "border-danger/60 focus:ring-danger/50"
+                      : "border-bg3"
+                  }`}
                   placeholder="••••••••"
                 />
                 <button
@@ -183,6 +208,12 @@ const Login: React.FC = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="flex items-center gap-1.5 text-xs text-danger mt-1 ml-1 font-medium animate-pulse">
+                  <AlertCircle size={13} className="shrink-0" />
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <Button

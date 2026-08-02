@@ -1,13 +1,16 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 interface RoleProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles: string[];
 }
 
-const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ children, allowedRoles }) => {
+const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
+  children,
+  allowedRoles,
+}) => {
   const { token, isLoading, user } = useAuth();
 
   if (isLoading) {

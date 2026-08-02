@@ -70,6 +70,7 @@ def log_crud(func: Callable[..., Any]) -> Callable[..., Any]:
             raise
 
     import asyncio
+
     if asyncio.iscoroutinefunction(func):
         return async_wrapper
     return sync_wrapper

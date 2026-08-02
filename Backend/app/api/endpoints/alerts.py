@@ -37,17 +37,17 @@ async def listar_alertas(
 async def get_alerts_summary(db: AsyncSession = Depends(get_db)):
     """Endpoint para el resumen de alertas en el Dashboard."""
     alerts = await crud_alerts.get_all_alerts(db, estado="activa")
-    
+
     stock_alerts = [
-        {"id": getattr(a, "id"), "title": getattr(a, "titulo"), "count": getattr(a, "valor_actual")} 
+        {"id": getattr(a, "id"), "title": getattr(a, "titulo"), "count": getattr(a, "valor_actual")}
         for a in alerts if getattr(a, "tipo") == "stock_bajo"
     ]
-    
+
     garantia_alerts = [
-        {"id": getattr(a, "id"), "title": getattr(a, "titulo")} 
+        {"id": getattr(a, "id"), "title": getattr(a, "titulo")}
         for a in alerts if getattr(a, "tipo") == "garantia_vencida"
     ]
-    
+
     return {
         "total": len(alerts),
         "stock": stock_alerts,
@@ -56,18 +56,18 @@ async def get_alerts_summary(db: AsyncSession = Depends(get_db)):
 
 @router.patch("/{id}/estado", response_model=AlertRead)
 async def actualizar_estado(
-    id: int, 
-    body: AlertUpdate, 
+    id: int,
+    body: AlertUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """Actualiza el estado de una alerta y registra en auditoría."""
     estado_str = str(body.estado.value) if body.estado else "activa"
     alerta = await crud_alerts.update_alert_status(
-        db, 
-        alert_id=id, 
-        estado=estado_str, 
-        notas=body.notas or "", 
+        db,
+        alert_id=id,
+        estado=estado_str,
+        notas=body.notas or "",
         current_user_id=getattr(current_user, "id_usuario", 0),
         valor_actual=body.valor_actual,
         solucion=body.solucion,
@@ -79,7 +79,7 @@ async def actualizar_estado(
 
 @router.delete("/{id}")
 async def eliminar_alerta(
-    id: int, 
+    id: int,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):

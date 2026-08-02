@@ -50,7 +50,7 @@ stateDiagram-v2
     ENVIADO_PROVEEDOR --> RECIBIDO_PROVEEDOR: Proveedor devuelve
     RECIBIDO_PROVEEDOR --> ENTREGADO_CLIENTE: Verificación OK
     ENTREGADO_CLIENTE --> [*]: Acta firmada
-    
+
     note right of EN_LABORATORIO
         Si supera 15 días sin
         movimiento → ALERTA_ESTANCADA

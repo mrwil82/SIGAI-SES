@@ -244,5 +244,3 @@ Ejemplos:
 <p align="center">
  <sub>Políticas de Calidad — SIGAI-SES · Securitas Colombia S.A. · Unidad de Seguridad Electrónica (SES)</sub>
 </p>
-
-

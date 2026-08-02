@@ -3,17 +3,20 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 
+
 class AlertEstado(str, Enum):
     ACTIVA = "activa"
     RECONOCIDA = "reconocida"
     RESUELTA = "resuelta"
     IGNORADA = "ignorada"
 
+
 class AlertPrioridad(str, Enum):
     CRITICA = "critica"
     ALTA = "alta"
     MEDIA = "media"
     BAJA = "baja"
+
 
 class AlertUpdate(BaseModel):
     estado: Optional[AlertEstado] = None
@@ -23,6 +26,7 @@ class AlertUpdate(BaseModel):
     valor_actual: Optional[float] = None
     solucion: Optional[str] = None
     asignado_a: Optional[int] = None
+
 
 class AlertRead(BaseModel):
     id: int
@@ -39,5 +43,5 @@ class AlertRead(BaseModel):
     valor_umbral: Optional[float] = None
     asignado_a: Optional[int] = None
     solucion: Optional[str] = None
-    
+
     model_config = ConfigDict(from_attributes=True)

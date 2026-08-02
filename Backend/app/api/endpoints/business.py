@@ -59,7 +59,7 @@ async def delete_acta(
 
 @router.post("/clientes", response_model=Cliente)
 async def create_cliente(
-    cliente_in: ClienteCreate, 
+    cliente_in: ClienteCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -86,8 +86,8 @@ async def read_cliente(
 
 @router.put("/clientes/{id_cliente}", response_model=Cliente)
 async def update_cliente(
-    id_cliente: int, 
-    cliente_in: ClienteUpdate, 
+    id_cliente: int,
+    cliente_in: ClienteUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -111,7 +111,7 @@ async def delete_cliente(
 
 @router.post("/proyectos", response_model=Proyecto)
 async def create_proyecto(
-    proyecto_in: ProyectoCreate, 
+    proyecto_in: ProyectoCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -138,8 +138,8 @@ async def read_proyecto(
 
 @router.put("/proyectos/{id_proyecto}", response_model=Proyecto)
 async def update_proyecto(
-    id_proyecto: int, 
-    proyecto_in: ProyectoUpdate, 
+    id_proyecto: int,
+    proyecto_in: ProyectoUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -163,7 +163,7 @@ async def delete_proyecto(
 
 @router.post("/proveedores", response_model=Proveedor)
 async def create_proveedor(
-    prov_in: ProveedorCreate, 
+    prov_in: ProveedorCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -180,8 +180,8 @@ async def read_proveedores(
 
 @router.put("/proveedores/{id_proveedor}", response_model=Proveedor)
 async def update_proveedor(
-    id_proveedor: int, 
-    prov_in: ProveedorUpdate, 
+    id_proveedor: int,
+    prov_in: ProveedorUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -206,7 +206,7 @@ async def delete_proveedor(
 
 @router.post("/movimientos", response_model=Movimiento)
 async def create_movimiento(
-    mov_in: MovimientoCreate, 
+    mov_in: MovimientoCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -221,11 +221,11 @@ async def read_movimientos(
     movimientos, total = await crud_business.get_movimientos(db, skip=(page - 1) * page_size, limit=page_size)
     return PaginatedResponse.create(movimientos, total, page, page_size)
 
-#  GARANTÍAS 
+#  GARANTÍAS
 
 @router.post("/garantias", response_model=Garantia)
 async def create_garantia(
-    gar_in: GarantiaCreate, 
+    gar_in: GarantiaCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -252,8 +252,8 @@ async def read_garantia(
 
 @router.put("/garantias/{id_garantia}", response_model=Garantia)
 async def update_garantia(
-    id_garantia: int, 
-    gar_in: GarantiaUpdate, 
+    id_garantia: int,
+    gar_in: GarantiaUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -273,7 +273,7 @@ async def delete_garantia(
         raise HTTPException(status_code=404, detail="Garantía no encontrada")
     return {"message": "Garantía eliminada"}
 
-# ACTAS Y REPORTES 
+# ACTAS Y REPORTES
 
 @router.post("/actas/generate")
 async def generate_acta(data: dict, current_user = Depends(get_current_user)):
@@ -303,7 +303,7 @@ async def generate_acta_by_id(
         raise HTTPException(status_code=404, detail="Acta no encontrada")
 
     # Construir los datos del pdf a partir del acta
-    
+
     tecnico = getattr(acta, 'tecnico', None)
     proyecto = getattr(acta, 'proyecto', None)
 
@@ -320,6 +320,8 @@ async def generate_acta_by_id(
             'observaciones': getattr(d, 'notas_estado', '') or '',
         })
 
+    fecha_entrega = getattr(acta, 'fecha_entrega', None)
+
     data = {
         'id_acta': acta.id_acta,
         'numero_acta': acta.numero_acta,
@@ -329,7 +331,7 @@ async def generate_acta_by_id(
         'nombre_tecnico': getattr(tecnico, 'nombre', '') or '',
         'cedula': getattr(tecnico, 'cedula', '') or '',
         'codigo': getattr(tecnico, 'codigo_empleado', '') or '',
-        'fecha': getattr(acta, 'fecha_entrega', None).strftime("%d/%m/%Y") if getattr(acta, 'fecha_entrega', None) else datetime.now().strftime("%d/%m/%Y"),
+        'fecha': fecha_entrega.strftime("%d/%m/%Y") if fecha_entrega else datetime.now().strftime("%d/%m/%Y"),
         'regional': getattr(tecnico, 'regional', 'BOGOTÁ').upper(),
         'items': items,
         'observaciones_generales': getattr(acta, 'observaciones', '') or '',

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import TypeVar, Generic, List, Optional
+from typing import TypeVar, Generic, List, Optional, Sequence
 
 T = TypeVar("T")
 
@@ -15,7 +15,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @classmethod
-    def create(cls, items: List[T], total: int, page: int, page_size: int) -> "PaginatedResponse[T]":
+    def create(cls, items: Sequence[T], total: int, page: int, page_size: int) -> "PaginatedResponse[T]":
         total_pages = max(1, (total + max(1, page_size) - 1) // max(1, page_size))
         return cls(
             items=items,

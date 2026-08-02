@@ -174,19 +174,19 @@ gantt
     title SIGAI-SES Roadmap
     dateFormat  YYYY-MM
     axisFormat  %b %Y
-    
+
     section Prototipo
     v0.1.0 - Prototipo inicial          :done, 2026-04, 1M
-    
+
     section MVP
     v0.5.0 - MVP Funcional              :done, 2026-05, 1M
-    
+
     section Pre-release
     v0.9.0 - Features + Docs            :done, 2026-06, 1M
-    
+
     section Release
     v1.0.0 - Release Candidate          :done, 2026-07, 1M
-    
+
     section Futuro
     v1.1.0 - Mejoras continuas         :active, 2026-08, 2M
 ```

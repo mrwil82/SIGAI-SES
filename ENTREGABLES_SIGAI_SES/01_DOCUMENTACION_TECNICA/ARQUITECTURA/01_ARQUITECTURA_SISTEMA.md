@@ -183,22 +183,22 @@ sequenceDiagram
     U->>N: HTTPS Request
     N->>F: proxy_pass :8000
     activate F
-    
+
     Note over F: 🔐 Valida JWT (python-jose)
     Note over F: 👤 Autoriza rol (RBAC)
     Note over F: ✅ Valida datos (Pydantic)
     Note over F: ⚙️ Ejecuta CRUD
     Note over F: 📝 Registra auditoría
-    
+
     F->>M: Consulta SQLAlchemy Async
     activate M
     M-->>F: Resultado
     deactivate M
-    
+
     F-->>N: JSON Response
     deactivate F
     N-->>U: HTTPS Response
-    
+
     Note over U: 🔄 React actualiza estado
     Note over U: 🎨 Re-renderiza vista
 ```

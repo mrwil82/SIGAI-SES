@@ -52,7 +52,9 @@ async def wait_for_db(engine, max_retries=30, retry_interval=2):
                 )
                 await asyncio.sleep(retry_interval)
             else:
-                logger.error("No se pudo conectar a la base de datos despues de varios intentos.")
+                logger.error(
+                    "No se pudo conectar a la base de datos despues de varios intentos."
+                )
                 return False
     return False
 

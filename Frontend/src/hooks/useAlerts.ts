@@ -7,6 +7,28 @@ interface AlertParams {
   page_size?: number;
 }
 
+interface AlertCreatePayload {
+  tipo: string;
+  titulo: string;
+  descripcion?: string;
+  prioridad?: string;
+  estado?: string;
+  valor_actual?: number;
+  valor_umbral?: number;
+  asignado_a?: number;
+  item_id?: number;
+}
+
+interface AlertUpdatePayload {
+  estado?: string;
+  notas?: string;
+  titulo?: string;
+  prioridad?: string;
+  valor_actual?: number;
+  solucion?: string;
+  asignado_a?: number;
+}
+
 export const useAlerts = (params: AlertParams = {}) => {
   return useQuery({
     queryKey: ['alerts', params],
@@ -20,7 +42,7 @@ export const useAlerts = (params: AlertParams = {}) => {
 export const useCreateAlert = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => api.post('/alerts/', data),
+    mutationFn: (data: AlertCreatePayload) => api.post('/alerts/', data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
   });
 };
@@ -28,7 +50,7 @@ export const useCreateAlert = () => {
 export const useUpdateAlertEstado = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: any }) =>
+    mutationFn: ({ id, payload }: { id: number; payload: AlertUpdatePayload }) =>
       api.patch(`/alerts/${id}/estado`, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
   });

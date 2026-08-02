@@ -3,8 +3,8 @@ export interface InventoryItem {
   nombre_equipo: string;
   marca: string;
   referencia: string;
-  categoria?: string; 
-  tipo_acta_permitido?: string[]; 
+  categoria?: string;
+  tipo_acta_permitido?: string[];
 }
 
 export interface Activo {
@@ -22,6 +22,25 @@ export interface ActaItem {
   serie: string;
   cantidad: number;
   observaciones: string;
+}
+
+export interface ActaDetalle {
+  descripcion?: string;
+  id_item?: number | string;
+  cantidad?: number;
+  notas_estado?: string;
+  observaciones?: string;
+}
+
+export interface Acta {
+  id_acta?: number;
+  numero_acta?: string;
+  tipo_acta?: string;
+  estado_acta?: string;
+  observaciones?: string;
+  id_proyecto?: number | null;
+  id_usuario_tecnico?: number | null;
+  detalles?: ActaDetalle[];
 }
 
 export interface ActaFormData {

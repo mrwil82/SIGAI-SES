@@ -190,7 +190,3 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
   <img src="https://img.shields.io/badge/Última%20actualización-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualización"><br>
    v1.0.0
 </p>
-
-
-
-

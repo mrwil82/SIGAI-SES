@@ -224,22 +224,22 @@ gantt
  title Plan de Ejecución SIGAI-SES v2.0
  dateFormat YYYY-MM-DD
  axisFormat Sprint %S
- 
+
  section Sprint 1
  Cimiento y Auth :s1, 2026-05-04, 14d
- 
+
  section Sprint 2
  Inventario Base :s2, after s1, 14d
- 
+
  section Sprint 3
  Garantías y Seriales :s3, after s2, 14d
- 
+
  section Sprint 4
  Operación y Actas :s4, after s3, 14d
- 
+
  section Sprint 5
  Laboratorio y Dashboards :s5, after s4, 14d
- 
+
  section Sprint 6
  QA y Despliegue :s6, after s5, 14d
 ```
@@ -247,7 +247,7 @@ gantt
 ---
 
 > [!NOTE]
-> **Revisión técnica realizada por el Desarrollador Senior** — *SIGAI-SES v2.0* 
+> **Revisión técnica realizada por el Desarrollador Senior** — *SIGAI-SES v2.0*
 > **Enfoque:** Escalabilidad, Trazabilidad y Seguridad.
 
 <p align="center">
@@ -255,4 +255,3 @@ gantt
  <br>
  <sub>© 2026 — Seguridad Electrónica Securitas. Todos los derechos reservados.</sub>
 </p>
-

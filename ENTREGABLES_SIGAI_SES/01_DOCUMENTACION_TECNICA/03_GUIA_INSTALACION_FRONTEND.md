@@ -71,7 +71,7 @@ npm run dev
 ```
 
 > [!IMPORTANT]
-> El frontend estará disponible en **http://localhost:5173** 
+> El frontend estará disponible en **http://localhost:5173**
 
 ### 3.4 Generar versión de producción
 
@@ -241,8 +241,3 @@ npm run build && echo " Build exitoso"
   <img src="https://img.shields.io/badge/Última%20actualización-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualización"><br>
    v1.0.0
 </p>
-
-
-
-
-

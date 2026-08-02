@@ -1,13 +1,17 @@
 /* FORCE REFRESH: SIGAI-SES CSS */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @keyframes toast-progress {
-  from { transform: scaleX(1); }
-  to   { transform: scaleX(0); }
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 /* ===== TEMA VERDE (default) ===== */
@@ -42,45 +46,51 @@
   --btn-primary-text: 10 15 13;
   --btn-neo-text: 154 184 164;
 
-  --shadow-neo: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(255,255,255,0.03);
-  --shadow-neo-inset: inset 3px 3px 8px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.03);
-  --shadow-glow-sm: 0 0 12px rgba(0,194,106,0.3);
+  --shadow-neo:
+    4px 4px 12px rgba(0, 0, 0, 0.5), -2px -2px 8px rgba(255, 255, 255, 0.03);
+  --shadow-neo-inset:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.5),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.03);
+  --shadow-glow-sm: 0 0 12px rgba(0, 194, 106, 0.3);
 }
 
-/* ===== TEMA AZUL COBALTO (más negro) ===== */
+/* ===== TEMA AZUL COBALTO */
 [data-theme="blue"] {
-  --bg0: 5 7 14;
-  --bg1: 8 12 26;
-  --bg2: 12 18 38;
-  --bg3: 16 26 50;
-  --bg4: 20 34 62;
-  --bginput: 6 10 20;
+  --bg0: 7 10 20;
+  --bg1: 11 17 33;
+  --bg2: 16 24 46;
+  --bg3: 22 34 62;
+  --bg4: 28 44 80;
+  --bginput: 9 14 28;
 
-  --emerald-primary: 55 135 250;
-  --emerald-bright: 85 165 255;
-  --emerald-glow: 120 185 255;
-  --emerald-muted: 16 40 80;
-  --emerald-deep: 8 20 45;
+  --emerald-primary: 75 155 255;
+  --emerald-bright: 110 185 255;
+  --emerald-glow: 150 205 255;
+  --emerald-muted: 24 56 106;
+  --emerald-deep: 12 30 64;
 
-  --chart-green: 55 135 250;
-  --chart-blue: 85 165 255;
-  --chart-orange: 255 140 66;
-  --chart-purple: 155 109 255;
-  --chart-teal: 0 200 195;
+  --chart-green: 75 155 255;
+  --chart-blue: 110 185 255;
+  --chart-orange: 255 155 80;
+  --chart-purple: 170 125 255;
+  --chart-teal: 45 215 210;
 
-  --gold: 245 166 35;
-  --danger: 255 77 77;
-  --cyan: 0 200 195;
+  --gold: 250 180 55;
+  --danger: 255 95 95;
+  --cyan: 45 215 210;
 
-  --content-primary: 210 225 245;
-  --content-secondary: 130 155 195;
-  --content-muted: 80 105 145;
-  --btn-primary-text: 5 7 14;
-  --btn-neo-text: 130 155 195;
+  --content-primary: 228 238 252;
+  --content-secondary: 165 188 225;
+  --content-muted: 115 140 180;
+  --btn-primary-text: 6 10 20;
+  --btn-neo-text: 170 195 235;
 
-  --shadow-neo: 4px 4px 12px rgba(0,0,0,0.6), -2px -2px 8px rgba(255,255,255,0.03);
-  --shadow-neo-inset: inset 3px 3px 8px rgba(0,0,0,0.6), inset -1px -1px 4px rgba(255,255,255,0.03);
-  --shadow-glow-sm: 0 0 12px rgba(55,135,250,0.3);
+  --shadow-neo:
+    4px 4px 12px rgba(0, 0, 0, 0.55), -2px -2px 8px rgba(255, 255, 255, 0.04);
+  --shadow-neo-inset:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.55),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.04);
+  --shadow-glow-sm: 0 0 12px rgba(75, 155, 255, 0.35);
 }
 
 /* ===== TEMA BLANCO HUESO (LIGHT) ===== */
@@ -88,8 +98,8 @@
   --bg0: 255 250 240;
   --bg1: 244 234 218;
   --bg2: 228 214 192;
-  --bg3: 30 40 70;
-  --bg4: 20 30 55;
+  --bg3: 205 188 164;
+  --bg4: 185 166 140;
   --bginput: 232 218 198;
 
   --emerald-primary: 200 165 100;
@@ -112,10 +122,13 @@
   --content-secondary: 40 52 85;
   --content-muted: 100 112 140;
   --btn-primary-text: 8 14 30;
-  --btn-neo-text: 210 220 240;
+  --btn-neo-text: 40 52 85;
 
-  --shadow-neo: 4px 4px 12px rgba(20, 30, 55, 0.12), -2px -2px 8px rgba(255, 255, 255, 0.7);
-  --shadow-neo-inset: inset 3px 3px 8px rgba(20, 30, 55, 0.08), inset -1px -1px 4px rgba(255, 255, 255, 0.5);
+  --shadow-neo:
+    4px 4px 12px rgba(20, 30, 55, 0.12), -2px -2px 8px rgba(255, 255, 255, 0.7);
+  --shadow-neo-inset:
+    inset 3px 3px 8px rgba(20, 30, 55, 0.08),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.5);
   --shadow-glow-sm: 0 0 12px rgba(200, 165, 100, 0.25);
 }
 
@@ -150,14 +163,10 @@ select option {
   }
 
   .glass-card {
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     background-color: rgba(var(--bg1), 0.7);
     border: 1px solid rgba(var(--bg3), 0.3);
-  }
-
-  .sidebar-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,194,106,0.2) transparent;
   }
 
   .sidebar-scroll::-webkit-scrollbar {
@@ -178,11 +187,6 @@ select option {
   }
 
   /* Scrollbar Minimalista Global */
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-  }
-
   .custom-scrollbar::-webkit-scrollbar {
     width: 5px;
     height: 5px;
@@ -206,4 +210,8 @@ select option {
 img {
   max-width: 100%;
   height: auto;
+}
+
+.chart-axis-tick text {
+  fill: rgb(var(--content-muted));
 }

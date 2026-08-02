@@ -9,8 +9,6 @@ import {
   Search,
   Trash2,
   Eye,
-  X,
-  ExternalLink,
 } from "lucide-react";
 import {
   DashboardLayout,
@@ -26,7 +24,6 @@ import {
   NeoSelect,
   Modal,
   FormGroup,
-  Badge,
 } from "../components/Fusion";
 import { ConfirmModal } from "../components/Fusion";
 import { SearchableSelect } from "../components/SearchableSelect";
@@ -45,8 +42,47 @@ import {
 } from "../services/inventory";
 import { getProyectos, getClientes } from "../services/business";
 
+interface ActivoTriaje {
+  id_activo: number;
+  serial?: string;
+  calificacion_tecnica?: string;
+  observaciones?: string;
+  estado_actual?: string;
+  condicion_fisica?: string;
+  ubicacion_fisica?: string;
+  area_asignada?: string;
+  fecha_ingreso_laboratorio?: string;
+  fecha_triaje?: string;
+  item?: { nombre_equipo?: string; referencia?: string; marca?: string };
+  proyecto?: { nombre_proyecto?: string };
+  cliente_actual?: { nombre_comercial?: string; nombre?: string };
+}
+
+interface ItemCatalogo {
+  id_item: number;
+  nombre_equipo?: string;
+  categoria?: string;
+  marca?: string;
+  referencia?: string;
+}
+
+interface ProyectoCatalogo {
+  id_proyecto: number;
+  nombre_proyecto: string;
+}
+
+interface ClienteCatalogo {
+  id_cliente: number;
+  nombre: string;
+}
+
+const errorDetail = (err: unknown): unknown => {
+  const r = (err as { response?: { data?: { detail?: unknown } } }).response;
+  return r?.data?.detail;
+};
+
 const Desmontes: React.FC = () => {
-  const [activos, setActivos] = useState<any[]>([]);
+  const [activos, setActivos] = useState<ActivoTriaje[]>([]);
   const [triajeData, setTriajeData] = useState<
     Record<number, { calificacion: string; observaciones: string }>
   >({});
@@ -59,9 +95,9 @@ const Desmontes: React.FC = () => {
   const [isDesmonteModalOpen, setIsDesmonteModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [items, setItems] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [clientes, setClientes] = useState<any[]>([]);
+  const [items, setItems] = useState<ItemCatalogo[]>([]);
+  const [projects, setProjects] = useState<ProyectoCatalogo[]>([]);
+  const [clientes, setClientes] = useState<ClienteCatalogo[]>([]);
 
   const [selectedProjectId, setSelectedProjectId] = useState<
     number | undefined
@@ -87,8 +123,11 @@ const Desmontes: React.FC = () => {
       const data = await getActivosParaTriaje();
       const itemsList = data.items || [];
       setActivos(itemsList);
-      const initialData: any = {};
-      itemsList.forEach((a: any) => {
+      const initialData: Record<
+        number,
+        { calificacion: string; observaciones: string }
+      > = {};
+      itemsList.forEach((a: ActivoTriaje) => {
         initialData[a.id_activo] = {
           calificacion: a.calificacion_tecnica || "BUENO",
           observaciones: a.observaciones || "",
@@ -132,12 +171,13 @@ const Desmontes: React.FC = () => {
   };
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [selectedActivo, setSelectedActivo] = useState<any>(null);
+  const [selectedActivo, setSelectedActivo] = useState<ActivoTriaje | null>(
+    null,
+  );
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
-  const [deleting, setDeleting] = useState(false);
   const performProcesarTriaje = async (id: number | null) => {
     if (!id) return closeConfirm();
     setLoading(true);
@@ -186,7 +226,6 @@ const Desmontes: React.FC = () => {
 
   const performDelete = async () => {
     if (!deleteTarget) return;
-    setDeleting(true);
     try {
       await deleteActivo(deleteTarget);
       toast.success("Activo eliminado de la lista de triaje");
@@ -195,8 +234,6 @@ const Desmontes: React.FC = () => {
       cargarActivos();
     } catch (err) {
       toast.error("Error al eliminar activo");
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -251,15 +288,17 @@ const Desmontes: React.FC = () => {
       setDesmonteSearch("");
       setDesmonteCatFilter("all");
       cargarActivos();
-    } catch (error: any) {
-      const detail = error.response?.data?.detail;
+    } catch (error) {
+      const detail = errorDetail(error);
       setError(
         Array.isArray(detail)
           ? detail
-              .map((e: any) => e.msg)
+              .map((e: { msg?: string }) => e.msg)
               .filter(Boolean)
               .join("; ")
-          : detail || "Error al registrar desmontes.",
+          : typeof detail === "string"
+            ? detail
+            : "Error al registrar desmontes.",
       );
     } finally {
       setLoading(false);
@@ -385,7 +424,7 @@ const Desmontes: React.FC = () => {
                       value={
                         triajeData[activo.id_activo]?.calificacion || "BUENO"
                       }
-                      onChange={(e: any) =>
+                      onChange={(e) =>
                         setTriajeData((prev) => ({
                           ...prev,
                           [activo.id_activo]: {
@@ -490,14 +529,14 @@ const Desmontes: React.FC = () => {
                     ? String(selectedClienteId)
                     : ""
                 }
-                onChange={(e: any) => {
+                onChange={(e) => {
                   const val = e.target.value;
                   setSelectedClienteId(val ? parseInt(val) : undefined);
                   setSelectedProjectId(undefined);
                 }}
               >
                 <option value="">Seleccione cliente...</option>
-                {clientes.map((c: any) => (
+                {clientes.map((c) => (
                   <option key={c.id_cliente} value={c.id_cliente}>
                     {c.nombre}
                   </option>
@@ -511,14 +550,14 @@ const Desmontes: React.FC = () => {
                     ? String(selectedProjectId)
                     : ""
                 }
-                onChange={(e: any) => {
+                onChange={(e) => {
                   const val = e.target.value;
                   setSelectedProjectId(val ? parseInt(val) : undefined);
                   setSelectedClienteId(undefined);
                 }}
               >
                 <option value="">Seleccione proyecto...</option>
-                {projects.map((p: any) => (
+                {projects.map((p) => (
                   <option key={p.id_proyecto} value={p.id_proyecto}>
                     {p.nombre_proyecto}
                   </option>
@@ -542,9 +581,9 @@ const Desmontes: React.FC = () => {
                 key={cat}
                 onClick={() => setDesmonteCatFilter(cat)}
                 className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all border ${
-                    desmonteCatFilter === cat
-                      ? "bg-emerald-muted border-emerald-primary/40 text-emerald-primary"
-                      : "bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-primary/20 hover:text-content"
+                  desmonteCatFilter === cat
+                    ? "bg-emerald-muted border-emerald-primary/40 text-emerald-primary"
+                    : "bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-primary/20 hover:text-content"
                 }`}
               >
                 {cat === "all" ? "Todos" : cat}
@@ -586,7 +625,7 @@ const Desmontes: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {items.filter((it: any) => {
+                {items.filter((it) => {
                   const cat = it.categoria ?? "OTROS";
                   const matchesCat =
                     desmonteCatFilter === "all" || cat === desmonteCatFilter;
@@ -610,7 +649,7 @@ const Desmontes: React.FC = () => {
                   </tr>
                 ) : (
                   items
-                    .filter((it: any) => {
+                    .filter((it) => {
                       const cat = it.categoria ?? "OTROS";
                       const matchesCat =
                         desmonteCatFilter === "all" ||
@@ -623,7 +662,7 @@ const Desmontes: React.FC = () => {
                         it.referencia?.toLowerCase().includes(term);
                       return matchesCat && matchSearch;
                     })
-                    .map((it: any) => {
+                    .map((it) => {
                       const isSelected =
                         desmonteSelections[it.id_item] !== undefined;
                       return (
@@ -717,7 +756,7 @@ const Desmontes: React.FC = () => {
               <SearchableSelect
                 options={[
                   { value: "", label: "Ninguno" },
-                  ...clientes.map((c: any) => ({
+                  ...clientes.map((c) => ({
                     value: String(c.id_cliente),
                     label: c.nombre,
                   })),
@@ -739,7 +778,7 @@ const Desmontes: React.FC = () => {
               <SearchableSelect
                 options={[
                   { value: "", label: "Ninguno" },
-                  ...projects.map((p: any) => ({
+                  ...projects.map((p) => ({
                     value: String(p.id_proyecto),
                     label: p.nombre_proyecto,
                   })),
@@ -777,15 +816,17 @@ const Desmontes: React.FC = () => {
                     setSuccess(res.mensaje);
                     cargarActivos();
                     setIsImportModalOpen(false);
-                  } catch (err: any) {
-                    const detail = err.response?.data?.detail;
+                  } catch (error) {
+                    const detail = errorDetail(error);
                     setError(
                       Array.isArray(detail)
                         ? detail
-                            .map((e: any) => e.msg)
+                            .map((e: { msg?: string }) => e.msg)
                             .filter(Boolean)
                             .join("; ")
-                        : detail || "Error al importar archivo",
+                        : typeof detail === "string"
+                          ? detail
+                          : "Error al importar archivo",
                     );
                   } finally {
                     setImporting(false);

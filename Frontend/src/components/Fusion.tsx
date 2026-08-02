@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { ToastProvider } from "./Toaster";
 import {
   LayoutDashboard,
@@ -20,18 +20,29 @@ import {
   FileText,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { getDashboardAlerts } from "../services/alerts";
 import { globalSearch } from "../services/analytics";
 import { logger } from "../lib/logger";
+import { resolveAvatarUrl } from "../lib/avatar";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
-const API_BACKEND_BASE = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
+interface AlertSummaryItem {
+  id: number;
+  title: string;
+  count?: number;
+}
 
-export function resolveAvatarUrl(url: string | undefined): string | undefined {
-  if (!url) return undefined;
-  if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) return url;
-  return undefined;
+interface AlertSummary {
+  total: number;
+  stock: AlertSummaryItem[];
+  garantias: AlertSummaryItem[];
+}
+
+interface SearchResult {
+  title: string;
+  type: string;
+  subtitle: string;
+  link: string;
 }
 
 export const AvatarImg: React.FC<{
@@ -123,7 +134,9 @@ export const Modal: React.FC<ModalProps> = ({
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-bg3 shadow-neo overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}>
+      <div
+        className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl my-8 bg-bg1 rounded-xl md:rounded-2xl border border-bg3 shadow-neo overflow-hidden animate-in fade-in zoom-in duration-200 ${className}`}
+      >
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-bg4 bg-bg2">
           <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-emerald-primary">
             {title}
@@ -502,7 +515,7 @@ const SidebarItem = ({
   isCollapsed,
 }: {
   to: string;
-  icon: any;
+  icon: React.ReactNode;
   label: string;
   active?: boolean;
   onClick?: () => void;
@@ -544,7 +557,7 @@ const NavButton = ({
   className = "",
   onClick,
 }: {
-  icon: any;
+  icon: React.ReactNode;
   count?: number;
   className?: string;
   onClick?: () => void;
@@ -566,12 +579,10 @@ const Sidebar = ({
   className = "",
   onItemClick,
   isCollapsed,
-  onToggle,
 }: {
   className?: string;
   onItemClick?: () => void;
   isCollapsed: boolean;
-  onToggle: () => void;
 }) => {
   const location = useLocation();
   const { logout, user } = useAuth();
@@ -593,12 +604,50 @@ const Sidebar = ({
           onClick={onItemClick}
         >
           <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center shadow-neo group-hover:shadow-glow transition-all duration-300 shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32">
-              <rect x="2" y="2" width="28" height="28" rx="7" fill="none" stroke="rgb(var(--emerald-primary))" stroke-width="1.5"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 32 32"
+            >
+              <rect
+                x="2"
+                y="2"
+                width="28"
+                height="28"
+                rx="7"
+                fill="none"
+                stroke="rgb(var(--emerald-primary))"
+                strokeWidth="1.5"
+              />
               <g transform="translate(8,8)">
-                <rect x="1" y="3" width="14" height="11" rx="1.5" fill="none" stroke="rgb(var(--emerald-primary))" stroke-width="1.5"/>
-                <rect x="1" y="1" width="14" height="3" rx="1" fill="rgb(var(--emerald-primary))" opacity="0.9"/>
-                <path d="M5 10l2 2 4-4" fill="none" stroke="#0d1a12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect
+                  x="1"
+                  y="3"
+                  width="14"
+                  height="11"
+                  rx="1.5"
+                  fill="none"
+                  stroke="rgb(var(--emerald-primary))"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  x="1"
+                  y="1"
+                  width="14"
+                  height="3"
+                  rx="1"
+                  fill="rgb(var(--emerald-primary))"
+                  opacity="0.9"
+                />
+                <path
+                  d="M5 10l2 2 4-4"
+                  fill="none"
+                  stroke="rgb(var(--btn-primary-text))"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </g>
             </svg>
           </div>
@@ -767,10 +816,10 @@ const Navbar = ({
   onToggleSidebar: () => void;
 }) => {
   const [showAlerts, setShowAlerts] = useState(false);
-  const [alerts, setAlerts] = useState<any>(null);
+  const [alerts, setAlerts] = useState<AlertSummary | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = React.useRef<HTMLDivElement>(null);
@@ -935,12 +984,12 @@ const Navbar = ({
         <div className="flex gap-2 md:gap-3 relative">
           <NavButton
             icon={<Bell size={18} />}
-            count={alerts?.total > 0 ? alerts.total : undefined}
+            count={alerts && alerts.total > 0 ? alerts.total : undefined}
             onClick={() => setShowAlerts(!showAlerts)}
           />
           <NavButton
             icon={<Settings size={18} />}
-            onClick={() => navigate('/settings')}
+            onClick={() => navigate("/settings")}
           />
 
           {showAlerts && alerts && (
@@ -957,7 +1006,7 @@ const Navbar = ({
                     <p className="text-[9px] font-bold uppercase text-gold tracking-widest">
                       Stock Crítico
                     </p>
-                    {alerts.stock.map((s: any, i: number) => (
+                    {alerts.stock.map((s: AlertSummaryItem, i: number) => (
                       <div
                         key={i}
                         onClick={() => handleAlertClick(s.id)}
@@ -978,7 +1027,7 @@ const Navbar = ({
                     <p className="text-[9px] font-bold uppercase text-danger/80 tracking-widest mt-2">
                       Garantías (Vencimiento)
                     </p>
-                    {alerts.garantias.map((g: any, i: number) => (
+                    {alerts.garantias.map((g: AlertSummaryItem, i: number) => (
                       <div
                         key={i}
                         onClick={() => handleAlertClick(g.id)}
@@ -1005,7 +1054,6 @@ const Navbar = ({
               </button>
             </div>
           )}
-
         </div>
       </div>
     </header>
@@ -1028,7 +1076,6 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
         <Sidebar
           className="hidden lg:flex flex-shrink-0"
           isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
 
         {/* Sidebar para Móvil */}
@@ -1050,7 +1097,6 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
           `}
             onItemClick={() => setIsSidebarOpen(false)}
             isCollapsed={false}
-            onToggle={() => {}}
           />
         </div>
 

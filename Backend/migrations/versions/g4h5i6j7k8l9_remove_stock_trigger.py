@@ -35,7 +35,7 @@ def downgrade() -> None:
             VALUES (NEW.id_item, NEW.cantidad)
             ON DUPLICATE KEY UPDATE cantidad_actual = cantidad_actual + NEW.cantidad;
         ELSEIF NEW.tipo_movimiento IN ('SALIDA_INSTALACION', 'BAJA_DAÑO') THEN
-          UPDATE stock_bulk 
+          UPDATE stock_bulk
             SET cantidad_actual = GREATEST(0, cantidad_actual - NEW.cantidad)
             WHERE id_item = NEW.id_item;
         END IF;

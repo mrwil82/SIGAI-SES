@@ -1,81 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  DashboardLayout, Card, TableContainer, THead, TBody, TH, TR, TD, Badge, Alert,
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  DashboardLayout, Card, TableContainer, THead, TBody, TH, TR, TD, Badge,
   NeoSelect, Button, Modal, FormGroup, NeoTextarea, NeoInput, ConfirmModal
 } from '../components/Fusion';
 import { useToast } from '../lib/toast';
 import { ExportMenu } from '../components/ExportMenu';
-import { Check, XCircle, Search, Eye, AlertTriangle, Trash2, Plus, Edit2 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Check, AlertTriangle, Trash2, Plus, Edit2 } from 'lucide-react';
 import api from '../services/api';
-import { getUsers } from '../services/users';
 import { logger } from '../lib/logger';
 
+interface AlertRow {
+  id: number;
+  titulo: string;
+  tipo: string;
+  prioridad: string;
+  estado: string;
+  created_at: string | null;
+  descripcion?: string | null;
+  valor_actual?: number | null;
+  solucion?: string | null;
+}
+
+interface UpdateEstadoPayload {
+  estado: string;
+  notas: string;
+  valor_actual?: number;
+  solucion?: string;
+}
+
 const Alerts: React.FC = () => {
-  const location = useLocation();
-  const [alerts, setAlerts] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [estado, setEstado] = useState('activa');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
   const [totalAlerts, setTotalAlerts] = useState(0);
-  
+
   // Modal de gestión
 
-  const [selectedAlert, setSelectedAlert] = useState<any>(null);
+  const [selectedAlert, setSelectedAlert] = useState<AlertRow | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [notas, setNotas] = useState('');
   const [valorActual, setValorActual] = useState<number | ''>('');
   const [solucion, setSolucion] = useState('');
-  
+
   // Modal de creación
-  
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newAlert, setNewAlert] = useState({ titulo: '', prioridad: 'media', notas: '' });
 
-  useEffect(() => {
-    fetchData();
-  }, [estado, currentPage]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch alerts first; users list is optional (may require ADMIN). Use Promise.allSettled so a 403 on users doesn't block alerts.
-      const results = await Promise.allSettled([
-        api.get('/alerts/', { params: { estado, page: currentPage, page_size: pageSize } }),
-        getUsers(1, 500)
-      ]);
-
-      const alertsResult = results[0];
-      const usersResult = results[1];
-
-      if (alertsResult.status === 'fulfilled') {
-        const responseData = (alertsResult.value as { data?: Record<string, unknown> }).data;
-        setAlerts((responseData?.items as unknown as unknown[]) || []);
-        setTotalAlerts((responseData?.total as number) || 0);
-      } else {
-        logger.error('Error fetching alerts:', alertsResult.reason);
-        setAlerts([]);
-      }
-
-      if (usersResult && usersResult.status === 'fulfilled') {
-        const usersRes = (usersResult.value as { data?: { items?: unknown[] } }).data;
-        setUsers(usersRes?.items || []);
-      } else {
-        // If fetching users failed (e.g., technician without permission), keep users empty but continue.
-        if (usersResult) logger.warn('Could not fetch users list:', usersResult.reason);
-        setUsers([]);
-      }
+      const response = await api.get('/alerts/', {
+        params: { estado, page: currentPage, page_size: pageSize },
+      });
+      const responseData = response.data as { items?: AlertRow[]; total?: number };
+      setAlerts(responseData?.items || []);
+      setTotalAlerts(responseData?.total || 0);
     } catch (err) {
-      logger.error(err);
+      logger.error('Error fetching alerts:', err);
+      setAlerts([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [estado, currentPage, pageSize]);
 
-  const handleOpenModal = (alert: any) => {
+  useEffect(() => {
+    fetchData();
+  }, [estado, currentPage, fetchData]);
+
+  const handleOpenModal = (alert: AlertRow) => {
     setSelectedAlert(alert);
     setNotas(alert.descripcion || '');
     setValorActual(alert.valor_actual ?? '');
@@ -86,7 +82,7 @@ const Alerts: React.FC = () => {
   const updateEstado = async (id: number, newEstado: string) => {
     setIsUpdating(true);
     try {
-      const payload: any = { 
+      const payload: UpdateEstadoPayload = {
         estado: newEstado,
         notas: notas
       };
@@ -138,11 +134,6 @@ const Alerts: React.FC = () => {
     }
   };
 
-  const getUserName = (userId: number) => {
-    const user = users.find(u => u.id_usuario === userId);
-    return user ? user.nombre : `Usuario #${userId}`;
-  };
-
   const formatDate = (date: string | null) => {
     if (!date) return '---';
     return new Date(date).toLocaleString('es-CO', {
@@ -163,7 +154,7 @@ const Alerts: React.FC = () => {
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <ExportMenu module="alerts" />
-          <NeoSelect value={estado} onChange={(e: any) => { setEstado(e.target.value); setCurrentPage(1); }} className="w-full sm:w-40">
+          <NeoSelect value={estado} onChange={(e) => { setEstado(e.target.value); setCurrentPage(1); }} className="w-full sm:w-40">
             <option value="activa">Activas</option>
             <option value="reconocida">Reconocidas</option>
             <option value="resuelta">Resueltas</option>
@@ -198,16 +189,16 @@ const Alerts: React.FC = () => {
                 <TD className="font-mono text-emerald-primary">#{a.id}</TD>
                 <TD className="text-xs font-bold">{a.titulo}</TD>
                 <TD className="hidden sm:table-cell">
-                  <Badge 
-                    label={a.tipo === 'stock_bajo' ? 'EXISTENCIAS BAJAS' : a.tipo.replace(/_/g, ' ')} 
-                    color={a.tipo === 'stock_bajo' ? 'var(--gold)' : 'var(--emerald)'} 
+                  <Badge
+                    label={a.tipo === 'stock_bajo' ? 'EXISTENCIAS BAJAS' : a.tipo.replace(/_/g, ' ')}
+                    color={a.tipo === 'stock_bajo' ? 'var(--gold)' : 'var(--emerald)'}
                     bg={a.tipo === 'stock_bajo' ? 'rgba(var(--gold), 0.1)' : 'rgba(var(--emerald-primary), 0.1)'}
                   />
                 </TD>
                 <TD className="hidden md:table-cell">
-                  <Badge 
-                    label={a.prioridad} 
-                    color={a.prioridad === 'critica' ? 'rgb(var(--danger))' : 'rgb(var(--gold))'} 
+                  <Badge
+                    label={a.prioridad}
+                    color={a.prioridad === 'critica' ? 'rgb(var(--danger))' : 'rgb(var(--gold))'}
                     bg="transparent"
                   />
                 </TD>
@@ -261,14 +252,14 @@ const Alerts: React.FC = () => {
       </div>
 
       {/* Modal de Gestión */}
-      
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Detalles y Gestión de Alerta"
         footer={
           <>
-            <Button variant="danger" onClick={() => openConfirm(selectedAlert?.id)} disabled={isUpdating}>
+            <Button variant="danger" onClick={() => openConfirm(selectedAlert?.id ?? 0)} disabled={isUpdating}>
               <Trash2 size={14} className="mr-2"/> Eliminar
             </Button>
             {selectedAlert?.estado === 'activa' ? (
@@ -301,11 +292,11 @@ const Alerts: React.FC = () => {
                 <p className="text-xs text-content-muted mt-1 leading-relaxed">{selectedAlert.descripcion}</p>
               </div>
             </div>
-            
+
             <FormGroup label={selectedAlert.estado === 'activa' ? "Añadir Notas de Gestión" : "Notas Finales"}>
-              <NeoTextarea 
+              <NeoTextarea
                 value={notas}
-                onChange={(e: any) => setNotas(e.target.value)}
+                onChange={(e) => setNotas(e.target.value)}
                 disabled={selectedAlert.estado !== 'activa'}
                 className="min-h-[120px] bg-bg2"
               />
@@ -313,10 +304,10 @@ const Alerts: React.FC = () => {
             {/* Campos adicionales editables por técnicos */}
             {selectedAlert.tipo === 'stock_bajo' && (
               <FormGroup label="Cantidad actual (ingresar nueva cantidad)">
-                <NeoInput 
+                <NeoInput
                   type="number"
                   value={valorActual}
-                  onChange={(e: any) => setValorActual(e.target.value === '' ? '' : Number(e.target.value))}
+                  onChange={(e) => setValorActual(e.target.value === '' ? '' : Number(e.target.value))}
                   disabled={selectedAlert.estado !== 'activa'}
                 />
               </FormGroup>
@@ -324,7 +315,7 @@ const Alerts: React.FC = () => {
             <FormGroup label="Solución / Acción tomada">
               <NeoTextarea
                 value={solucion}
-                onChange={(e: any) => setSolucion(e.target.value)}
+                onChange={(e) => setSolucion(e.target.value)}
                 disabled={selectedAlert.estado !== 'activa'}
                 className="min-h-[80px] bg-bg2"
               />
@@ -334,7 +325,7 @@ const Alerts: React.FC = () => {
       </Modal>
 
       {/* Modal de Creación */}
-      
+
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -343,10 +334,10 @@ const Alerts: React.FC = () => {
       >
         <div className="space-y-4">
           <FormGroup label="Título">
-            <NeoInput value={newAlert.titulo} onChange={(e: any) => setNewAlert({...newAlert, titulo: e.target.value})} />
+            <NeoInput value={newAlert.titulo} onChange={(e) => setNewAlert({...newAlert, titulo: e.target.value})} />
           </FormGroup>
           <FormGroup label="Prioridad">
-            <NeoSelect value={newAlert.prioridad} onChange={(e: any) => setNewAlert({...newAlert, prioridad: e.target.value})}>
+            <NeoSelect value={newAlert.prioridad} onChange={(e) => setNewAlert({...newAlert, prioridad: e.target.value})}>
               <option value="critica">Crítica</option>
               <option value="alta">Alta</option>
               <option value="media">Media</option>
@@ -354,7 +345,7 @@ const Alerts: React.FC = () => {
             </NeoSelect>
           </FormGroup>
           <FormGroup label="Notas/Descripción">
-            <NeoTextarea value={newAlert.notas} onChange={(e: any) => setNewAlert({...newAlert, notas: e.target.value})} />
+            <NeoTextarea value={newAlert.notas} onChange={(e) => setNewAlert({...newAlert, notas: e.target.value})} />
           </FormGroup>
         </div>
       </Modal>

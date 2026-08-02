@@ -248,4 +248,3 @@ title: "**Plan de Pruebas — SIGAI-SES** `v1.0.0`"
 <p align="center">
  <sub>Plan de Pruebas — SIGAI-SES · Securitas Colombia S.A. · Unidad de Seguridad Electrónica (SES)</sub>
 </p>
-

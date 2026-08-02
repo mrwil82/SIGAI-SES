@@ -1,23 +1,23 @@
-import React from 'react';
+import React from "react";
 
 interface SkeletonProps {
   className?: string;
-  variant?: 'text' | 'circular' | 'rectangular';
+  variant?: "text" | "circular" | "rectangular";
   width?: string | number;
   height?: string | number;
 }
 
 const Skeleton: React.FC<SkeletonProps> = ({
-  className = '',
-  variant = 'text',
+  className = "",
+  variant = "text",
   width,
   height,
 }) => {
-  const base = 'bg-bg2 rounded animate-pulse';
+  const base = "bg-bg2 rounded animate-pulse";
   const variants: Record<string, string> = {
-    text: 'h-4 w-full rounded',
-    circular: 'rounded-full',
-    rectangular: 'rounded-lg',
+    text: "h-4 w-full rounded",
+    circular: "rounded-full",
+    rectangular: "rounded-lg",
   };
 
   return (
@@ -28,7 +28,10 @@ const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({ rows = 5, cols = 4 }) => (
+export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({
+  rows = 5,
+  cols = 4,
+}) => (
   <div className="space-y-3 p-4">
     {Array.from({ length: rows }).map((_, i) => (
       <div key={i} className="flex gap-4">

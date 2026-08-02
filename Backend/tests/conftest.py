@@ -1,4 +1,5 @@
 import os
+
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-ci")
 
@@ -8,6 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from app.db.session import Base
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
 
 @pytest_asyncio.fixture
 async def test_db():
@@ -21,9 +23,11 @@ async def test_db():
 
     await engine.dispose()
 
+
 @pytest_asyncio.fixture
 async def test_db_session(test_db):
     yield test_db
+
 
 @pytest.fixture
 def sample_user_data():
@@ -32,8 +36,9 @@ def sample_user_data():
         "email": "test@example.com",
         "password": "TestPass123!",
         "rol": "ADMIN",
-        "is_active": True
+        "is_active": True,
     }
+
 
 @pytest.fixture
 def sample_item_data():
@@ -45,8 +50,9 @@ def sample_item_data():
         "stock_minimo": 2,
         "compra_maxima": 10,
         "cantidad_inicial": 5,
-        "ubicacion": "BODEGA"
+        "ubicacion": "BODEGA",
     }
+
 
 @pytest.fixture
 def sample_cliente_data():
@@ -55,12 +61,10 @@ def sample_cliente_data():
         "nit": "123456789-0",
         "contacto": "Contacto Test",
         "telefono": "3001234567",
-        "tipo_cliente": "CORPORATIVO"
+        "tipo_cliente": "CORPORATIVO",
     }
+
 
 @pytest.fixture
 def sample_proyecto_data():
-    return {
-        "nombre_proyecto": "Proyecto Test",
-        "estado": "ACTIVO"
-    }
+    return {"nombre_proyecto": "Proyecto Test", "estado": "ACTIVO"}

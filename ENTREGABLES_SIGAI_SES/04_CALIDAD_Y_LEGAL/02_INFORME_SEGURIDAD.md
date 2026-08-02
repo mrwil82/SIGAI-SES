@@ -280,5 +280,3 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 <p align="center">
  <sub>Informe de Seguridad — SIGAI-SES · Securitas Colombia S.A. · Unidad de Seguridad Electrónica (SES)</sub>
 </p>
-
-

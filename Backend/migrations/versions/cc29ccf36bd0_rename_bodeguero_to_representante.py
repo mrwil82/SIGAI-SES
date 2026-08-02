@@ -22,22 +22,22 @@ def upgrade() -> None:
     """Upgrade schema."""
     # 1. Eliminar la clave foránea existente
     op.drop_constraint('fk_actas_bodeguero', 'actas_entrega', type_='foreignkey')
-    
+
     # 2. Renombrar la columna de id_usuario_bodeguero a id_usuario_representante
     op.alter_column(
-        'actas_entrega', 
-        'id_usuario_bodeguero', 
-        new_column_name='id_usuario_representante', 
-        existing_type=sa.Integer(), 
+        'actas_entrega',
+        'id_usuario_bodeguero',
+        new_column_name='id_usuario_representante',
+        existing_type=sa.Integer(),
         existing_nullable=True
     )
-    
+
     # 3. Crear la nueva clave foránea sobre la columna renombrada
     op.create_foreign_key(
-        'fk_actas_representante', 
-        'actas_entrega', 
-        'usuarios', 
-        ['id_usuario_representante'], 
+        'fk_actas_representante',
+        'actas_entrega',
+        'usuarios',
+        ['id_usuario_representante'],
         ['id_usuario']
     )
 
@@ -46,21 +46,21 @@ def downgrade() -> None:
     """Downgrade schema."""
     # 1. Eliminar la nueva clave foránea
     op.drop_constraint('fk_actas_representante', 'actas_entrega', type_='foreignkey')
-    
+
     # 2. Renombrar de vuelta la columna a id_usuario_bodeguero
     op.alter_column(
-        'actas_entrega', 
-        'id_usuario_representante', 
-        new_column_name='id_usuario_bodeguero', 
-        existing_type=sa.Integer(), 
+        'actas_entrega',
+        'id_usuario_representante',
+        new_column_name='id_usuario_bodeguero',
+        existing_type=sa.Integer(),
         existing_nullable=True
     )
-    
+
     # 3. Recrear la clave foránea original
     op.create_foreign_key(
-        'fk_actas_bodeguero', 
-        'actas_entrega', 
-        'usuarios', 
-        ['id_usuario_bodeguero'], 
+        'fk_actas_bodeguero',
+        'actas_entrega',
+        'usuarios',
+        ['id_usuario_bodeguero'],
         ['id_usuario']
     )

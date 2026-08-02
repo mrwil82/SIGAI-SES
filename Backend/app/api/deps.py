@@ -5,13 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.core.config import settings
 from app.crud import crud_user
-from app.schemas import TokenData
 from app.core.logger import set_user_id
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 async def get_current_user(
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
     credentials_exception = HTTPException(
@@ -21,14 +20,13 @@ async def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        email: str = payload.get("sub")
+        email = payload.get("sub")
         if email is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
     except JWTError:
         raise credentials_exception
-        
-    user = await crud_user.get_user_by_email(db, email=token_data.email)
+
+    user = await crud_user.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
     set_user_id(int(getattr(user, "id_usuario", 0)))

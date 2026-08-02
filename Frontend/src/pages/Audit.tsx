@@ -1,16 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import { ExportMenu } from "../components/ExportMenu";
-import { 
-  History, 
-  Search, 
-  Filter, 
-  User, 
+import {
+  Search,
+  User,
   Calendar,
-  Activity,
-  X
-} from 'lucide-react';
-import { 
-  Card, 
+  X,
+} from "lucide-react";
+import {
+  Card,
   Button,
   DashboardLayout,
   TableContainer,
@@ -21,41 +18,73 @@ import {
   TD,
   NeoInput,
   NeoSelect,
-  Badge
-} from '../components/Fusion';
-import { getAuditLogs } from '../services/users';
+  Badge,
+} from "../components/Fusion";
+import { getAuditLogs } from "../services/users";
+
+interface AuditLog {
+  id_log: number;
+  fecha_accion: string;
+  accion: string;
+  tabla_afectada: string;
+  valor_anterior: string | null;
+  valor_nuevo: string | null;
+  id_usuario: number;
+  usuario?: { nombre: string } | null;
+}
 
 // Componente para mostrar detalles de auditoría, formateando JSON si es posible
 
-const IGNORE_KEYS = new Set(['created_at', 'updated_at', 'deleted_at', '__class__']);
+const IGNORE_KEYS = new Set([
+  "created_at",
+  "updated_at",
+  "deleted_at",
+  "__class__",
+]);
 
 const AuditDetails: React.FC<{ data: string | null }> = ({ data }) => {
-  if (!data) return <span className="text-[9px] text-content-muted italic">Sin datos</span>;
-  
+  if (!data)
+    return (
+      <span className="text-[9px] text-content-muted italic">Sin datos</span>
+    );
+
   try {
     const parsed = JSON.parse(data);
-    const entries = Object.entries(parsed).filter(([key, val]) => val !== null && val !== undefined && val !== '' && !IGNORE_KEYS.has(key));
-    if (entries.length === 0) return <span className="text-[9px] text-content-muted italic">--</span>;
+    const entries = Object.entries(parsed).filter(
+      ([key, val]) =>
+        val !== null &&
+        val !== undefined &&
+        val !== "" &&
+        !IGNORE_KEYS.has(key),
+    );
+    if (entries.length === 0)
+      return <span className="text-[9px] text-content-muted italic">--</span>;
     return (
       <div className="flex flex-col gap-0.5 font-mono text-[9px] bg-bg3/20 p-2 rounded">
         {entries.map(([key, val]) => (
           <div key={key} className="flex gap-1">
             <span className="text-emerald-primary font-bold">{key}:</span>
-            <span className="text-content-secondary truncate max-w-[120px] md:max-w-[200px] lg:max-w-[350px]">{String(val)}</span>
+            <span className="text-content-secondary truncate max-w-[120px] md:max-w-[200px] lg:max-w-[350px]">
+              {String(val)}
+            </span>
           </div>
         ))}
       </div>
     );
   } catch {
-    return <span className="text-[9px] text-content-muted">{data.substring(0, 80)}...</span>;
+    return (
+      <span className="text-[9px] text-content-muted">
+        {data.substring(0, 80)}...
+      </span>
+    );
   }
 };
 
 const Audit: React.FC = () => {
-  const [logs, setLogs] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [actionFilter, setActionFilter] = useState('');
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [actionFilter, setActionFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
   const [totalLogs, setTotalLogs] = useState(0);
@@ -69,31 +98,65 @@ const Audit: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const fetchLogs = async (page?: number) => {
+  const fetchLogs = useCallback(async (page?: number) => {
     const targetPage = page ?? currentPage;
     setIsLoading(true);
     try {
-      const data = await getAuditLogs(targetPage, pageSize, debouncedSearch || undefined, actionFilter || undefined);
+      const data = await getAuditLogs(
+        targetPage,
+        pageSize,
+        debouncedSearch || undefined,
+        actionFilter || undefined,
+      );
       setLogs(data.items || []);
       setTotalLogs(data.total || 0);
     } catch (error) {
-      console.error('Failed to fetch audit logs', error);
+      console.error("Failed to fetch audit logs", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, pageSize, debouncedSearch, actionFilter]);
 
   useEffect(() => {
     fetchLogs(currentPage);
-  }, [currentPage, debouncedSearch, actionFilter]);
+  }, [currentPage, debouncedSearch, actionFilter, fetchLogs]);
 
   const getActionBadge = (action: string) => {
     switch (action) {
-      case 'CREATE': return <Badge label="CREACIÓN" color="var(--emerald)" bg="var(--emerald-muted)" />;
-      case 'UPDATE': return <Badge label="CAMBIO" color="var(--chart-blue)" bg="rgba(0,163,255,0.1)" />;
-      case 'DELETE': return <Badge label="ELIMINACIÓN" color="var(--danger)" bg="rgba(255,77,77,0.1)" />;
-      case 'LOGIN': return <Badge label="INGRESO" color="var(--chart-purple)" bg="rgba(155, 109, 255, 0.1)" />;
-      default: return <Badge label={action} color="white" bg="gray" />;
+      case "CREATE":
+        return (
+          <Badge
+            label="CREACIÓN"
+            color="var(--emerald)"
+            bg="var(--emerald-muted)"
+          />
+        );
+      case "UPDATE":
+        return (
+          <Badge
+            label="CAMBIO"
+            color="var(--chart-blue)"
+            bg="rgba(0,163,255,0.1)"
+          />
+        );
+      case "DELETE":
+        return (
+          <Badge
+            label="ELIMINACIÓN"
+            color="var(--danger)"
+            bg="rgba(255,77,77,0.1)"
+          />
+        );
+      case "LOGIN":
+        return (
+          <Badge
+            label="INGRESO"
+            color="var(--chart-purple)"
+            bg="rgba(155, 109, 255, 0.1)"
+          />
+        );
+      default:
+        return <Badge label={action} color="white" bg="gray" />;
     }
   };
 
@@ -101,8 +164,12 @@ const Audit: React.FC = () => {
     <DashboardLayout>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-content-primary">Registro de Auditoría</h1>
-          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Historial completo de acciones y cambios en el sistema</p>
+          <h1 className="text-2xl font-bold tracking-tight text-content-primary">
+            Registro de Auditoría
+          </h1>
+          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">
+            Historial completo de acciones y cambios en el sistema
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <ExportMenu module="audit" />
@@ -112,22 +179,31 @@ const Audit: React.FC = () => {
       <Card className="mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted" size={16} />
-            <NeoInput 
-              placeholder="Buscar por tabla, nombre de equipo, serial..." 
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted"
+              size={16}
+            />
+            <NeoInput
+              placeholder="Buscar por tabla, nombre de equipo, serial..."
               className="pl-10 h-11"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted hover:text-content-primary">
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted hover:text-content-primary"
+              >
                 <X size={16} />
               </button>
             )}
           </div>
-          <NeoSelect 
-            value={actionFilter} 
-            onChange={(e: any) => { setActionFilter(e.target.value); setCurrentPage(1); }}
+          <NeoSelect
+            value={actionFilter}
+            onChange={(e) => {
+              setActionFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-11 w-full sm:w-44"
           >
             <option value="">Todas las acciones</option>
@@ -152,7 +228,10 @@ const Audit: React.FC = () => {
           <TBody>
             {isLoading ? (
               <TR>
-                <TD colSpan={6} className="text-center py-20 text-content-primary font-bold">
+                <TD
+                  colSpan={6}
+                  className="text-center py-20 text-content-primary font-bold"
+                >
                   Consultando Bitácora...
                 </TD>
               </TR>
@@ -162,17 +241,23 @@ const Audit: React.FC = () => {
                   <TD className="hidden sm:table-cell whitespace-nowrap">
                     <div className="flex items-center gap-2 text-content-secondary">
                       <Calendar size={12} className="text-content-muted" />
-                      <span className="text-[10px]">{new Date(log.fecha_accion).toLocaleString()}</span>
+                      <span className="text-[10px]">
+                        {new Date(log.fecha_accion).toLocaleString()}
+                      </span>
                     </div>
                   </TD>
                   <TD>
                     <div className="flex items-center gap-2">
                       <User size={12} className="text-emerald-primary/70" />
-                      <span className="text-[11px] font-bold">{log.usuario?.nombre || `ID: ${log.id_usuario}`}</span>
+                      <span className="text-[11px] font-bold">
+                        {log.usuario?.nombre || `ID: ${log.id_usuario}`}
+                      </span>
                     </div>
                   </TD>
                   <TD>{getActionBadge(log.accion)}</TD>
-                  <TD className="hidden md:table-cell font-bold uppercase tracking-wider">{log.tabla_afectada}</TD>
+                  <TD className="hidden md:table-cell font-bold uppercase tracking-wider">
+                    {log.tabla_afectada}
+                  </TD>
                   <TD className="hidden lg:table-cell">
                     <AuditDetails data={log.valor_anterior} />
                   </TD>
@@ -183,7 +268,12 @@ const Audit: React.FC = () => {
               ))
             ) : (
               <TR>
-                <TD colSpan={6} className="text-center py-10 text-content-muted italic">No hay registros de auditoría.</TD>
+                <TD
+                  colSpan={6}
+                  className="text-center py-10 text-content-muted italic"
+                >
+                  No hay registros de auditoría.
+                </TD>
               </TR>
             )}
           </TBody>

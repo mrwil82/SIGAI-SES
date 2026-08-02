@@ -19,7 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # 1. Nuevas Tablas
-    
+
     # Tabla regionales
     op.create_table(
         'regionales',
@@ -28,7 +28,7 @@ def upgrade() -> None:
         sa.Column('ciudad', sa.String(length=100), nullable=True),
         sa.PrimaryKeyConstraint('id_regional')
     )
-    
+
     # Tabla sesiones_usuario
     op.create_table(
         'sesiones_usuario',
@@ -141,7 +141,7 @@ def upgrade() -> None:
     # Vista stock consolidado
     op.execute("""
     CREATE VIEW `v_stock_consolidado` AS
-    SELECT 
+    SELECT
       i.id_item,
       i.nombre_equipo,
       i.marca,
@@ -150,14 +150,14 @@ def upgrade() -> None:
       i.stock_minimo,
       COALESCE(SUM(CASE WHEN a.estado_actual = 'DISPONIBLE' THEN 1 ELSE 0 END), 0) AS stock_activos_disponibles,
       COALESCE(sb.cantidad_actual, 0) AS stock_bulk_actual,
-      CASE 
+      CASE
         WHEN COALESCE(sb.cantidad_actual, 0) <= i.stock_minimo THEN 1
-        ELSE 0 
+        ELSE 0
       END AS alerta_recompra
     FROM items i
     LEFT JOIN activos a ON i.id_item = a.id_item
     LEFT JOIN stock_bulk sb ON i.id_item = sb.id_item
-    GROUP BY i.id_item, i.nombre_equipo, i.marca, i.referencia, 
+    GROUP BY i.id_item, i.nombre_equipo, i.marca, i.referencia,
              i.categoria, i.stock_minimo, sb.cantidad_actual
     """)
 

@@ -1,13 +1,24 @@
-from sqlalchemy import Column, Integer, String, Boolean, Enum, TIMESTAMP, ForeignKey, Text
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Boolean,
+    Enum,
+    TIMESTAMP,
+    ForeignKey,
+    Text,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
 import enum
 
+
 class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     TECNICO = "TECNICO"
     TECNICO_LABORATORIO = "TECNICO_LABORATORIO"
+
 
 class Regional(Base):
     __tablename__ = "regionales"
@@ -15,6 +26,7 @@ class Regional(Base):
     nombre = Column(String(100), nullable=False)
     ciudad = Column(String(100))
     usuarios = relationship("Usuario", back_populates="regional_rel")
+
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -33,17 +45,22 @@ class Usuario(Base):
     avatar_url = Column(Text, nullable=True)
 
     regional_rel = relationship("Regional", back_populates="usuarios")
-    sesiones = relationship("SesionUsuario", back_populates="usuario", cascade="all, delete-orphan")
+    sesiones = relationship(
+        "SesionUsuario", back_populates="usuario", cascade="all, delete-orphan"
+    )
+
 
 class SesionUsuario(Base):
     __tablename__ = "sesiones_usuario"
     id_sesion = Column(Integer, primary_key=True, index=True)
-    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), nullable=False)
+    id_usuario = Column(
+        Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), nullable=False
+    )
     token_hash = Column(String(64), nullable=False, index=True)
     ip_origen = Column(String(45))
     user_agent = Column(String(255))
     created_at = Column(TIMESTAMP, server_default=func.now())
     expires_at = Column(TIMESTAMP)
     revocado = Column(Boolean, default=False)
-    
+
     usuario = relationship("Usuario", back_populates="sesiones")

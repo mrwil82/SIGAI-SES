@@ -4,6 +4,7 @@ from datetime import datetime
 from app.models.user import UserRole
 from app.schemas.inventory import Regional
 
+
 class UsuarioBase(BaseModel):
     nombre: str
     email: EmailStr
@@ -11,11 +12,13 @@ class UsuarioBase(BaseModel):
     id_regional: Optional[int] = None
     cedula: Optional[str] = None
     codigo_empleado: Optional[str] = None
-    regional: Optional[str] = None 
+    regional: Optional[str] = None
     is_active: bool = True
+
 
 class UsuarioCreate(UsuarioBase):
     password: str
+
 
 class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -28,6 +31,7 @@ class UsuarioUpdate(BaseModel):
     codigo_empleado: Optional[str] = None
     regional: Optional[str] = None
 
+
 class Usuario(UsuarioBase):
     id_usuario: int
     created_at: datetime
@@ -36,10 +40,12 @@ class Usuario(UsuarioBase):
     config: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
+
 
 class TokenData(BaseModel):
     email: Optional[str] = None

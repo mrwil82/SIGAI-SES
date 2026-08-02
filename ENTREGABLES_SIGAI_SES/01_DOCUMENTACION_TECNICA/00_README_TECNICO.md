@@ -151,7 +151,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
            │
            │   Axios HTTP (JWT Bearer Token + Refresh)
            │   Proxy: /api → servidor backend
-           
+
 ┌──────────────────────────────────────────────────────────────────┐
 │              SERVIDOR DE APLICACIONES (FastAPI)                │
 │                                                                  │
@@ -166,7 +166,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
            │
            │   SQLAlchemy Async (asyncpg / aiomysql)
            │   Pool de conexiones a base de datos
-           
+
 ┌──────────────────────────────────────────────────────────────────┐
 │                 BASE DE DATOS RELACIONAL                       │
 │                                                                  │
@@ -410,8 +410,3 @@ npm run build
    <b>Securitas Colombia S.A.</b> — <i>Unidad de Seguridad Electrónica (SES)</i><br>
    v1.0.0 ·  Julio 2026
 </p>
-
-
-
-
-

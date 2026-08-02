@@ -1,12 +1,13 @@
-import axios from 'axios';
-import { logger } from '../lib/logger';
+import axios from "axios";
+import { logger } from "../lib/logger";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `${window.location.origin}/api/v1`;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || `${window.location.origin}/api/v1`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -29,7 +30,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 api.interceptors.request.use(
   (config) => {
-    const token = sessionStorage.getItem('token');
+    const token = sessionStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +38,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 api.interceptors.response.use(
@@ -46,12 +47,12 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      const refreshToken = sessionStorage.getItem('refreshToken');
+      const refreshToken = sessionStorage.getItem("refreshToken");
 
       if (!refreshToken) {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("refreshToken");
+        window.location.href = "/login";
         return Promise.reject(error);
       }
 
@@ -75,23 +76,23 @@ api.interceptors.response.use(
           null,
           {
             params: { refresh_token: refreshToken },
-          }
+          },
         );
 
         const { access_token, refresh_token: newRefreshToken } = response.data;
-        sessionStorage.setItem('token', access_token);
-        sessionStorage.setItem('refreshToken', newRefreshToken);
+        sessionStorage.setItem("token", access_token);
+        sessionStorage.setItem("refreshToken", newRefreshToken);
 
-        api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        api.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
 
         processQueue(null, access_token);
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("refreshToken");
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -99,15 +100,20 @@ api.interceptors.response.use(
     }
 
     if (error.response) {
-      logger.error(`API Error: ${error.config?.url} responded with ${error.response.status}`, error.response.data);
+      logger.error(
+        `API Error: ${error.config?.url} responded with ${error.response.status}`,
+        error.response.data,
+      );
     } else if (error.request) {
-      logger.error('API Error: Error de conexion - no se recibio respuesta del servidor');
+      logger.error(
+        "API Error: Error de conexion - no se recibio respuesta del servidor",
+      );
     } else {
-      logger.error('API Error', error.message);
+      logger.error("API Error", error.message);
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

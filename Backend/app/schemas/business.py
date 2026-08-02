@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime, date
 
+
 class ClienteBase(BaseModel):
     nombre: str
     nit: Optional[str] = None
@@ -14,8 +15,10 @@ class ClienteBase(BaseModel):
     tipo_cliente: str = "CORPORATIVO"
     ceco_asociado: Optional[str] = None
 
+
 class ClienteCreate(ClienteBase):
     pass
+
 
 class ClienteUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -29,10 +32,12 @@ class ClienteUpdate(BaseModel):
     tipo_cliente: Optional[str] = None
     ceco_asociado: Optional[str] = None
 
+
 class Cliente(ClienteBase):
     id_cliente: int
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
 
 class ProyectoBase(BaseModel):
     id_cliente: Optional[int] = None
@@ -45,8 +50,10 @@ class ProyectoBase(BaseModel):
     fecha_cierre_real: Optional[date] = None
     descripcion: Optional[str] = None
 
+
 class ProyectoCreate(ProyectoBase):
     pass
+
 
 class ProyectoUpdate(BaseModel):
     nombre_proyecto: Optional[str] = None
@@ -58,10 +65,12 @@ class ProyectoUpdate(BaseModel):
     fecha_cierre_real: Optional[date] = None
     descripcion: Optional[str] = None
 
+
 class Proyecto(ProyectoBase):
     id_proyecto: int
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
 
 class ProveedorBase(BaseModel):
     nombre: str
@@ -74,8 +83,10 @@ class ProveedorBase(BaseModel):
     dias_credito: int = 30
     categoria: str = "DISTRIBUIDOR"
 
+
 class ProveedorCreate(ProveedorBase):
     pass
+
 
 class ProveedorUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -88,10 +99,12 @@ class ProveedorUpdate(BaseModel):
     dias_credito: Optional[int] = None
     categoria: Optional[str] = None
 
+
 class Proveedor(ProveedorBase):
     id_proveedor: int
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
 
 class GarantiaBase(BaseModel):
     id_activo: int
@@ -111,8 +124,10 @@ class GarantiaBase(BaseModel):
     comentarios_proceso: Optional[str] = None
     estado_proceso: str = "REGISTRADO"
 
+
 class GarantiaCreate(GarantiaBase):
     pass
+
 
 class GarantiaUpdate(BaseModel):
     rma_proveedor: Optional[str] = None
@@ -121,7 +136,9 @@ class GarantiaUpdate(BaseModel):
     fecha_recibido_reparado: Optional[datetime] = None
     tipo_resolucion: Optional[str] = None
 
+
 from app.schemas.inventory import Activo
+
 
 class Garantia(GarantiaBase):
     id_garantia: int
@@ -130,9 +147,15 @@ class Garantia(GarantiaBase):
     proveedor: Optional[Proveedor] = None
     model_config = ConfigDict(from_attributes=True)
 
-    @field_validator('fecha_envio', 'fecha_recibido_reparado', 'fecha_limite_estimada', 'fecha_inicio_garantia', mode='before')
+    @field_validator(
+        "fecha_envio",
+        "fecha_recibido_reparado",
+        "fecha_limite_estimada",
+        "fecha_inicio_garantia",
+        mode="before",
+    )
     @classmethod
     def validate_date(cls, v):
-        if v is not None and isinstance(v, str) and v.startswith('0000'):
+        if v is not None and isinstance(v, str) and v.startswith("0000"):
             return None
         return v

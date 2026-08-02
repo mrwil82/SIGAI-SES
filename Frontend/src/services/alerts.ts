@@ -1,6 +1,6 @@
-import api from './api';
+import api from "./api";
 
 export const getDashboardAlerts = async () => {
-  const response = await api.get('/alerts/summary');
+  const response = await api.get("/alerts/summary");
   return response.data;
 };

@@ -59,7 +59,7 @@ graph TB
         SQLAlchemy 2.0 Async
         18 tablas · 9 migraciones"]
     end
-    
+
     C1 -->|🔐 Axios JWT| S1
     S1 -->|🔌 aiomysql pool| D1
 ```
@@ -353,7 +353,7 @@ Backend/
 sequenceDiagram
     participant C as 🖥️ Cliente
     participant S as 🖧 Servidor
-    
+
     C->>S: POST /auth/login (email + password)
     activate S
     S->>S: Verificar credenciales (bcrypt)
@@ -361,17 +361,17 @@ sequenceDiagram
     S->>S: Generar refresh_token (7d)
     S-->>C: {access_token, refresh_token}
     deactivate S
-    
+
     Note over C: Almacena en localStorage
-    
+
     C->>S: GET /auth/me (Bearer access_token)
     activate S
     S->>S: Validar JWT
     S-->>C: {user data}
     deactivate S
-    
+
     Note over C: Axios interceptor renueva automaticamente
-    
+
     C->>S: POST /auth/refresh (refresh_token)
     activate S
     S-->>C: {new access_token}

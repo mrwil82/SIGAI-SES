@@ -135,20 +135,20 @@ async def check_field_unique(
 ):
     if field not in ("email", "cedula", "codigo_empleado"):
         raise HTTPException(status_code=400, detail="Campo no válido")
-    
+
     from app.models.user import Usuario as User
     import re
-    
+
     # Validación de formato de email
     if field == "email":
         if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', value):
             return {"available": False, "error": "Formato de correo inválido"}
-    
+
     column = getattr(User, field, None)
     query = select(User).where(column == value)
     if exclude_id:
         query = query.where(User.id_usuario != exclude_id)
-    
+
     result = await db.execute(query)
     exists = result.scalars().first() is not None
     error = f"El {field.replace('_', ' ')} '{value}' ya está registrado." if exists else None
@@ -158,7 +158,7 @@ async def check_field_unique(
 
 @router.post("/", response_model=Usuario)
 async def create_user(
-    user_in: UsuarioCreate, 
+    user_in: UsuarioCreate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -168,11 +168,11 @@ async def create_user(
         return await crud_user.create_user(db, user=user_in, current_user_id=current_user.id_usuario)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
 # Listar usuarios con paginación (solo para administradores)
 @router.get("/", response_model=PaginatedResponse[Usuario])
 async def read_users(
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=500),
     current_user = Depends(get_current_user)
@@ -190,8 +190,8 @@ async def read_users(
 
 @router.put("/{id_user}", response_model=Usuario)
 async def update_user(
-    id_user: int, 
-    user_in: UsuarioUpdate, 
+    id_user: int,
+    user_in: UsuarioUpdate,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -208,7 +208,7 @@ async def update_user(
 
 @router.delete("/{id_user}", response_model=Usuario)
 async def delete_user(
-    id_user: int, 
+    id_user: int,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):

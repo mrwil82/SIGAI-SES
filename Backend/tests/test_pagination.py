@@ -3,6 +3,7 @@ from sqlalchemy import select
 from app.core.pagination import paginate
 from app.models import Item
 
+
 @pytest.mark.asyncio
 class TestPagination:
     async def test_paginate_empty(self, test_db):

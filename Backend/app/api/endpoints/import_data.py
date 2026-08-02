@@ -7,7 +7,7 @@ import io
 import logging
 import re
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, cast
 
 from app.db.session import get_db
 from app.api.deps import get_current_user
@@ -18,9 +18,9 @@ from app.models.guarantees import Garantia
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# ============================================================
+
 # Funciones auxiliares para limpieza y transformación de datos
-# ============================================================
+
 
 def _clean(val, default=None):
     if val is None:
@@ -82,9 +82,9 @@ def _slug(s: str) -> Optional[str]:
     return s or None
 
 
-# ============================================================
+
 # UPSERT: crea o actualiza un Item y su StockBulk
-# ============================================================
+
 
 async def _upsert_item_and_stock(
     db: AsyncSession,
@@ -335,13 +335,13 @@ async def _crear_cliente_si_no_existe(db: AsyncSession, nombre: str) -> Optional
     result = await db.execute(select(Cliente).where(Cliente.nombre == nombre))
     existing = result.scalars().first()
     if existing:
-        return existing.id_cliente
+        return cast(int, existing.id_cliente)
     cliente = Cliente(nombre=nombre, tipo_cliente="CORPORATIVO")
     db.add(cliente)
     await db.flush()
     await db.refresh(cliente)
     logger.info(f"  Cliente creado: {nombre}")
-    return cliente.id_cliente
+    return cast(int, cliente.id_cliente)
 
 async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
     """
@@ -701,6 +701,7 @@ async def descargar_plantilla(module: str):
     """
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
     from fastapi.responses import FileResponse
     import tempfile
 
@@ -804,7 +805,9 @@ async def descargar_plantilla(module: str):
 
     tpl = TEMPLATES[module]
     wb = openpyxl.Workbook()
-    wb.remove(wb.active)
+    ws_default = wb.active
+    if ws_default is not None:
+        wb.remove(ws_default)
 
     header_font = Font(bold=True, color="FFFFFF", size=11)
     header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
@@ -822,7 +825,7 @@ async def descargar_plantilla(module: str):
             cell.fill = header_fill
             cell.alignment = header_alignment
             cell.border = thin_border
-            ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = max(len(col_name) + 4, 18)
+            ws.column_dimensions[get_column_letter(col_idx)].width = max(len(col_name) + 4, 18)
 
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
     wb.save(tmp.name)

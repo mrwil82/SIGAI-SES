@@ -22,7 +22,9 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cargar .env desde Backend/
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
+load_dotenv(
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+)
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.crud.crud_alerts import evaluar_alertas
@@ -38,8 +40,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
+    "DATABASE_URL", "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
 )
 
 
@@ -47,8 +48,12 @@ async def run_alerts():
     os.makedirs("logs", exist_ok=True)
     logger.info(f"Inicio de evaluacion de alertas: {datetime.now().isoformat()}")
 
-    engine = create_async_engine(DATABASE_URL, echo=False, connect_args={"ssl": "require"})
-    async_session = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    engine = create_async_engine(
+        DATABASE_URL, echo=False, connect_args={"ssl": "require"}
+    )
+    async_session = async_sessionmaker(
+        bind=engine, class_=AsyncSession, expire_on_commit=False
+    )
 
     try:
         async with async_session() as db:

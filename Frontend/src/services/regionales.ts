@@ -1,6 +1,6 @@
-import api from './api';
+import api from "./api";
 
 export const getRegionales = async () => {
-  const response = await api.get('/regionales/');
+  const response = await api.get("/regionales/");
   return response.data;
 };

@@ -1,7 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Package, X } from 'lucide-react';
-import { Button } from '../../components/Fusion';
-import { InventoryItem, TIPO_ACTA_CATEGORIAS, TODAS_CATEGORIAS, CAT_LABELS, CAT_COLORS } from './types';
+import React, { useState, useEffect, useRef } from "react";
+import { Search, Package, X } from "lucide-react";
+import { Button } from "../../components/Fusion";
+import {
+  InventoryItem,
+  TIPO_ACTA_CATEGORIAS,
+  TODAS_CATEGORIAS,
+  CAT_LABELS,
+  CAT_COLORS,
+} from "./types";
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -18,19 +24,20 @@ const ItemModal: React.FC<ItemModalProps> = ({
   inventoryItems,
   tipoActa,
 }) => {
-  const [search, setSearch] = useState('');
-  const [catFilter, setCatFilter] = useState<string>('all');
-  const [selections, setSelections] = useState<Record<number, number>>({}); 
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState<string>("all");
+  const [selections, setSelections] = useState<Record<number, number>>({});
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const allowedCats = TIPO_ACTA_CATEGORIAS[tipoActa] ?? Object.keys(CAT_LABELS);
 
   const filtered = inventoryItems.filter((it) => {
-    const cat = it.categoria ?? 'OTROS';
-    const matchesCat = catFilter === 'all' || cat === catFilter;
+    const cat = it.categoria ?? "OTROS";
+    const matchesCat = catFilter === "all" || cat === catFilter;
     const matchesType = !CAT_LABELS[cat] || allowedCats.includes(cat);
     const term = search.toLowerCase();
-    const safeIncludes = (val: string | null | undefined) => val?.toLowerCase().includes(term) ?? false;
+    const safeIncludes = (val: string | null | undefined) =>
+      val?.toLowerCase().includes(term) ?? false;
     const matchesSearch =
       !term ||
       safeIncludes(it.nombre_equipo) ||
@@ -64,8 +71,8 @@ const ItemModal: React.FC<ItemModalProps> = ({
     });
     onConfirm(result);
     setSelections({});
-    setSearch('');
-    setCatFilter('all');
+    setSearch("");
+    setCatFilter("all");
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -75,13 +82,15 @@ const ItemModal: React.FC<ItemModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setSelections({});
-      setSearch('');
-      setCatFilter('all');
+      setSearch("");
+      setCatFilter("all");
     }
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [isOpen]);
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -90,27 +99,40 @@ const ItemModal: React.FC<ItemModalProps> = ({
       ref={overlayRef}
       onClick={handleOverlayClick}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      style={{ animation: 'fadeIn 0.18s ease' }}
+      style={{ animation: "fadeIn 0.18s ease" }}
     >
       <div
         className="flex flex-col w-full max-w-[820px] mx-4 max-h-[85vh] rounded-2xl overflow-hidden"
         style={{
-          background: 'var(--bg1, rgb(var(--bg1)))',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: 'var(--shadow-neo), 0 0 0 1px rgba(var(--emerald-primary), 0.06)',
-          animation: 'slideUp 0.22s cubic-bezier(0.16,1,0.3,1)',
+          background: "var(--bg1, rgb(var(--bg1)))",
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow:
+            "var(--shadow-neo), 0 0 0 1px rgba(var(--emerald-primary), 0.06)",
+          animation: "slideUp 0.22s cubic-bezier(0.16,1,0.3,1)",
         }}
       >
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-bg4"
-             style={{ background: 'linear-gradient(135deg, rgba(var(--emerald-primary), 0.05), transparent)' }}>
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl"
-               style={{ background: 'rgba(var(--emerald-primary), 0.12)', border: '1px solid rgba(var(--emerald-primary), 0.2)' }}>
+        <div
+          className="flex items-center gap-3 px-6 py-4 border-b border-bg4"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(var(--emerald-primary), 0.05), transparent)",
+          }}
+        >
+          <div
+            className="flex items-center justify-center w-9 h-9 rounded-xl"
+            style={{
+              background: "rgba(var(--emerald-primary), 0.12)",
+              border: "1px solid rgba(var(--emerald-primary), 0.2)",
+            }}
+          >
             <Package size={16} className="text-emerald-primary" />
           </div>
           <div>
-            <p className="text-sm font-bold tracking-wide text-content">Seleccionar Items</p>
+            <p className="text-sm font-bold tracking-wide text-content">
+              Seleccionar Items
+            </p>
             <p className="text-[10px] uppercase tracking-widest text-content-muted mt-0.5">
-              Filtrado · {tipoActa.replace(/_/g, ' ')}
+              Filtrado · {tipoActa.replace(/_/g, " ")}
             </p>
           </div>
           <button
@@ -121,23 +143,27 @@ const ItemModal: React.FC<ItemModalProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 px-6 py-3 border-b border-bg4 flex-wrap"
-             style={{ background: 'rgba(255,255,255,0.02)' }}>
-          {['all', ...TODAS_CATEGORIAS].map((cat) => (
+        <div
+          className="flex items-center gap-2 px-6 py-3 border-b border-bg4 flex-wrap"
+          style={{ background: "rgba(255,255,255,0.02)" }}
+        >
+          {["all", ...TODAS_CATEGORIAS].map((cat) => (
             <button
               key={cat}
               onClick={() => setCatFilter(cat)}
               className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest transition-all border ${
                 catFilter === cat
-                  ? 'bg-emerald-muted border-emerald-primary/40 text-emerald-primary'
-                  : 'bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-primary/20 hover:text-content'
+                  ? "bg-emerald-muted border-emerald-primary/40 text-emerald-primary"
+                  : "bg-bg1/80 border-bg3 text-content-muted hover:border-emerald-primary/20 hover:text-content"
               }`}
             >
-              {cat === 'all' ? 'Todos' : CAT_LABELS[cat]}
+              {cat === "all" ? "Todos" : CAT_LABELS[cat]}
             </button>
           ))}
-          <div className="ml-auto flex items-center gap-2 rounded-lg border border-bg4/80 px-3 py-1.5"
-               style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <div
+            className="ml-auto flex items-center gap-2 rounded-lg border border-bg4/80 px-3 py-1.5"
+            style={{ background: "rgba(255,255,255,0.04)" }}
+          >
             <Search size={12} className="text-content-muted" />
             <input
               type="text"
@@ -154,11 +180,21 @@ const ItemModal: React.FC<ItemModalProps> = ({
             <thead>
               <tr>
                 <th className="w-10 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm"></th>
-                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">Descripción / Equipo</th>
-                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">Categoría</th>
-                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">Marca</th>
-                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">Referencia</th>
-                <th className="w-24 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">Cantidad</th>
+                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  Descripción / Equipo
+                </th>
+                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  Categoría
+                </th>
+                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  Marca
+                </th>
+                <th className="px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  Referencia
+                </th>
+                <th className="w-24 px-4 py-2.5 text-left text-[9px] uppercase tracking-widest text-content-muted border-b border-bg4 sticky top-0 bg-bg1/95 backdrop-blur-sm">
+                  Cantidad
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -167,41 +203,62 @@ const ItemModal: React.FC<ItemModalProps> = ({
                   <td colSpan={6} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center opacity-30">
                       <Package size={36} className="mb-3" />
-                      <p className="text-xs font-bold uppercase tracking-widest">Sin items disponibles</p>
+                      <p className="text-xs font-bold uppercase tracking-widest">
+                        Sin items disponibles
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 filtered.map((it) => {
                   const isSelected = selections[it.id_item] !== undefined;
-                  const cat = it.categoria ?? 'HERRAMIENTA';
+                  const cat = it.categoria ?? "HERRAMIENTA";
                   return (
                     <tr
                       key={it.id_item}
                       onClick={() => toggle(it.id_item)}
                       className="cursor-pointer border-b border-bg3/50 transition-colors"
-                      style={{ background: isSelected ? 'rgba(var(--emerald-primary), 0.06)' : undefined }}
+                      style={{
+                        background: isSelected
+                          ? "rgba(var(--emerald-primary), 0.06)"
+                          : undefined,
+                      }}
                     >
                       <td className="px-4 py-2.5">
-                        <div className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
-                          isSelected
-                            ? 'bg-emerald-primary text-[rgb(var(--btn-primary-text))]'
-                            : 'border border-bg3'
-                        }`}>
-                          {isSelected && <span className="text-[9px] font-bold">✓</span>}
+                        <div
+                          className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
+                            isSelected
+                              ? "bg-emerald-primary text-[rgb(var(--btn-primary-text))]"
+                              : "border border-bg3"
+                          }`}
+                        >
+                          {isSelected && (
+                            <span className="text-[9px] font-bold">✓</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-2.5">
-                        <p className="text-xs font-semibold text-content">{it.nombre_equipo}</p>
+                        <p className="text-xs font-semibold text-content">
+                          {it.nombre_equipo}
+                        </p>
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${CAT_COLORS[cat] ?? ''}`}>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${CAT_COLORS[cat] ?? ""}`}
+                        >
                           {CAT_LABELS[cat] ?? cat}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-[11px] text-content-muted">{it.marca}</td>
-                      <td className="px-4 py-2.5 text-[11px] text-content-muted">{it.referencia}</td>
-                      <td className="px-4 py-2.5" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                      <td className="px-4 py-2.5 text-[11px] text-content-muted">
+                        {it.marca}
+                      </td>
+                      <td className="px-4 py-2.5 text-[11px] text-content-muted">
+                        {it.referencia}
+                      </td>
+                      <td
+                        className="px-4 py-2.5"
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                      >
                         <input
                           id={`qty-${it.id_item}`}
                           name={`qty-${it.id_item}`}
@@ -222,13 +279,18 @@ const ItemModal: React.FC<ItemModalProps> = ({
           </table>
         </div>
 
-        <div className="flex items-center gap-3 px-6 py-3.5 border-t border-bg4"
-             style={{ background: 'rgba(255,255,255,0.01)' }}>
+        <div
+          className="flex items-center gap-3 px-6 py-3.5 border-t border-bg4"
+          style={{ background: "rgba(255,255,255,0.01)" }}
+        >
           <span className="text-[10px] uppercase tracking-widest text-emerald-primary">
-            {selectedCount} item{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
+            {selectedCount} item{selectedCount !== 1 ? "s" : ""} seleccionado
+            {selectedCount !== 1 ? "s" : ""}
           </span>
           <div className="ml-auto flex gap-3">
-            <Button variant="neo" onClick={onClose}>Cancelar</Button>
+            <Button variant="neo" onClick={onClose}>
+              Cancelar
+            </Button>
             <Button onClick={handleConfirm} disabled={selectedCount === 0}>
               Agregar al Acta
             </Button>

@@ -424,6 +424,3 @@ MovimientoInventario --> Kardex Digital
   <img src="https://img.shields.io/badge/Documento%20actualizado-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualizado"><br>
    v2.0 — Completo con 18 tablas · 7 módulos
 </p>
-
-
-

@@ -1,16 +1,42 @@
-import React, { useState } from 'react';
-import { User, Key, ArrowLeft, Upload } from 'lucide-react';
-import { DashboardLayout, Card, Button, SectionTitle, NeoInput } from '../components/Fusion';
-import { useNavigate } from 'react-router-dom';
-import { uploadAvatar, changeMyPassword } from '../services/users';
-import { useToast } from '../lib/toast';
-import { useAuth } from '../context/AuthContext';
-import { useTheme, ThemeName } from '../context/ThemeContext';
+import React, { useState } from "react";
+import { User, Key, ArrowLeft, Upload } from "lucide-react";
+import {
+  DashboardLayout,
+  Card,
+  Button,
+  SectionTitle,
+  NeoInput,
+} from "../components/Fusion";
+import { useNavigate } from "react-router-dom";
+import { uploadAvatar, changeMyPassword } from "../services/users";
+import { useToast } from "../lib/toast";
+import { useAuth } from "../hooks/useAuth";
+import { useTheme, ThemeName } from "../hooks/useTheme";
 
-const THEMES: { id: ThemeName; label: string; desc: string; preview: string }[] = [
-  { id: 'green', label: 'Verde', desc: 'Industrial / seguridad', preview: 'bg-emerald-primary' },
-  { id: 'blue', label: 'Azul Cobalto', desc: 'Oscuro / corporativo', preview: 'bg-chart-blue' },
-  { id: 'bone', label: 'Blanco Hueso', desc: 'Cálido / natural', preview: 'bg-gold' },
+const THEMES: {
+  id: ThemeName;
+  label: string;
+  desc: string;
+  preview: string;
+}[] = [
+  {
+    id: "green",
+    label: "Verde",
+    desc: "Industrial / seguridad",
+    preview: "bg-emerald-primary",
+  },
+  {
+    id: "blue",
+    label: "Azul Cobalto",
+    desc: "Oscuro / corporativo",
+    preview: "bg-chart-blue",
+  },
+  {
+    id: "bone",
+    label: "Blanco",
+    desc: "Cálido / natural",
+    preview: "bg-gold",
+  },
 ];
 
 const Settings: React.FC = () => {
@@ -21,36 +47,44 @@ const Settings: React.FC = () => {
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [currentPass, setCurrentPass] = useState('');
-  const [newPass, setNewPass] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
   const [changingPass, setChangingPass] = useState(false);
 
   const handleAvatarUpload = async () => {
-    if (!avatarFile) return toast.error('Selecciona un archivo');
+    if (!avatarFile) return toast.error("Selecciona un archivo");
     setAvatarUploading(true);
     try {
-      const res = await uploadAvatar(avatarFile);
-      toast.success('Avatar actualizado');
+      await uploadAvatar(avatarFile);
+      toast.success("Avatar actualizado");
       setAvatarFile(null);
       await refreshUser();
     } catch (err) {
-      toast.error('Error subiendo avatar');
+      toast.error("Error subiendo avatar");
     } finally {
       setAvatarUploading(false);
     }
   };
 
   const handleChangePassword = async () => {
-    if (!currentPass || !newPass) return toast.error('Completa ambos campos');
-    if (newPass !== confirmPass) return toast.error('Las contraseñas no coinciden');
+    if (!currentPass || !newPass) return toast.error("Completa ambos campos");
+    if (newPass !== confirmPass)
+      return toast.error("Las contraseñas no coinciden");
     setChangingPass(true);
     try {
       await changeMyPassword(currentPass, newPass);
-      toast.success('Contraseña cambiada');
-      setCurrentPass(''); setNewPass(''); setConfirmPass('');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || 'Error cambiando contraseña');
+      toast.success("Contraseña cambiada");
+      setCurrentPass("");
+      setNewPass("");
+      setConfirmPass("");
+    } catch (err) {
+      const detail = (
+        err as { response?: { data?: { detail?: unknown } } }
+      ).response?.data?.detail;
+      toast.error(
+        typeof detail === "string" ? detail : "Error cambiando contraseña",
+      );
     } finally {
       setChangingPass(false);
     }
@@ -59,12 +93,17 @@ const Settings: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => navigate('/')} className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-bg4">
+        <button
+          onClick={() => navigate("/")}
+          className="p-2 rounded-xl bg-bg3 text-content-muted hover:text-emerald-primary transition-all border border-bg4"
+        >
           <ArrowLeft size={18} />
         </button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>
-          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Ajustes del sistema y preferencias de usuario</p>
+          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">
+            Ajustes del sistema y preferencias de usuario
+          </p>
         </div>
       </div>
 
@@ -78,12 +117,16 @@ const Settings: React.FC = () => {
                 onClick={() => setTheme(t.id)}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   theme === t.id
-                    ? 'border-emerald-primary bg-emerald-primary/5'
-                    : 'border-bg4 bg-bg2 hover:bg-emerald-primary/5'
+                    ? "border-emerald-primary bg-emerald-primary/5"
+                    : "border-bg4 bg-bg2 hover:bg-emerald-primary/5"
                 }`}
               >
-                <div className={`w-full h-8 rounded-lg mb-3 ${t.preview} bg-opacity-30 border border-bg3`} />
-                <p className="text-xs font-bold text-content-primary">{t.label}</p>
+                <div
+                  className={`w-full h-8 rounded-lg mb-3 ${t.preview} bg-opacity-30 border border-bg3`}
+                />
+                <p className="text-xs font-bold text-content-primary">
+                  {t.label}
+                </p>
                 <p className="text-[9px] text-content-muted mt-0.5">{t.desc}</p>
               </button>
             ))}
@@ -99,21 +142,37 @@ const Settings: React.FC = () => {
                   <User size={18} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-content-primary">Avatar</h3>
-                  <p className="text-[10px] text-content-muted">Sube una foto de perfil</p>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-content-primary">
+                    Avatar
+                  </h3>
+                  <p className="text-[10px] text-content-muted">
+                    Sube una foto de perfil
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex-1 flex items-center gap-3 p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 cursor-pointer hover:border-emerald-primary/30 transition-colors">
                   <Upload size={20} className="text-content-muted shrink-0" />
                   <span className="text-[11px] text-content-muted truncate">
-                    {avatarFile ? avatarFile.name : 'Seleccionar imagen...'}
+                    {avatarFile ? avatarFile.name : "Seleccionar imagen..."}
                   </span>
-                  <input type="file" accept="image/*" className="hidden" onChange={(e: any) => setAvatarFile(e.target.files?.[0] || null)} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      setAvatarFile(e.target.files?.[0] || null)
+                    }
+                  />
                 </label>
               </div>
-              <Button className="w-full" variant="neo" onClick={handleAvatarUpload} disabled={avatarUploading || !avatarFile}>
-                {avatarUploading ? 'Subiendo...' : 'Actualizar Avatar'}
+              <Button
+                className="w-full"
+                variant="neo"
+                onClick={handleAvatarUpload}
+                disabled={avatarUploading || !avatarFile}
+              >
+                {avatarUploading ? "Subiendo..." : "Actualizar Avatar"}
               </Button>
             </div>
 
@@ -123,15 +182,38 @@ const Settings: React.FC = () => {
                   <Key size={18} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-content-primary">Seguridad</h3>
-                  <p className="text-[10px] text-content-muted">Cambia tu contraseña</p>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-content-primary">
+                    Seguridad
+                  </h3>
+                  <p className="text-[10px] text-content-muted">
+                    Cambia tu contraseña
+                  </p>
                 </div>
               </div>
-              <NeoInput type="password" value={currentPass} onChange={(e: any) => setCurrentPass(e.target.value)} placeholder="Contraseña actual" />
-              <NeoInput type="password" value={newPass} onChange={(e: any) => setNewPass(e.target.value)} placeholder="Nueva contraseña" />
-              <NeoInput type="password" value={confirmPass} onChange={(e: any) => setConfirmPass(e.target.value)} placeholder="Confirmar nueva contraseña" />
-              <Button className="w-full" onClick={handleChangePassword} disabled={changingPass}>
-                {changingPass ? 'Cambiando...' : 'Cambiar Contraseña'}
+              <NeoInput
+                type="password"
+                value={currentPass}
+                onChange={(e) => setCurrentPass(e.target.value)}
+                placeholder="Contraseña actual"
+              />
+              <NeoInput
+                type="password"
+                value={newPass}
+                onChange={(e) => setNewPass(e.target.value)}
+                placeholder="Nueva contraseña"
+              />
+              <NeoInput
+                type="password"
+                value={confirmPass}
+                onChange={(e) => setConfirmPass(e.target.value)}
+                placeholder="Confirmar nueva contraseña"
+              />
+              <Button
+                className="w-full"
+                onClick={handleChangePassword}
+                disabled={changingPass}
+              >
+                {changingPass ? "Cambiando..." : "Cambiar Contraseña"}
               </Button>
             </div>
           </div>

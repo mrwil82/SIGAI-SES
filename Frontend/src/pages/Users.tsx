@@ -1,26 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import { ExportMenu } from "../components/ExportMenu";
-import { 
-  UserCog, 
-  Search, 
-  Plus, 
-  Mail, 
-  Shield, 
-  Edit2, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
   UserCheck,
   UserX,
-  MapPin,
-  CreditCard,
-  Hash,
   Eye,
-  EyeOff
-} from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { 
-  Card, 
-  Button, 
-  Badge, 
+  EyeOff,
+} from "lucide-react";
+import { useForm } from "react-hook-form";
+import {
+  Card,
+  Button,
+  Badge,
   DashboardLayout,
   TableContainer,
   THead,
@@ -32,35 +26,85 @@ import {
   Modal,
   FormGroup,
   NeoSelect,
-  Alert,
   AvatarImg,
-  resolveAvatarUrl
-} from '../components/Fusion';
-import { SearchableSelect } from '../components/SearchableSelect';
-import { ConfirmModal } from '../components/Fusion';
-import { getUsers, createUser, updateUser, deleteUser, checkUniqueField } from '../services/users';
-import { getRegionales } from '../services/regionales';
-import { useToast } from '../lib/toast';
+} from "../components/Fusion";
+import { SearchableSelect } from "../components/SearchableSelect";
+import { ConfirmModal } from "../components/Fusion";
+import {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  checkUniqueField,
+} from "../services/users";
+import { getRegionales } from "../services/regionales";
+import { useToast } from "../lib/toast";
+
+interface UserRow {
+  id_usuario: number;
+  nombre: string;
+  email: string;
+  rol: string;
+  is_active: boolean;
+  cedula?: string | null;
+  codigo_empleado?: string | null;
+  regional?: string | null;
+  regional_rel?: { nombre: string } | null;
+  id_regional?: number | null;
+  avatar_url?: string | null;
+}
+
+interface Regional {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
+}
+
+interface UserFormValues {
+  nombre: string;
+  email: string;
+  cedula?: string;
+  codigo_empleado?: string;
+  id_regional?: string;
+  regional?: string;
+  rol: string;
+  is_active: string | boolean;
+  password?: string;
+  confirmPassword?: string;
+}
+
+interface ApiError {
+  response?: { data?: { detail?: string } };
+}
 
 const UsersPage: React.FC = () => {
-  const [users, setUsers] = useState<any[]>([]);
-  const [regionales, setRegionales] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [regionales, setRegionales] = useState<Regional[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
   const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const toast = useToast();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
-  const [confirmMessage, setConfirmMessage] = useState<string>('');
+  const [confirmMessage, setConfirmMessage] = useState<string>("");
 
-  const { register, handleSubmit, reset, setValue, watch, setError, clearErrors, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm<UserFormValues>();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -72,45 +116,48 @@ const UsersPage: React.FC = () => {
 
   const effectivePageSize = debouncedSearch ? 1000 : pageSize;
 
-  const fetchData = async (page?: number) => {
-    const targetPage = page ?? currentPage;
-    setIsLoading(true);
-    try {
-      const [usersData, regionalesData] = await Promise.all([
-        getUsers(targetPage, effectivePageSize),
-        getRegionales()
-      ]);
-      setUsers(usersData.items || []);
-      setTotalUsers(usersData.total || 0);
-      setRegionales(regionalesData || []);
-    } catch (error) {
-      console.error('Failed to fetch data', error);
-      toast.error('Error al cargar los datos.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchData = useCallback(
+    async (page?: number) => {
+      const targetPage = page ?? currentPage;
+      setIsLoading(true);
+      try {
+        const [usersData, regionalesData] = await Promise.all([
+          getUsers(targetPage, effectivePageSize),
+          getRegionales(),
+        ]);
+        setUsers(usersData.items || []);
+        setTotalUsers(usersData.total || 0);
+        setRegionales(regionalesData || []);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+        toastError("Error al cargar los datos.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentPage, effectivePageSize, toastError],
+  );
 
   useEffect(() => {
     fetchData(currentPage);
-  }, [currentPage, debouncedSearch]);
+  }, [currentPage, debouncedSearch, fetchData]);
 
-  const handleEdit = (user: any) => {
+  const handleEdit = (user: UserRow) => {
     setEditingUser(user);
-    setValue('nombre', user.nombre);
-    setValue('email', user.email);
-    setValue('rol', user.rol);
-    setValue('cedula', user.cedula || '');
-    setValue('codigo_empleado', user.codigo_empleado || '');
-    setValue('id_regional', user.id_regional || '');
-    setValue('regional', user.regional || '');
-    setValue('is_active', user.is_active);
+    setValue("nombre", user.nombre);
+    setValue("email", user.email);
+    setValue("rol", user.rol);
+    setValue("cedula", user.cedula || "");
+    setValue("codigo_empleado", user.codigo_empleado || "");
+    setValue("id_regional", user.id_regional ? String(user.id_regional) : "");
+    setValue("regional", user.regional || "");
+    setValue("is_active", user.is_active);
     setIsModalOpen(true);
   };
 
   const openConfirm = (id: number, message?: string) => {
     setConfirmId(id);
-    setConfirmMessage(message || '¿Está seguro de desactivar a este usuario?');
+    setConfirmMessage(message || "¿Está seguro de desactivar a este usuario?");
     setConfirmOpen(true);
   };
 
@@ -118,22 +165,26 @@ const UsersPage: React.FC = () => {
     if (confirmId == null) return;
     try {
       await deleteUser(confirmId);
-      toast.success('Usuario desactivado correctamente.');
+      toastSuccess("Usuario desactivado correctamente.");
       setCurrentPage(1);
       fetchData(1);
-    } catch (error: any) {
-      toast.error('Error al desactivar el usuario', { description: error.response?.data?.detail });
+    } catch (error) {
+      const detail = (error as ApiError).response?.data?.detail;
+      toastError("Error al desactivar el usuario", { description: detail });
     } finally {
       setConfirmOpen(false);
       setConfirmId(null);
     }
   };
 
-  const checkField = async (field: string, value: string) => {
+  const checkField = async (field: keyof UserFormValues, value: string) => {
     const excludeId = editingUser?.id_usuario;
     const result = await checkUniqueField(field, value, excludeId);
     if (!result.available) {
-      setError(field, { type: 'manual', message: result.error || `Este ${field} ya está en uso.` });
+      setError(field, {
+        type: "manual",
+        message: result.error || `Este ${field} ya está en uso.`,
+      });
     } else {
       clearErrors(field);
     }
@@ -145,79 +196,99 @@ const UsersPage: React.FC = () => {
     reset();
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: UserFormValues) => {
     if (data.password && data.password !== data.confirmPassword) {
-      toast.error('Las contraseñas no coinciden.');
+      toastError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Si estamos editando y no se ingresó contraseña, la removemos del payload
-    const payload = { ...data };
-    if (!payload.password) delete payload.password;
-    delete payload.confirmPassword;
-
-    // Convertir is_active a booleano real
-    payload.is_active = payload.is_active === 'true' || payload.is_active === true;
-    
-    // Convertir id_regional a número o null
-    payload.id_regional = payload.id_regional ? parseInt(payload.id_regional) : null;
-
-    
+    const payload: {
+      nombre: string;
+      email: string;
+      rol: string;
+      cedula?: string;
+      codigo_empleado?: string;
+      regional?: string;
+      id_regional?: number | null;
+      is_active: boolean;
+      password?: string;
+    } = {
+      nombre: data.nombre,
+      email: data.email,
+      rol: data.rol,
+      cedula: data.cedula || undefined,
+      codigo_empleado: data.codigo_empleado || undefined,
+      regional: data.regional || undefined,
+      is_active: data.is_active === "true" || data.is_active === true,
+      id_regional: data.id_regional ? parseInt(data.id_regional, 10) : null,
+    };
+    if (data.password) payload.password = data.password;
 
     try {
       if (editingUser) {
         await updateUser(editingUser.id_usuario, payload);
-        toast.success('Usuario actualizado exitosamente.');
+        toastSuccess("Usuario actualizado exitosamente.");
       } else {
         await createUser(payload);
-        toast.success('Usuario creado exitosamente.');
+        toastSuccess("Usuario creado exitosamente.");
       }
       closeModal();
       setCurrentPage(1);
       fetchData(1);
-    } catch (error: any) {
-      console.error('Error:', error);
-      toast.error('Error al procesar el usuario', { description: error.response?.data?.detail || 'Intente de nuevo.' });
+    } catch (error) {
+      console.error("Error:", error);
+      const detail =
+        (error as ApiError).response?.data?.detail || "Intente de nuevo.";
+      toastError("Error al procesar el usuario", { description: detail });
     }
   };
 
-
-  const filteredUsers = users.filter((u: any) => 
-    u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.cedula?.includes(searchTerm)
+  const filteredUsers = users.filter(
+    (u) =>
+      u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.cedula?.includes(searchTerm),
   );
 
   const ROLE_LABELS: Record<string, string> = {
-    ADMIN: 'Administrador',
-    TECNICO: 'Técnico',
-    TECNICO_LABORATORIO: 'Técnico de Laboratorio',
-    SUPERVISOR: 'Supervisor',
-    BODEGUERO: 'Bodeguero',
+    ADMIN: "Administrador",
+    TECNICO: "Técnico",
+    TECNICO_LABORATORIO: "Técnico de Laboratorio",
+    SUPERVISOR: "Supervisor",
+    BODEGUERO: "Bodeguero",
   };
 
   return (
     <DashboardLayout>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-content-primary">Gestión de Usuarios</h1>
-          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">Control de acceso y roles del sistema (RBAC)</p>
+          <h1 className="text-2xl font-bold tracking-tight text-content-primary">
+            Gestión de Usuarios
+          </h1>
+          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">
+            Control de acceso y roles del sistema (RBAC)
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <ExportMenu module="users" />
-          <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
             <Plus size={16} />
             Nuevo Usuario
           </Button>
         </div>
       </div>
 
-  
       <Card className="mb-8">
         <div className="relative max-w-md">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted" size={16} />
-          <NeoInput 
-            placeholder="Buscar por nombre, correo o cédula..." 
+          <Search
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted"
+            size={16}
+          />
+          <NeoInput
+            placeholder="Buscar por nombre, correo o cédula..."
             className="pl-10 h-12"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,7 +310,10 @@ const UsersPage: React.FC = () => {
           <TBody>
             {isLoading ? (
               <TR>
-                <TD colSpan={7} className="text-center py-20 text-content-primary font-bold">
+                <TD
+                  colSpan={7}
+                  className="text-center py-20 text-content-primary font-bold"
+                >
                   Sincronizando Usuarios...
                 </TD>
               </TR>
@@ -248,47 +322,69 @@ const UsersPage: React.FC = () => {
                 <TR key={u.id_usuario}>
                   <TD>
                     <div className="flex items-center gap-4">
-                      <AvatarImg url={u.avatar_url} name={u.nombre} className="shadow-neo" />
+                      <AvatarImg
+                        url={u.avatar_url}
+                        name={u.nombre}
+                        className="shadow-neo"
+                      />
                       <div className="flex flex-col">
-                        <span className="font-bold text-xs md:text-sm text-content-primary">{u.nombre}</span>
-                        <span className="text-[10px] text-content-muted">{u.email}</span>
+                        <span className="font-bold text-xs md:text-sm text-content-primary">
+                          {u.nombre}
+                        </span>
+                        <span className="text-[10px] text-content-muted">
+                          {u.email}
+                        </span>
                       </div>
                     </div>
                   </TD>
                   <TD className="hidden sm:table-cell">
-                    <span className="text-xs text-content-secondary">{u.cedula || '---'}</span>
+                    <span className="text-xs text-content-secondary">
+                      {u.cedula || "---"}
+                    </span>
                   </TD>
                   <TD className="hidden md:table-cell">
-                    <span className="text-xs text-content-secondary">{u.codigo_empleado || '---'}</span>
+                    <span className="text-xs text-content-secondary">
+                      {u.codigo_empleado || "---"}
+                    </span>
                   </TD>
                   <TD className="hidden lg:table-cell">
-                    <span className="text-xs text-content-secondary">{u.regional_rel?.nombre || u.regional || '---'}</span>
+                    <span className="text-xs text-content-secondary">
+                      {u.regional_rel?.nombre || u.regional || "---"}
+                    </span>
                   </TD>
                   <TD>
-                    <Badge label={ROLE_LABELS[u.rol] ?? u.rol} color="#9B6DFF" bg="rgba(155, 109, 255, 0.1)" />
+                    <Badge
+                      label={ROLE_LABELS[u.rol] ?? u.rol}
+                      color="#9B6DFF"
+                      bg="rgba(155, 109, 255, 0.1)"
+                    />
                   </TD>
                   <TD className="hidden sm:table-cell">
                     {u.is_active ? (
                       <div className="flex items-center gap-1 text-emerald-primary">
                         <UserCheck size={12} />
-                        <span className="text-[9px] font-bold uppercase">Activo</span>
+                        <span className="text-[9px] font-bold uppercase">
+                          Activo
+                        </span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 text-danger">
                         <UserX size={12} />
-                        <span className="text-[9px] font-bold uppercase">Inactivo</span>
+                        <span className="text-[9px] font-bold uppercase">
+                          Inactivo
+                        </span>
                       </div>
                     )}
                   </TD>
                   <TD>
                     <div className="flex justify-end gap-2">
-                      <button 
+                      <button
                         onClick={() => handleEdit(u)}
                         className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => openConfirm(u.id_usuario)}
                         className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
@@ -300,7 +396,12 @@ const UsersPage: React.FC = () => {
               ))
             ) : (
               <TR>
-                <TD colSpan={7} className="text-center py-20 text-content-muted italic text-xs md:text-sm">No hay usuarios registrados.</TD>
+                <TD
+                  colSpan={7}
+                  className="text-center py-20 text-content-muted italic text-xs md:text-sm"
+                >
+                  No hay usuarios registrados.
+                </TD>
               </TR>
             )}
           </TBody>
@@ -331,31 +432,50 @@ const UsersPage: React.FC = () => {
         </div>
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
         title={editingUser ? "Editar Usuario" : "Registrar Nuevo Usuario"}
         footer={
           <>
-            <Button variant="ghost"  onClick={closeModal}>Cancelar</Button>
-            <Button onClick={handleSubmit(onSubmit)}>{editingUser ? "Actualizar Usuario" : "Crear Usuario"}</Button>
+            <Button variant="ghost" onClick={closeModal}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit(onSubmit)}>
+              {editingUser ? "Actualizar Usuario" : "Crear Usuario"}
+            </Button>
           </>
         }
       >
         <form className="space-y-3 text-[11px] md:text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <FormGroup label="Nombre Completo" error={errors.nombre?.message as string}>
-              <NeoInput {...register('nombre', { required: 'Obligatorio' })} placeholder="Nombre" />
-            </FormGroup>
-            <FormGroup label="Correo Electrónico" error={errors.email?.message as string}>
+            <FormGroup
+              label="Nombre Completo"
+              error={errors.nombre?.message as string}
+            >
               <NeoInput
-                {...register('email', {
-                  required: 'Obligatorio',
-                  pattern: { value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, message: 'Formato de correo inválido' }
+                {...register("nombre", { required: "Obligatorio" })}
+                placeholder="Nombre"
+              />
+            </FormGroup>
+            <FormGroup
+              label="Correo Electrónico"
+              error={errors.email?.message as string}
+            >
+              <NeoInput
+                {...register("email", {
+                  required: "Obligatorio",
+                  pattern: {
+                    value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+                    message: "Formato de correo inválido",
+                  },
                 })}
                 type="email"
                 placeholder="correo@securitas.com"
-                onBlur={(e: any) => { if (e.target.value && !errors.email?.message) checkField('email', e.target.value); }}
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  if (e.target.value && !errors.email?.message)
+                    checkField("email", e.target.value);
+                }}
               />
             </FormGroup>
           </div>
@@ -363,23 +483,34 @@ const UsersPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <FormGroup label="Cédula" error={errors.cedula?.message as string}>
               <NeoInput
-                {...register('cedula')}
+                {...register("cedula")}
                 placeholder="CC."
-                onBlur={(e: any) => { if (e.target.value) checkField('cedula', e.target.value); }}
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  if (e.target.value) checkField("cedula", e.target.value);
+                }}
               />
             </FormGroup>
-            <FormGroup label="Código Empleado" error={errors.codigo_empleado?.message as string}>
+            <FormGroup
+              label="Código Empleado"
+              error={errors.codigo_empleado?.message as string}
+            >
               <NeoInput
-                {...register('codigo_empleado')}
+                {...register("codigo_empleado")}
                 placeholder="Código"
-                onBlur={(e: any) => { if (e.target.value) checkField('codigo_empleado', e.target.value); }}
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  if (e.target.value)
+                    checkField("codigo_empleado", e.target.value);
+                }}
               />
             </FormGroup>
             <FormGroup label="Regional">
               <SearchableSelect
-                options={regionales.map((r: any) => ({ value: String(r.id_regional), label: r.nombre }))}
-                value={watch('id_regional') || ''}
-                onChange={(val) => setValue('id_regional', val)}
+                options={regionales.map((r) => ({
+                  value: String(r.id_regional),
+                  label: r.nombre,
+                }))}
+                value={watch("id_regional") || ""}
+                onChange={(val) => setValue("id_regional", val)}
                 placeholder="Buscar regional..."
               />
             </FormGroup>
@@ -387,14 +518,16 @@ const UsersPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormGroup label="Rol de Sistema">
-              <NeoSelect {...register('rol')}>
+              <NeoSelect {...register("rol")}>
                 <option value="ADMIN">Administrador</option>
                 <option value="TECNICO">Técnico</option>
-                <option value="TECNICO_LABORATORIO">Técnico de Laboratorio</option>
+                <option value="TECNICO_LABORATORIO">
+                  Técnico de Laboratorio
+                </option>
               </NeoSelect>
             </FormGroup>
             <FormGroup label="Estado">
-              <NeoSelect {...register('is_active')}>
+              <NeoSelect {...register("is_active")}>
                 <option value="true">Activo</option>
                 <option value="false">Inactivo</option>
               </NeoSelect>
@@ -408,7 +541,11 @@ const UsersPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="relative">
                 <FormGroup label="Contraseña">
-                  <NeoInput {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="••••••••" />
+                  <NeoInput
+                    {...register("password")}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                  />
                 </FormGroup>
                 <button
                   type="button"
@@ -420,14 +557,22 @@ const UsersPage: React.FC = () => {
               </div>
               <div className="relative">
                 <FormGroup label="Confirmar Contraseña">
-                  <NeoInput {...register('confirmPassword')} type={showConfirmPassword ? 'text' : 'password'} placeholder="••••••••" />
+                  <NeoInput
+                    {...register("confirmPassword")}
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                  />
                 </FormGroup>
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-content-muted hover:text-emerald-primary transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={14} />
+                  ) : (
+                    <Eye size={14} />
+                  )}
                 </button>
               </div>
             </div>

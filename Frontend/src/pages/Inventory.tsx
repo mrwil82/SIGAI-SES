@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { utils, writeFile } from "xlsx";
 import {
   Package,
   Search,
@@ -9,7 +8,7 @@ import {
   Download,
   X,
 } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
   Card,
@@ -31,7 +30,6 @@ import {
 } from "../components/Fusion";
 import { useToast } from "../lib/toast";
 import {
-  getInventoryItems,
   createInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
@@ -40,6 +38,39 @@ import {
 } from "../services/inventory";
 import { ExportMenu } from "../components/ExportMenu";
 import { useInventory } from "../hooks/useInventory";
+
+interface InventoryItemRow {
+  id_item: number;
+  nombre_equipo?: string;
+  categoria?: string;
+  sub_categoria?: string;
+  marca?: string;
+  referencia?: string;
+  codigo_item_interno?: string;
+  costo_unitario?: number | string;
+  moneda?: string;
+  stock_minimo?: number;
+  compra_maxima?: number;
+  unidad_medida?: string;
+  deleted_at?: string | null;
+  stock_bulk?: { cantidad_actual?: number };
+}
+
+interface InventoryFormValues {
+  nombre_equipo: string;
+  categoria: string;
+  sub_categoria: string;
+  marca: string;
+  referencia: string;
+  codigo_item_interno: string;
+  costo_unitario: number;
+  moneda: string;
+  unidad_medida: string;
+  stock_minimo: number;
+  compra_maxima: number;
+  cantidad_inicial: number;
+  ubicacion: string;
+}
 
 const UBICACIONES = [
   { id: "BODEGA_PRINCIPAL", nombre: "Bodega Principal" },
@@ -84,7 +115,7 @@ const Inventory: React.FC = () => {
     refreshVersion,
     showDeleted,
   );
-  const items = data?.items || [];
+  const items = (data?.items || []) as InventoryItemRow[];
   const totalItems = data?.total || 0;
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -92,14 +123,19 @@ const Inventory: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStockStatus, setFilterStockStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [editingItem, setEditingItem] = useState<InventoryItemRow | null>(null);
 
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
 
-  useEffect(() => { if (alert) { const t = setTimeout(() => setAlert(null), 4500); return () => clearTimeout(t); } }, [alert]);
+  useEffect(() => {
+    if (alert) {
+      const t = setTimeout(() => setAlert(null), 4500);
+      return () => clearTimeout(t);
+    }
+  }, [alert]);
 
   const toast = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -112,7 +148,7 @@ const Inventory: React.FC = () => {
     reset,
     setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm<InventoryFormValues>();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -126,19 +162,19 @@ const Inventory: React.FC = () => {
     setRefreshVersion((value) => value + 1);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: InventoryItemRow) => {
     setEditingItem(item);
-    setValue("nombre_equipo", item.nombre_equipo);
-    setValue("categoria", item.categoria);
+    setValue("nombre_equipo", item.nombre_equipo ?? "");
+    setValue("categoria", item.categoria ?? "");
     setValue("sub_categoria", item.sub_categoria || "");
     setValue("marca", item.marca || "");
     setValue("referencia", item.referencia || "");
     setValue("codigo_item_interno", item.codigo_item_interno || "");
-    setValue("costo_unitario", item.costo_unitario);
+    setValue("costo_unitario", Number(item.costo_unitario) || 0);
     setValue("moneda", item.moneda || "COP");
-    setValue("stock_minimo", item.stock_minimo);
+    setValue("stock_minimo", item.stock_minimo ?? 5);
     setValue("compra_maxima", item.compra_maxima || 20);
-    setValue("unidad_medida", item.unidad_medida);
+    setValue("unidad_medida", item.unidad_medida ?? "UND");
     setIsModalOpen(true);
   };
 
@@ -158,7 +194,7 @@ const Inventory: React.FC = () => {
       setAlert(null);
       setCurrentPage(1);
       fetchData();
-    } catch (error: any) {
+    } catch {
       toast.error("Error al eliminar el item.");
     } finally {
       setConfirmOpen(false);
@@ -172,10 +208,10 @@ const Inventory: React.FC = () => {
     reset();
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: InventoryFormValues) => {
     try {
       if (editingItem) {
-        await updateInventoryItem(editingItem.id_item, data);
+        await updateInventoryItem(String(editingItem.id_item), data);
         toast.success("Ítem actualizado exitosamente.");
         setAlert({
           type: "success",
@@ -198,23 +234,33 @@ const Inventory: React.FC = () => {
       closeModal();
       setCurrentPage(1);
       fetchData();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error al guardar los datos.");
-      const detail = error.response?.data?.detail;
-      const msg = Array.isArray(detail) ? detail.map((e: any) => e.msg).filter(Boolean).join('; ') : (detail || "Error al guardar los datos.");
+      const detail = (
+        error as { response?: { data?: { detail?: unknown } } }
+      ).response?.data?.detail;
+      const msg = Array.isArray(detail)
+        ? detail
+            .map((e: { msg?: string }) => e.msg)
+            .filter(Boolean)
+            .join("; ")
+        : typeof detail === "string"
+          ? detail
+          : "Error al guardar los datos.";
       setAlert({ type: "error", message: msg });
     }
   };
 
-  const filteredItems = items.filter((item: any) => {
+  const filteredItems = items.filter((item) => {
     const matchesCategory = filterCategory
       ? item.categoria === filterCategory
       : true;
+    const stockMin = item.stock_minimo ?? 0;
     const matchesStock =
       filterStockStatus === "BAJO"
-        ? (item.stock_bulk?.cantidad_actual || 0) <= item.stock_minimo
+        ? (item.stock_bulk?.cantidad_actual || 0) <= stockMin
         : filterStockStatus === "OK"
-          ? (item.stock_bulk?.cantidad_actual || 0) > item.stock_minimo
+          ? (item.stock_bulk?.cantidad_actual || 0) > stockMin
           : true;
 
     return matchesCategory && matchesStock;
@@ -231,21 +277,32 @@ const Inventory: React.FC = () => {
             Administra tu catálogo de equipos, herramientas y consumibles
           </p>
         </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <ExportMenu module="inventory" />
-            <Button variant="neo" className="flex items-center gap-2" onClick={() => downloadTemplate("inventario_laboratorio")}>
-              <Download size={14} />
-              Plantilla
-            </Button>
-            <Button variant="neo" className="flex items-center gap-2" onClick={() => setIsImportModalOpen(true)}>
-              <Download size={16} className="rotate-180" />
-              Carga Excel
-            </Button>
-            <Button className="flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
-              <Plus size={16} />
-              Nuevo Registro
-            </Button>
-          </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <ExportMenu module="inventory" />
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => downloadTemplate("inventario_laboratorio")}
+          >
+            <Download size={14} />
+            Plantilla
+          </Button>
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <Download size={16} className="rotate-180" />
+            Carga Excel
+          </Button>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus size={16} />
+            Nuevo Registro
+          </Button>
+        </div>
       </div>
 
       {alert && (
@@ -268,7 +325,7 @@ const Inventory: React.FC = () => {
               placeholder="Buscar por nombre, referencia o marca..."
               className="pl-10 pr-10 h-11 md:h-12 text-xs md:text-sm"
               value={searchTerm}
-              onChange={(e: any) => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
               <button
@@ -285,7 +342,7 @@ const Inventory: React.FC = () => {
             <div className="flex flex-wrap gap-2">
               <NeoSelect
                 className="h-11 md:h-12 text-xs md:text-sm w-full sm:w-auto"
-                onChange={(e: any) => setFilterCategory(e.target.value)}
+                onChange={(e) => setFilterCategory(e.target.value)}
               >
                 <option value="">Todas las categorías</option>
                 <option value="MONITOREO">Monitoreo</option>
@@ -298,7 +355,7 @@ const Inventory: React.FC = () => {
               </NeoSelect>
               <NeoSelect
                 className="h-11 md:h-12 text-xs md:text-sm w-full sm:w-auto"
-                onChange={(e: any) => setFilterStockStatus(e.target.value)}
+                onChange={(e) => setFilterStockStatus(e.target.value)}
               >
                 <option value="">Todos los estados</option>
                 <option value="OK">Existencias OK</option>
@@ -308,12 +365,12 @@ const Inventory: React.FC = () => {
                 onClick={() => setShowDeleted(!showDeleted)}
                 className={`h-11 md:h-12 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
                   showDeleted
-                    ? 'bg-danger/10 border-danger/40 text-danger/80'
-                    : 'border-bg3 text-content-muted hover:border-danger/30 hover:text-danger/80'
+                    ? "bg-danger/10 border-danger/40 text-danger/80"
+                    : "border-bg3 text-content-muted hover:border-danger/30 hover:text-danger/80"
                 }`}
               >
                 <Trash2 size={14} className="inline mr-1.5" />
-                {showDeleted ? 'Con eliminados' : 'Eliminados'}
+                {showDeleted ? "Con eliminados" : "Eliminados"}
               </button>
             </div>
           </div>
@@ -343,8 +400,15 @@ const Inventory: React.FC = () => {
                   </TD>
                 </TR>
               ) : filteredItems.length > 0 ? (
-                filteredItems.map((item: any) => (
-                  <TR key={item.id_item} className={item.deleted_at ? "opacity-50 [&_td]:line-through [&_td]:decoration-danger/30 [&_td]:decoration-1" : ""}>
+                filteredItems.map((item) => (
+                  <TR
+                    key={item.id_item}
+                    className={
+                      item.deleted_at
+                        ? "opacity-50 [&_td]:line-through [&_td]:decoration-danger/30 [&_td]:decoration-1"
+                        : ""
+                    }
+                  >
                     <TD>
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-bg3 flex items-center justify-center text-emerald-primary border border-bg4 shadow-neo">
@@ -362,7 +426,7 @@ const Inventory: React.FC = () => {
                     </TD>
                     <TD className="hidden md:table-cell">
                       <Badge
-                        label={item.categoria}
+                        label={item.categoria ?? "S.N."}
                         color="var(--chart-blue)"
                         bg="rgba(0, 163, 255, 0.05)"
                       />
@@ -384,13 +448,20 @@ const Inventory: React.FC = () => {
                     </TD>
                     <TD className="hidden lg:table-cell">
                       <div className="text-content-primary font-mono font-bold">
-                        ${Number((Number(item.costo_unitario) || 0) * (Number(item.stock_bulk?.cantidad_actual) || 0)).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                        $
+                        {Number(
+                          (Number(item.costo_unitario) || 0) *
+                            (Number(item.stock_bulk?.cantidad_actual) || 0),
+                        ).toLocaleString("es-CO", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
                         {item.moneda}
                       </div>
                     </TD>
                     <TD>
                       {(item.stock_bulk?.cantidad_actual || 0) <=
-                      item.stock_minimo ? (
+                      (item.stock_minimo ?? 0) ? (
                         <Badge
                           label="BAJO"
                           color="var(--gold)"
@@ -593,7 +664,7 @@ const Inventory: React.FC = () => {
               id="excel-upload"
               className="hidden"
               accept=".xlsx,.xls,.csv"
-              onChange={async (e: any) => {
+              onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (file) {
                   setImporting(true);
@@ -603,12 +674,16 @@ const Inventory: React.FC = () => {
                     setCurrentPage(1);
                     fetchData();
                     setIsImportModalOpen(false);
-                  } catch (err: any) {
+                  } catch (err) {
+                    const detail = (
+                      err as { response?: { data?: { detail?: unknown } } }
+                    ).response?.data?.detail;
                     setAlert({
                       type: "error",
                       message:
-                        err.response?.data?.detail ||
-                        "Error al importar archivo",
+                        typeof detail === "string"
+                          ? detail
+                          : "Error al importar archivo",
                     });
                   } finally {
                     setImporting(false);
@@ -639,11 +714,19 @@ const Inventory: React.FC = () => {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="neo" className="flex-1 text-[10px] py-2" onClick={() => downloadTemplate("inventario_laboratorio")}>
+            <Button
+              variant="neo"
+              className="flex-1 text-[10px] py-2"
+              onClick={() => downloadTemplate("inventario_laboratorio")}
+            >
               <Download size={14} className="mr-1" />
               Plantilla Laboratorio
             </Button>
-            <Button variant="neo" className="flex-1 text-[10px] py-2" onClick={() => downloadTemplate("inventario_clientes")}>
+            <Button
+              variant="neo"
+              className="flex-1 text-[10px] py-2"
+              onClick={() => downloadTemplate("inventario_clientes")}
+            >
               <Download size={14} className="mr-1" />
               Plantilla Clientes
             </Button>
@@ -697,7 +780,6 @@ const Inventory: React.FC = () => {
           </Button>
         </div>
       </div>
-
     </DashboardLayout>
   );
 };
