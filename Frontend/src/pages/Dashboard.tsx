@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Package,
   ShieldCheck,
@@ -41,8 +41,8 @@ import {
 } from "../components/Fusion";
 import { StatCard, QuickAccessBtn } from "../components/DashboardComponents";
 import { useAuth } from "../hooks/useAuth";
-import { getDashboardStats, getPredictions } from "../services/analytics";
-import { getAuditLogs } from "../services/users";
+import { useDashboardStats, usePredictions } from "../hooks/useAnalytics";
+import { useAuditLogs } from "../hooks/useAudit";
 import { useNavigate } from "react-router-dom";
 
 const COLORS = [
@@ -127,28 +127,14 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [actividad, setActividad] = useState<ActividadLog[]>([]);
-  const [predicciones, setPredicciones] = useState<Predicciones | null>(null);
   const [timeRange, setTimeRange] = useState<"hoy" | "semana" | "mes">("hoy");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsData, auditData, predictionsData] = await Promise.all([
-          getDashboardStats(timeRange),
-          getAuditLogs(1, 50),
-          getPredictions(),
-        ]);
-        setStats(statsData);
-        setActividad(auditData.items || []);
-        setPredicciones(predictionsData);
-      } catch (error) {
-        console.error("Failed to fetch data", error);
-      }
-    };
-    fetchData();
-  }, [timeRange]);
+  const { data: statsData } = useDashboardStats(timeRange);
+  const { data: auditData } = useAuditLogs(1, 50);
+  const { data: predictionsData } = usePredictions();
+  const stats = (statsData || null) as DashboardStats | null;
+  const actividad = (auditData?.items || []) as ActividadLog[];
+  const predicciones = (predictionsData || null) as Predicciones | null;
 
   const formatAccion = (accion: string) => {
     const map: Record<string, string> = {

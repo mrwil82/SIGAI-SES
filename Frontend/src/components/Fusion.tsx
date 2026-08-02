@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { getDashboardAlerts } from "../services/alerts";
+import { useDashboardAlerts } from "../hooks/useAlertsSummary";
 import { globalSearch } from "../services/analytics";
 import { logger } from "../lib/logger";
 import { resolveAvatarUrl } from "../lib/avatar";
@@ -816,7 +816,8 @@ const Navbar = ({
   onToggleSidebar: () => void;
 }) => {
   const [showAlerts, setShowAlerts] = useState(false);
-  const [alerts, setAlerts] = useState<AlertSummary | null>(null);
+  const { data: alertsData } = useDashboardAlerts();
+  const alerts = (alertsData || null) as AlertSummary | null;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -829,6 +830,7 @@ const Navbar = ({
 
   // Cerrar resultados al hacer click fuera
   useEffect(() => {
+    // Cerrar resultados al hacer click fuera
     const handleClickOutside = (event: MouseEvent) => {
       if (
         searchRef.current &&
@@ -843,23 +845,6 @@ const Navbar = ({
   const pathParts = location.pathname.split("/").filter((p) => p);
   const breadcrumb =
     pathParts.length > 0 ? pathParts[pathParts.length - 1] : "Dashboard";
-
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const data = await getDashboardAlerts();
-        setAlerts(data);
-      } catch (error) {
-        logger.error("Failed to fetch alerts", error);
-      }
-    };
-    fetchAlerts();
-
-    // Refrescar cada 5 minutos
-
-    const interval = setInterval(fetchAlerts, 300000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Lógica de búsqueda con debounce
   useEffect(() => {

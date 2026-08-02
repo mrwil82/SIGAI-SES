@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { ExportMenu } from "../components/ExportMenu";
 import {
   Search,
@@ -20,7 +20,7 @@ import {
   NeoSelect,
   Badge,
 } from "../components/Fusion";
-import { getAuditLogs } from "../services/users";
+import { useAuditLogs } from "../hooks/useAudit";
 
 interface AuditLog {
   id_log: number;
@@ -81,14 +81,11 @@ const AuditDetails: React.FC<{ data: string | null }> = ({ data }) => {
 };
 
 const Audit: React.FC = () => {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
-  const [totalLogs, setTotalLogs] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -98,28 +95,14 @@ const Audit: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const fetchLogs = useCallback(async (page?: number) => {
-    const targetPage = page ?? currentPage;
-    setIsLoading(true);
-    try {
-      const data = await getAuditLogs(
-        targetPage,
-        pageSize,
-        debouncedSearch || undefined,
-        actionFilter || undefined,
-      );
-      setLogs(data.items || []);
-      setTotalLogs(data.total || 0);
-    } catch (error) {
-      console.error("Failed to fetch audit logs", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, pageSize, debouncedSearch, actionFilter]);
-
-  useEffect(() => {
-    fetchLogs(currentPage);
-  }, [currentPage, debouncedSearch, actionFilter, fetchLogs]);
+  const { data: auditData, isLoading } = useAuditLogs(
+    currentPage,
+    pageSize,
+    debouncedSearch || undefined,
+    actionFilter || undefined,
+  );
+  const logs = (auditData?.items || []) as AuditLog[];
+  const totalLogs = auditData?.total || 0;
 
   const getActionBadge = (action: string) => {
     switch (action) {
