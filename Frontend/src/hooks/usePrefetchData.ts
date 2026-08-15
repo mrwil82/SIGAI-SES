@@ -7,11 +7,7 @@ import {
 } from "../services/business";
 import { getRegionales } from "../services/regionales";
 import { getDashboardAlerts } from "../services/alerts";
-import {
-  getDashboardStats,
-  getPredictions,
-  getInventorySummary,
-} from "../services/analytics";
+import { getDashboardStats, getPredictions } from "../services/analytics";
 
 const MASTER_STALE_TIME = Infinity;
 const LIVE_STALE_TIME = 15 * 60 * 1000;
@@ -33,7 +29,6 @@ const PREFETCHES: PrefetchEntry[] = [
   // Dashboard: se refrescan en segundo plano al volver al modulo
   { key: ["dashboardStats", "hoy"], fn: () => getDashboardStats("hoy"), staleTime: LIVE_STALE_TIME },
   { key: ["predictions"], fn: () => getPredictions(), staleTime: LIVE_STALE_TIME },
-  { key: ["inventorySummary"], fn: () => getInventorySummary(), staleTime: LIVE_STALE_TIME },
   { key: ["alertsSummary"], fn: () => getDashboardAlerts(), staleTime: LIVE_STALE_TIME },
 ];
 
