@@ -177,6 +177,22 @@ def _rate_limit_handler(request: Request, exc: Exception) -> Response:
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
 
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; img-src 'self' data: blob: http: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    )
+    response.headers.setdefault(
+        "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
+    )
+    return response
+
 static_dir = os.path.join(str(BASE_DIR), "app", "static")
 if not os.path.exists(static_dir):
     os.makedirs(os.path.join(static_dir, "avatars"), exist_ok=True)
@@ -273,9 +289,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         f"GLOBAL ERROR | {request.method} {request.url.path} | Error: {msg}",
         exc_info=True,
     )
+    # No revelar detalles internos de la excepción al cliente
     return JSONResponse(
         status_code=500,
-        content={"detail": "Error interno del servidor", "message": msg},
+        content={"detail": "Error interno del servidor"},
     )
 
 

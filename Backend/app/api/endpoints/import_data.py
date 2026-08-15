@@ -851,6 +851,23 @@ async def import_excel(
     Importa cualquiera de los tres Excel del sistema.
     El tipo se detecta automáticamente por nombre de archivo.
     """
+    if not (file.filename or "").lower().endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="Solo se permiten archivos .xlsx")
+
+    MAX_IMPORT_SIZE = 30 * 1024 * 1024  # 30 MB
+    content_length = file.size
+    if content_length and content_length > MAX_IMPORT_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail="El archivo excede el tamaño máximo permitido de 30 MB.",
+        )
+    contents = await file.read(MAX_IMPORT_SIZE + 1)
+    if len(contents) > MAX_IMPORT_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail="El archivo excede el tamaño máximo permitido de 30 MB.",
+        )
+
     tipo = _detectar_tipo(file.filename or "")
     if not tipo:
         raise HTTPException(
@@ -863,11 +880,11 @@ async def import_excel(
             ),
         )
 
-    contents = await file.read()
     try:
         xl = pd.ExcelFile(io.BytesIO(contents))
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"No se pudo leer el Excel: {e}")
+        logger.warning(f"No se pudo leer el Excel '{file.filename}': {e}")
+        raise HTTPException(status_code=422, detail=f"No se pudo leer el archivo como Excel válido.")
 
     procesador = ARCHIVO_TIPO[tipo]
     try:
@@ -893,7 +910,7 @@ async def import_excel(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error importando '{file.filename}': {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error durante importación: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error durante la importación. Consulte los logs.")
 
 
 # Endpoint legacy (mantiene compatibilidad con frontend existente)

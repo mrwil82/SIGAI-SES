@@ -82,14 +82,34 @@ async def update_my_settings(settings: dict, db: AsyncSession = Depends(get_db),
 ALLOWED_AVATAR_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
 MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
 
+# Firmas (magic bytes) de cada imagen permitida. Cambiar a funciones por tipo
+# para cubrir WebP (RIFF + 'WEBP' en offset 8).
+def _is_webp(content: bytes) -> bool:
+    return len(content) >= 12 and content[:4] == b'RIFF' and content[8:12] == b'WEBP'
+
+_AVATAR_SIGNATURES = {
+    'image/jpeg': (b'\xff\xd8\xff',),
+    'image/png': (b'\x89PNG\r\n\x1a\n',),
+    'image/gif': (b'GIF87a', b'GIF89a'),
+    'image/vnd.microsoft.icon': (b'\x00\x00\x01\x00',),
+}
+
 @router.post('/me/avatar')
 async def upload_avatar(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     """Sube una imagen de avatar y actualiza la URL en el usuario."""
     if file.content_type not in ALLOWED_AVATAR_TYPES:
         raise HTTPException(status_code=400, detail=f'Tipo de archivo no permitido: {file.content_type}. Use JPEG, PNG, GIF o WebP.')
-    content = await file.read()
+    content = await file.read(MAX_AVATAR_SIZE + 1)
     if len(content) > MAX_AVATAR_SIZE:
         raise HTTPException(status_code=400, detail='El archivo excede el tamaño máximo de 2MB.')
+    if not content:
+        raise HTTPException(status_code=400, detail='El archivo está vacío.')
+    # Validar firma real del archivo (el content-type puede ser falseado)
+    is_valid = _is_webp(content) if file.content_type == 'image/webp' else any(
+        content.startswith(sig) for sig in _AVATAR_SIGNATURES[file.content_type]
+    )
+    if not is_valid:
+        raise HTTPException(status_code=400, detail='El contenido del archivo no corresponde a una imagen válida.')
     b64 = base64.b64encode(content).decode('utf-8')
     data_url = f"data:{file.content_type};base64,{b64}"
 
@@ -111,6 +131,10 @@ async def change_my_password(data: dict, db: AsyncSession = Depends(get_db), cur
     new = data.get('new_password')
     if not current or not new:
         raise HTTPException(status_code=400, detail='Se requieren current_password y new_password')
+    if len(new) < 8:
+        raise HTTPException(status_code=400, detail='La nueva contraseña debe tener al menos 8 caracteres')
+    if not any(c.islower() for c in new) or not any(c.isupper() for c in new) or not any(c.isdigit() for c in new):
+        raise HTTPException(status_code=400, detail='La nueva contraseña debe incluir al menos una mayúscula, una minúscula y un número')
     # obtener user
     result = await db.execute(select(UserModel).where(UserModel.id_usuario == current_user.id_usuario))
     db_user = result.scalars().first()

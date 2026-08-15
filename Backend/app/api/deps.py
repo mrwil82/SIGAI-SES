@@ -23,6 +23,9 @@ async def get_current_user(
         email = payload.get("sub")
         if email is None:
             raise credentials_exception
+        if payload.get("type") != "access":
+            # Un refresh token no debe servir como token de acceso
+            raise credentials_exception
     except JWTError:
         raise credentials_exception
 

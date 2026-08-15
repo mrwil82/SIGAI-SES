@@ -219,6 +219,16 @@ def build_pdf_header(module: str, meta: dict | None = None) -> list:
 # ── EXCEL (Streaming - XlsxWriter) ──
 
 
+def _sanitize_excel_value(val):
+    """Evita inyección de fórmulas (CSV/Excel injection) anteponiendo '
+    a textos que empiezan con = + - @ o tabulador."""
+    if isinstance(val, str):
+        stripped = val.strip()
+        if stripped[:1] in ("=", "+", "-", "@", "\t", "\r"):
+            return "'" + val
+    return val
+
+
 def stream_excel_large(
     data_generator: Iterable[Dict[str, Any]],
     module: str,
@@ -383,7 +393,7 @@ def stream_excel_large(
                 worksheet.write_number(current_row, ci, val, fmt)
             else:
                 worksheet.write(
-                    current_row, ci, str(val) if val is not None else "", fmt
+                    current_row, ci, _sanitize_excel_value(val) if val is not None else "", fmt
                 )
         current_row += 1
         row_count += 1
@@ -584,7 +594,7 @@ def export_to_excel(data: list, module: str, meta: dict | None = None) -> BytesI
             ws.row_dimensions[ri].height = 18
             for ci, val in enumerate(row, 1):
                 c = cast(Cell, ws.cell(row=ri, column=ci))
-                c.value = val if val is not None else ""
+                c.value = _sanitize_excel_value(val) if val is not None else ""
                 c.font = Font(size=9, name="Calibri")
                 c.alignment = Alignment(horizontal="left", vertical="center")
                 c.border = border_thin

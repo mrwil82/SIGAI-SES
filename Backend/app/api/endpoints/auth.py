@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from starlette.concurrency import run_in_threadpool
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from pydantic import BaseModel
 from app.db.session import get_db
 from app.crud import crud_user
 from app.core.security import (
@@ -19,6 +20,10 @@ from app.models.user import SesionUsuario
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 @router.post("/login", response_model=Token)
 @limiter.limit("10/minute")
@@ -67,12 +72,13 @@ async def login(
     }
 
 @router.post("/refresh", response_model=Token)
-async def refresh_token_endpoint(refresh_token: str, db: AsyncSession = Depends(get_db)):
-    payload = decode_token(refresh_token)
-    if not payload or payload.get("type") != "refresh":
+async def refresh_token_endpoint(payload: RefreshRequest, db: AsyncSession = Depends(get_db)):
+    refresh_token = payload.refresh_token
+    payload_dec = decode_token(refresh_token)
+    if not payload_dec or payload_dec.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Refresh token inválido")
 
-    email = payload.get("sub")
+    email = payload_dec.get("sub")
     if not email:
         raise HTTPException(status_code=401, detail="Token no contiene identidad")
 
@@ -105,7 +111,8 @@ async def refresh_token_endpoint(refresh_token: str, db: AsyncSession = Depends(
     }
 
 @router.post("/logout")
-async def logout(refresh_token: str, db: AsyncSession = Depends(get_db)):
+async def logout(payload: RefreshRequest, db: AsyncSession = Depends(get_db)):
+    refresh_token = payload.refresh_token
     token_hash = get_token_hash(refresh_token)
     result = await db.execute(select(SesionUsuario).filter(SesionUsuario.token_hash == token_hash))
     sesion = result.scalars().first()

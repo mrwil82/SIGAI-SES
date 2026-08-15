@@ -14,7 +14,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    const rt = sessionStorage.getItem("refreshToken");
+    if (rt) {
+      try {
+        await fetch(
+          `${import.meta.env.VITE_API_BASE_URL || `${window.location.origin}/api/v1`}/auth/logout`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh_token: rt }),
+            credentials: "include",
+          },
+        );
+      } catch {
+        // Si el servidor no responde, se limpia igualmente la sesión local
+      }
+    }
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("refreshToken");
     setToken(null);

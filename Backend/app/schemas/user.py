@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from app.models.user import UserRole
@@ -17,7 +17,13 @@ class UsuarioBase(BaseModel):
 
 
 class UsuarioCreate(UsuarioBase):
-    password: str
+    password: str = Field(..., min_length=8)
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if not any(c.islower() for c in v) or not any(c.isupper() for c in v) or not any(c.isdigit() for c in v):
+            raise ValueError("La contraseña debe tener al menos una mayúscula, una minúscula y un número")
+        return v
 
 
 class UsuarioUpdate(BaseModel):
@@ -26,7 +32,7 @@ class UsuarioUpdate(BaseModel):
     rol: Optional[UserRole] = None
     id_regional: Optional[int] = None
     is_active: Optional[bool] = None
-    password: Optional[str] = None
+    password: Optional[str] = Field(None, min_length=8)
     cedula: Optional[str] = None
     codigo_empleado: Optional[str] = None
     regional: Optional[str] = None

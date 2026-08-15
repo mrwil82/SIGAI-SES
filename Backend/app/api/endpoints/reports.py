@@ -247,7 +247,7 @@ async def export_module_data(
                 headers={"Content-Disposition": f"attachment; filename={filename}.pdf"}
             )
     except Exception as e:
-        detail = f"Error generando {format.upper()}: {str(e)}"
-        raise HTTPException(status_code=500, detail=detail)
+        logger.error(f"Error generando reporte {module} {format}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error generando el reporte. Consulte los logs.")
 
     raise HTTPException(status_code=400, detail="Formato no soportado")
