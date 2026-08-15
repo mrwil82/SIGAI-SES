@@ -6,7 +6,7 @@ import {
   getUserActivity,
 } from "../services/analytics";
 
-const LIVE_STALE_TIME = 5 * 60 * 1000;
+const LIVE_STALE_TIME = 15 * 60 * 1000;
 
 export const useDashboardStats = (timeRange = "hoy") => {
   return useQuery({

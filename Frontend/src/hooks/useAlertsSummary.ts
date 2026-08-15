@@ -5,6 +5,6 @@ export const useDashboardAlerts = () => {
   return useQuery({
     queryKey: ["alertsSummary"],
     queryFn: () => getDashboardAlerts(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000,
   });
 };

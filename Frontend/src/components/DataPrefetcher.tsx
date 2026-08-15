@@ -13,7 +13,6 @@ export const DataPrefetcher: React.FC = () => {
     if (prefetchedFor.current === user.id_usuario) return;
 
     prefetchedFor.current = user.id_usuario;
-    queryClient.clear();
     prefetchAllData(queryClient);
   }, [user, queryClient]);
 

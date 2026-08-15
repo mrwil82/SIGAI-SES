@@ -37,10 +37,12 @@ import {
   downloadTemplate,
   createActivo,
 } from "../services/inventory";
-import { getClientes, getProyectos, getProveedores } from "../services/business";
 import { SearchableSelect } from "../components/SearchableSelect";
 import { ExportMenu } from "../components/ExportMenu";
 import { useInventory } from "../hooks/useInventory";
+import { useClientes } from "../hooks/useClients";
+import { useProyectos } from "../hooks/useProjects";
+import { useProveedores } from "../hooks/useProveedores";
 
 interface InventoryItemRow {
   id_item: number;
@@ -176,6 +178,10 @@ const Inventory: React.FC = () => {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string>("");
 
+  const { data: clientesCache } = useClientes();
+  const { data: proyectosCache } = useProyectos();
+  const { data: proveedoresCache } = useProveedores();
+
   const {
     register: registerActivo,
     handleSubmit: handleSubmitActivo,
@@ -189,19 +195,10 @@ const Inventory: React.FC = () => {
   });
 
   useEffect(() => {
-    Promise.all([getClientes(), getProyectos(), getProveedores()])
-      .then(([c, p, prov]) => {
-        setClientes(c.items || []);
-        setProyectos(p.items || []);
-        setProveedores(prov.items || []);
-      })
-      .catch(() => {
-        setAlert({
-          type: "error",
-          message: "Error al cargar datos auxiliares del formulario de activos.",
-        });
-      });
-  }, [setAlert]);
+    if (clientesCache) setClientes(clientesCache.items || []);
+    if (proyectosCache) setProyectos(proyectosCache.items || []);
+    if (proveedoresCache) setProveedores(proveedoresCache.items || []);
+  }, [clientesCache, proyectosCache, proveedoresCache]);
 
   const closeActivoModal = () => {
     setIsActivoModalOpen(false);
