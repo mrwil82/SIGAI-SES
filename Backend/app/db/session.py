@@ -9,7 +9,26 @@ from fastapi.exceptions import RequestValidationError
 
 logger = logging.getLogger(__name__)
 
-db_url = settings.DATABASE_URL
+
+def _normalize_db_url(raw: str, driver: str = "asyncpg") -> str:
+    """Limpia la URL de BD para evitar errores de parseo comunes:
+    - espacios/comillas pegadas por error
+    - 'postgres://' sin driver (agrega +asyncpg / +psycopg2)
+    - query params estilo Neon (?sslmode=require&channel_binding=require),
+      que asyncpg no soporta: el SSL se maneja via connect_args.
+    """
+    if not raw:
+        return raw
+    url = raw.strip().strip("'\"` \t")
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+    if "+" not in url.split("://", 1)[0]:
+        scheme, rest = url.split("://", 1)
+        url = f"{scheme}+{driver}://{rest}"
+    return url.split("?", 1)[0]
+
+
+db_url = _normalize_db_url(settings.DATABASE_URL)
 
 connect_args = {}
 if db_url and "postgresql" in db_url:

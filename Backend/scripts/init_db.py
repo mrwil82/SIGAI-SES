@@ -16,6 +16,7 @@ import logging
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import settings
+from app.db.session import _normalize_db_url
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import select, text
 from app.models import Base
@@ -28,7 +29,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = settings.DATABASE_URL
+DATABASE_URL = _normalize_db_url(settings.DATABASE_URL)
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@securitas.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
