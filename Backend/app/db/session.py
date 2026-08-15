@@ -6,20 +6,30 @@ from app.core.config import settings
 from typing import AsyncGenerator
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi.exceptions import RequestValidationError
+import re
 
 logger = logging.getLogger(__name__)
 
 
+def _mask_credentials(url: str) -> str:
+    """Oculta la contrasena de una URL de BD para logs."""
+    return re.sub(r"(\w+):[^@/]+@", r"\1:***@", url)
+
+
 def _normalize_db_url(raw: str, driver: str = "asyncpg") -> str:
     """Limpia la URL de BD para evitar errores de parseo comunes:
-    - espacios/comillas pegadas por error
+    - espacios/comillas pegadas por error, prefijos tipo 'DATABASE_URL='
     - 'postgres://' sin driver (agrega +asyncpg / +psycopg2)
     - query params estilo Neon (?sslmode=require&channel_binding=require),
       que asyncpg no soporta: el SSL se maneja via connect_args.
     """
     if not raw:
         return raw
-    url = raw.strip().strip("'\"` \t")
+    url = raw.strip().strip("'\"` \t\r\n")
+    if "://" in url:
+        match = re.search(r"[a-zA-Z][a-zA-Z0-9+_-]*://[^\s'\"]+", url)
+        if match:
+            url = match.group(0)
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
     if "+" not in url.split("://", 1)[0]:
@@ -29,6 +39,27 @@ def _normalize_db_url(raw: str, driver: str = "asyncpg") -> str:
 
 
 db_url = _normalize_db_url(settings.DATABASE_URL)
+if not db_url:
+    fallback_raw = getattr(settings, "DATABASE_URL_SYNC", "") or __import__("os").getenv(
+        "DATABASE_URL_SYNC", ""
+    )
+    logger.warning(
+        "DATABASE_URL vacia o invalida, intentando con DATABASE_URL_SYNC como fallback"
+    )
+    db_url = _normalize_db_url(fallback_raw)
+    if not db_url:
+        raise RuntimeError(
+            "No se encontro una DATABASE_URL valida. Revisa las variables de entorno en el servidor."
+        )
+
+logger.info(
+    "DATABASE_URL cruda (enmascarada): %s",
+    _mask_credentials(settings.DATABASE_URL) or "(vacía)",
+)
+logger.info(
+    "Conectando a la BD: %s",
+    _mask_credentials(db_url) or "(sin URL)",
+)
 
 connect_args = {}
 if db_url and "postgresql" in db_url:
