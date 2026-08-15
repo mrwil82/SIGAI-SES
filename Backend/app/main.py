@@ -248,9 +248,18 @@ async def log_requests(request: Request, call_next):
     status_code = response.status_code
     level = "WARNING" if status_code >= 400 else "INFO"
 
+    # Tamaño de la respuesta (bytes) para medir cuánta data se descarga
+    # en cada login / creación / refresco de la aplicación.
+    try:
+        body = response.body
+        size_bytes = len(body) if isinstance(body, bytes) else 0
+    except Exception:
+        size_bytes = int(response.headers.get("content-length", 0) or 0)
+    size_str = f"{size_bytes / 1024:.1f} KB" if size_bytes >= 1024 else f"{size_bytes} B"
+
     logger.log(
         getattr(logging, level),
-        f"REQUEST END | {method} {path} | Status: {status_code} | Duration: {duration:.3f}s | IP: {client_ip} | req_id: {request_id}",
+        f"REQUEST END | {method} {path} | Status: {status_code} | Duration: {duration:.3f}s | Bytes: {size_str} | IP: {client_ip} | req_id: {request_id}",
     )
 
     response.headers["X-Request-ID"] = request_id
