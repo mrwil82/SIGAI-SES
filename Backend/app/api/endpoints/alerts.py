@@ -71,7 +71,8 @@ async def actualizar_estado(
         current_user_id=getattr(current_user, "id_usuario", 0),
         valor_actual=body.valor_actual,
         solucion=body.solucion,
-        asignado_a=body.asignado_a
+        asignado_a=body.asignado_a,
+        precio_unitario=body.precio_unitario,
     )
     if not alerta:
         raise HTTPException(status_code=404, detail="Alerta no encontrada")

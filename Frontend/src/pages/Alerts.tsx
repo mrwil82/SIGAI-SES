@@ -32,6 +32,7 @@ interface UpdateEstadoPayload {
   notas: string;
   valor_actual?: number;
   solucion?: string;
+  precio_unitario?: number;
 }
 
 const Alerts: React.FC = () => {
@@ -46,6 +47,7 @@ const Alerts: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [notas, setNotas] = useState('');
   const [valorActual, setValorActual] = useState<number | ''>('');
+  const [precioUnitario, setPrecioUnitario] = useState<number | ''>('');
   const [solucion, setSolucion] = useState('');
 
   // Modal de creación
@@ -64,6 +66,7 @@ const Alerts: React.FC = () => {
     setSelectedAlert(alert);
     setNotas(alert.descripcion || '');
     setValorActual(alert.valor_actual ?? '');
+    setPrecioUnitario('');
     setSolucion(alert.solucion || '');
     setIsModalOpen(true);
   };
@@ -76,6 +79,7 @@ const Alerts: React.FC = () => {
         notas: notas
       };
       if (valorActual !== '') payload.valor_actual = valorActual;
+      if (precioUnitario !== '') payload.precio_unitario = precioUnitario;
       if (solucion && solucion.trim().length > 0) payload.solucion = solucion;
       await updateAlertEstadoMut.mutateAsync({ id, payload });
       setIsModalOpen(false);
@@ -296,14 +300,25 @@ const Alerts: React.FC = () => {
             </FormGroup>
             {/* Campos adicionales editables por técnicos */}
             {selectedAlert.tipo === 'stock_bajo' && (
-              <FormGroup label="Cantidad actual (ingresar nueva cantidad)">
-                <NeoInput
-                  type="number"
-                  value={valorActual}
-                  onChange={(e) => setValorActual(e.target.value === '' ? '' : Number(e.target.value))}
-                  disabled={selectedAlert.estado !== 'activa'}
-                />
-              </FormGroup>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormGroup label="Cantidad actual (ingresar nueva cantidad)">
+                  <NeoInput
+                    type="number"
+                    value={valorActual}
+                    onChange={(e) => setValorActual(e.target.value === '' ? '' : Number(e.target.value))}
+                    disabled={selectedAlert.estado !== 'activa'}
+                  />
+                </FormGroup>
+                <FormGroup label="Precio unitario (COP)">
+                  <NeoInput
+                    type="number"
+                    value={precioUnitario}
+                    onChange={(e) => setPrecioUnitario(e.target.value === '' ? '' : Number(e.target.value))}
+                    disabled={selectedAlert.estado !== 'activa'}
+                    placeholder="Ej: 450000"
+                  />
+                </FormGroup>
+              </div>
             )}
             <FormGroup label="Solución / Acción tomada">
               <NeoTextarea

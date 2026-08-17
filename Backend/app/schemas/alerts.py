@@ -26,6 +26,7 @@ class AlertUpdate(BaseModel):
     valor_actual: Optional[float] = None
     solucion: Optional[str] = None
     asignado_a: Optional[int] = None
+    precio_unitario: Optional[float] = None
 
 
 class AlertRead(BaseModel):

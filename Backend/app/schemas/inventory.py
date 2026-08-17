@@ -54,10 +54,13 @@ class ItemUpdate(BaseModel):
     nombre_equipo: Optional[str] = None
     marca: Optional[str] = None
     referencia: Optional[str] = None
+    codigo_item_interno: Optional[str] = None
     stock_minimo: Optional[int] = None
     compra_maxima: Optional[int] = None
     costo_unitario: Optional[Decimal] = None
     moneda: Optional[str] = None
+    unidad_medida: Optional[str] = None
+    cantidad_inicial: Optional[Decimal] = None
 
 
 class Item(ItemBase):

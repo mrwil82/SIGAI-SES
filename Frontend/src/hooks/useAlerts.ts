@@ -27,6 +27,7 @@ interface AlertUpdatePayload {
   valor_actual?: number;
   solucion?: string;
   asignado_a?: number;
+  precio_unitario?: number;
 }
 
 export const useAlerts = (params: AlertParams = {}) => {

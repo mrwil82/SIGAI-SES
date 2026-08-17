@@ -2,6 +2,7 @@ from typing import Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, update
 from app.models import Alert, Item, StockBulk
+from app.models.inventory import MovimientoInventario
 from datetime import datetime
 from app.crud.crud_audit import create_audit_log
 from app.core.logger import get_logger
@@ -68,6 +69,7 @@ async def update_alert_status(
     valor_actual: Optional[float] = None,
     solucion: Optional[str] = None,
     asignado_a: Optional[int] = None,
+    precio_unitario: Optional[float] = None,
 ):
     result = await db.execute(select(Alert).where(Alert.id == alert_id))
     alerta = result.scalars().first()
@@ -81,17 +83,54 @@ async def update_alert_status(
         if notas is not None:
             setattr(alerta, "descripcion", notas)
             changes["notas"] = notas
-        # Valor actual (cantidad) - útil para alertas de stock
+        # Valor actual (cantidad) - útil para alertas de stock.
+        # Si es una alerta de stock bajo, actualiza el stock REAL del inventario
+        # (StockBulk) para que el módulo de inventario refleje el cambio.
         if valor_actual is not None:
             try:
-                setattr(alerta, "valor_actual", float(valor_actual))
-                changes["valor_actual"] = float(valor_actual)
+                valor = float(valor_actual)
+                setattr(alerta, "valor_actual", valor)
+                changes["valor_actual"] = valor
+                if alerta.item_id and alerta.tipo == "stock_bajo":
+                    stock_res = await db.execute(
+                        select(StockBulk).where(StockBulk.id_item == alerta.item_id)
+                    )
+                    db_stock = stock_res.scalars().first()
+                    if db_stock:
+                        anterior = float(db_stock.cantidad_actual or 0)
+                        setattr(db_stock, "cantidad_actual", valor)
+                        changes["stock_real_actualizado"] = valor
+                        if valor != anterior:
+                            db.add(
+                                MovimientoInventario(
+                                    id_usuario=current_user_id,
+                                    id_item=alerta.item_id,
+                                    tipo_movimiento="AJUSTE",
+                                    cantidad=abs(valor - anterior),
+                                    origen="REGISTRO DESDE ALERTA",
+                                    destino="STOCK",
+                                    notes=f"Ajuste de stock desde alerta #{alert_id}: {anterior} -> {valor}",
+                                )
+                            )
             except Exception:
                 pass
         # Solución textual (para garantías u otras acciones)
         if solucion is not None:
             setattr(alerta, "solucion", solucion)
             changes["solucion"] = solucion
+        # Precio unitario: actualiza el costo unitario real del item en inventario
+        if precio_unitario is not None:
+            try:
+                precio = float(precio_unitario)
+                item_res = await db.execute(
+                    select(Item).where(Item.id_item == alerta.item_id)
+                )
+                db_item = item_res.scalars().first()
+                if db_item:
+                    setattr(db_item, "costo_unitario", precio)
+                    changes["precio_unitario_actualizado"] = precio
+            except Exception:
+                pass
         # Asignado a
         if asignado_a is not None:
             setattr(alerta, "asignado_a", asignado_a)
@@ -100,6 +139,25 @@ async def update_alert_status(
         setattr(alerta, "updated_at", datetime.now())
         if estado in ["resuelta", "ignorada"]:
             setattr(alerta, "resolved_at", datetime.now())
+            changes["resolved_at"] = datetime.now().isoformat()
+
+        # Auto-resolver la alerta si el stock real quedó sobre el umbral mínimo
+        if (
+            alerta.tipo == "stock_bajo"
+            and alerta.valor_actual is not None
+            and alerta.valor_umbral is not None
+            and float(alerta.valor_actual) >= float(alerta.valor_umbral)
+            and alerta.estado in ("activa", "reconocida")
+        ):
+            setattr(alerta, "estado", "resuelta")
+            setattr(alerta, "resolved_at", datetime.now())
+            if not getattr(alerta, "solucion", None):
+                setattr(
+                    alerta,
+                    "solucion",
+                    f"Stock actualizado a {alerta.valor_actual} (mínimo {alerta.valor_umbral})",
+                )
+            changes["estado"] = "resuelta"
             changes["resolved_at"] = datetime.now().isoformat()
 
         try:

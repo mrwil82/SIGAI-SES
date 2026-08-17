@@ -220,8 +220,59 @@ async def update_item(
     old_data = {c.name: getattr(db_item, c.name) for c in db_item.__table__.columns}
     update_data = item_in.model_dump(exclude_unset=True)
 
+    cantidad_nueva = float(update_data.pop("cantidad_inicial") or 0) if "cantidad_inicial" in update_data else 0
+
     for field, value in update_data.items():
         setattr(db_item, field, value)
+
+    # Entrada de stock: suma la cantidad nueva al stock real y registra movimiento
+    if cantidad_nueva > 0:
+        from app.models.alerts import Alert
+        from app.models.inventory import MovimientoInventario
+        from sqlalchemy import and_
+
+        stock_res = await db.execute(
+            select(StockBulk).where(StockBulk.id_item == item_id)
+        )
+        db_stock = stock_res.scalars().first()
+        if not db_stock:
+            db_stock = StockBulk(id_item=item_id, cantidad_actual=cantidad_nueva)
+            db.add(db_stock)
+        else:
+            setattr(
+                db_stock,
+                "cantidad_actual",
+                float(db_stock.cantidad_actual or 0) + cantidad_nueva,
+            )
+        db.add(
+            MovimientoInventario(
+                id_usuario=current_user_id,
+                id_item=item_id,
+                tipo_movimiento="ENTRADA_COMPRA",
+                cantidad=cantidad_nueva,
+                origen="REGISTRO MANUAL / EDICION ITEM",
+                destino="STOCK",
+                notes=f"Entrada de {cantidad_nueva} unidades al editar item {item_id}",
+            )
+        )
+        # Auto-resolver alertas de stock activas del item si el stock quedó sobre el mínimo
+        alertas = await db.execute(
+            select(Alert).where(
+                and_(
+                    Alert.item_id == item_id,
+                    Alert.tipo == "stock_bajo",
+                    Alert.estado.in_(["activa", "reconocida"]),
+                )
+            )
+        )
+        for alerta in alertas.scalars().all():
+            setattr(alerta, "estado", "resuelta")
+            setattr(alerta, "resolved_at", datetime.now())
+            setattr(
+                alerta,
+                "solucion",
+                f"Stock actualizado a {float(db_stock.cantidad_actual)} desde edición de item",
+            )
 
     await db.commit()
     logger.info(

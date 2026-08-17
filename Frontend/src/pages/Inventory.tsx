@@ -289,6 +289,7 @@ const Inventory: React.FC = () => {
     setValue("stock_minimo", item.stock_minimo ?? 5);
     setValue("compra_maxima", item.compra_maxima || 20);
     setValue("unidad_medida", item.unidad_medida ?? "UND");
+    setValue("cantidad_inicial", 0);
     setIsModalOpen(true);
   };
 
@@ -412,6 +413,7 @@ const Inventory: React.FC = () => {
           <Button
             className="flex items-center gap-2"
             onClick={() => setIsModalOpen(true)}
+            title="Registrar un nuevo equipo al catálogo (producto genérico con precio y stock mínimo)"
           >
             <Plus size={16} />
             Nuevo Registro
@@ -420,7 +422,7 @@ const Inventory: React.FC = () => {
             variant="neo"
             className="flex items-center gap-2"
             onClick={() => setIsActivoModalOpen(true)}
-            title="Crear un activo serializado individual"
+            title="Registrar un equipo físico individual con serial (para rastrearlo en garantías, desmontes y entregas)"
           >
             <Plus size={16} />
             Nuevo Activo
@@ -732,33 +734,61 @@ const Inventory: React.FC = () => {
               />
             </FormGroup>
           </div>
-          {!editingItem && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormGroup label="Cantidad Inicial (Unidades que ingresan)">
-                <NeoInput
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="Ej: 10"
-                  {...register("cantidad_inicial", {
-                    valueAsNumber: true,
-                    min: { value: 0, message: "Debe ser 0 o más" },
-                  })}
-                  defaultValue={0}
-                />
-              </FormGroup>
-              <FormGroup label="Ubicación">
-                <NeoSelect {...register("ubicacion")}>
-                  <option value="">Seleccione ubicación...</option>
-                  {UBICACIONES.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.nombre}
-                    </option>
-                  ))}
-                </NeoSelect>
-              </FormGroup>
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {editingItem ? (
+              <>
+                <FormGroup label="Cantidad a Agregar (entrada de stock)">
+                  <NeoInput
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Ej: 4"
+                    {...register("cantidad_inicial", {
+                      valueAsNumber: true,
+                      min: { value: 0, message: "Debe ser 0 o más" },
+                    })}
+                  />
+                </FormGroup>
+                <FormGroup label="Stock Actual">
+                  <NeoInput
+                    value={
+                      String(editingItem.stock_bulk?.cantidad_actual ?? 0) +
+                      " " +
+                      (editingItem.unidad_medida ?? "UND")
+                    }
+                    disabled
+                    className="bg-bg3/50 text-content-secondary"
+                  />
+                </FormGroup>
+              </>
+            ) : (
+              <>
+                <FormGroup label="Cantidad Inicial (Unidades que ingresan)">
+                  <NeoInput
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Ej: 10"
+                    {...register("cantidad_inicial", {
+                      valueAsNumber: true,
+                      min: { value: 0, message: "Debe ser 0 o más" },
+                    })}
+                    defaultValue={0}
+                  />
+                </FormGroup>
+                <FormGroup label="Ubicación">
+                  <NeoSelect {...register("ubicacion")}>
+                    <option value="">Seleccione ubicación...</option>
+                    {UBICACIONES.map((loc) => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.nombre}
+                      </option>
+                    ))}
+                  </NeoSelect>
+                </FormGroup>
+              </>
+            )}
+          </div>
         </form>
       </Modal>
 
