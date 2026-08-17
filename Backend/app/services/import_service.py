@@ -43,12 +43,13 @@ class ImportService:
 
     @staticmethod
     def _to_date(val):
-        if val is None:
+        if val is None or pd.isna(val):
             return None
         if isinstance(val, (datetime,)):
             return val.date()
         try:
-            return pd.to_datetime(val).date()
+            parsed = pd.to_datetime(val)
+            return None if pd.isna(parsed) else parsed.date()
         except Exception:
             return None
 
