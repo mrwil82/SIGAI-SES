@@ -1,4 +1,11 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    UploadFile,
+    File,
+    HTTPException,
+    Form,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, update, or_
@@ -100,11 +107,15 @@ async def _upsert_item_and_stock(
     stock_min: int,
     compra_max: int,
     always_create_new: bool = False,
+    modo_stock: str = "sumar",
 ) -> Item:
     """
     Crea un Item nuevo o reutiliza uno existente.
     - Si always_create_new=False -> busca por referencia/codigo/nombre y si existe, solo actualiza stock.
     - Si always_create_new=True -> SIEMPRE crea uno nuevo, agregando sufijos si hay duplicados.
+    - modo_stock determina cómo se actualiza el stock del item existente:
+      - "sumar" -> el stock del Excel se SUMA al stock actual (nunca baja).
+      - "reemplazar" -> el stock queda igual al valor del Excel.
     """
 
     ref = _clean(referencia)
@@ -148,11 +159,21 @@ async def _upsert_item_and_stock(
         )
         existing = result.scalars().first()
         if existing:
-            await db.execute(
-                update(StockBulk)
-                .where(StockBulk.id_item == existing.id_item)
-                .values(cantidad_actual=cantidad)
+            result_stock = await db.execute(
+                select(StockBulk).where(StockBulk.id_item == existing.id_item)
             )
+            stock_row = result_stock.scalars().first()
+            if stock_row:
+                if modo_stock == "sumar":
+                    stock_row.cantidad_actual = (
+                        float(stock_row.cantidad_actual or 0) + cantidad
+                    )
+                else:
+                    stock_row.cantidad_actual = cantidad
+            else:
+                db.add(
+                    StockBulk(id_item=existing.id_item, cantidad_actual=cantidad)
+                )
             return existing
 
     # Generar codigo_item_interno único
@@ -205,6 +226,7 @@ async def _procesar_inventario_laboratorio(
     db: AsyncSession,
     id_proyecto: Optional[int] = None,
     id_cliente: Optional[int] = None,
+    modo_stock: str = "sumar",
 ):
     """
     Procesa Inventario_laboratorio.xlsx
@@ -294,6 +316,7 @@ async def _procesar_inventario_laboratorio(
                 cantidad=cantidad,
                 stock_min=2,
                 compra_max=10,
+                modo_stock=modo_stock,
             )
             items_creados += 1
 
@@ -345,7 +368,9 @@ async def _crear_cliente_si_no_existe(db: AsyncSession, nombre: str) -> Optional
     logger.info(f"  Cliente creado: {nombre}")
     return cast(int, cliente.id_cliente)
 
-async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
+async def _procesar_inventario_clientes(
+    xl: pd.ExcelFile, db: AsyncSession, modo_stock: str = "sumar"
+):
     """
     Procesa Formato_Inventario_Clientes_*.xlsx
     """
@@ -445,7 +470,8 @@ async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
                 cantidad=stock_actual,
                 stock_min=int(punto_recompra) if punto_recompra else 5,
                 compra_max=compra_max,
-                always_create_new=True,
+                always_create_new=False,
+                modo_stock=modo_stock,
             )
             items_creados += 1
 
@@ -455,7 +481,9 @@ async def _procesar_inventario_clientes(xl: pd.ExcelFile, db: AsyncSession):
     return {"items": items_creados, "clientes": clientes_creados}
 
 
-async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
+async def _procesar_garantias(
+    xl: pd.ExcelFile, db: AsyncSession, modo_stock: str = "sumar"
+):
     """
     Procesa ASIGNACION_NUMERO_DE_CASO_*.xlsx
     """
@@ -578,6 +606,7 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
                     cantidad=0,
                     stock_min=1,
                     compra_max=5,
+                    modo_stock=modo_stock,
                 )
                 activo = Activo(
                     id_item=item.id_item,
@@ -669,6 +698,7 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
                 cantidad=1,
                 stock_min=1,
                 compra_max=5,
+                modo_stock=modo_stock,
             )
             items_stock_creados += 1
 
@@ -683,6 +713,7 @@ async def _procesar_desmontes(
     db: AsyncSession,
     id_proyecto: Optional[int] = None,
     id_cliente: Optional[int] = None,
+    modo_stock: str = "sumar",
 ):
     """
     Procesa Plantilla_Desmontes.xlsx (hoja DESMONTES).
@@ -806,6 +837,7 @@ async def _procesar_desmontes(
             cantidad=cantidad,
             stock_min=2,
             compra_max=10,
+            modo_stock=modo_stock,
         )
         items_creados += 1
 
@@ -1272,12 +1304,13 @@ async def import_excel(
     file: UploadFile = File(...),
     id_proyecto: Optional[int] = None,
     id_cliente: Optional[int] = None,
+    modo_stock: str = Form("sumar"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
     """
     Importa cualquiera de los tres Excel del sistema.
-    El tipo se detecta automáticamente por nombre de archivo.
+    modo_stock: "sumar" (suma stock del Excel al existente) o "reemplazar" (pisa con el valor del Excel).
     """
     if not (file.filename or "").lower().endswith(".xlsx"):
         raise HTTPException(status_code=400, detail="Solo se permiten archivos .xlsx")
@@ -1294,6 +1327,12 @@ async def import_excel(
         raise HTTPException(
             status_code=413,
             detail="El archivo excede el tamaño máximo permitido de 30 MB.",
+        )
+
+    if modo_stock not in ("sumar", "reemplazar"):
+        raise HTTPException(
+            status_code=400,
+            detail="modo_stock debe ser 'sumar' o 'reemplazar'.",
         )
 
     tipo = _detectar_tipo(file.filename or "")
@@ -1320,10 +1359,11 @@ async def import_excel(
     try:
         if tipo in ("inventario_laboratorio", "desmontes"):
             resultado = await procesador(
-                xl, db, id_proyecto=id_proyecto, id_cliente=id_cliente
+                xl, db, id_proyecto=id_proyecto, id_cliente=id_cliente,
+                modo_stock=modo_stock,
             )
         else:
-            resultado = await procesador(xl, db)
+            resultado = await procesador(xl, db, modo_stock=modo_stock)
 
         await db.commit()
         try:
@@ -1339,6 +1379,7 @@ async def import_excel(
             nuevo={
                 "archivo": file.filename,
                 "tipo_detectado": tipo,
+                "modo_stock": modo_stock,
                 "resultado": resultado,
             },
         )
@@ -1346,6 +1387,7 @@ async def import_excel(
             "mensaje": "Importación completada exitosamente.",
             "archivo": file.filename,
             "tipo_detectado": tipo,
+            "modo_stock": modo_stock,
             "resultado": resultado,
         }
     except HTTPException:
@@ -1370,6 +1412,7 @@ async def import_full_system(
     file: UploadFile = File(...),
     id_proyecto: Optional[int] = None,
     id_cliente: Optional[int] = None,
+    modo_stock: str = Form("sumar"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
@@ -1378,6 +1421,7 @@ async def import_full_system(
         file=file,
         id_proyecto=id_proyecto,
         id_cliente=id_cliente,
+        modo_stock=modo_stock,
         db=db,
         current_user=current_user,
     )

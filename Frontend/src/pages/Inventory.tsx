@@ -39,6 +39,9 @@ import {
 } from "../services/inventory";
 import { SearchableSelect } from "../components/SearchableSelect";
 import { ExportMenu } from "../components/ExportMenu";
+import ImportModeSelector, {
+  type ImportStockMode,
+} from "../components/ImportModeSelector";
 import { useInventory } from "../hooks/useInventory";
 import { useClientes } from "../hooks/useClients";
 import { useProyectos } from "../hooks/useProjects";
@@ -151,6 +154,7 @@ const Inventory: React.FC = () => {
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [modoStock, setModoStock] = useState<ImportStockMode>("sumar");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStockStatus, setFilterStockStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -823,7 +827,12 @@ const Inventory: React.FC = () => {
                 if (file) {
                   setImporting(true);
                   try {
-                    const res = await importInventory(file);
+                    const res = await importInventory(
+                      file,
+                      undefined,
+                      undefined,
+                      modoStock,
+                    );
                     setAlert({ type: "success", message: res.mensaje });
                     setCurrentPage(1);
                     fetchData();
@@ -866,6 +875,8 @@ const Inventory: React.FC = () => {
               </div>
             </label>
           </div>
+
+          <ImportModeSelector value={modoStock} onChange={setModoStock} />
 
           <div className="flex gap-2">
             <Button

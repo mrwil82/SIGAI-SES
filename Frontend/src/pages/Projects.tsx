@@ -45,6 +45,9 @@ import {
 import { useClientes } from "../hooks/useClients";
 import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
 import { downloadTemplate, importInventory } from "../services/inventory";
+import ImportModeSelector, {
+  type ImportStockMode,
+} from "../components/ImportModeSelector";
 import { logger } from "../lib/logger";
 
 interface ProyectoRow {
@@ -95,6 +98,7 @@ const Projects: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [modoStock, setModoStock] = useState<ImportStockMode>("sumar");
   const [editingProyecto, setEditingProyecto] = useState<ProyectoRow | null>(
     null,
   );
@@ -638,7 +642,12 @@ const Projects: React.FC = () => {
                 if (file) {
                   setImporting(true);
                   try {
-                    const res = await importInventory(file);
+                    const res = await importInventory(
+                      file,
+                      undefined,
+                      undefined,
+                      modoStock,
+                    );
                     setAlert({ type: "success", message: res.mensaje });
                     setCurrentPage(1);
                     setIsImportModalOpen(false);
@@ -680,6 +689,8 @@ const Projects: React.FC = () => {
               </div>
             </label>
           </div>
+
+          <ImportModeSelector value={modoStock} onChange={setModoStock} />
 
           <div className="flex gap-2">
             <Button

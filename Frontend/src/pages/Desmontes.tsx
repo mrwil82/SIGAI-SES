@@ -36,6 +36,9 @@ import {
   importInventory,
   downloadTemplate,
 } from "../services/inventory";
+import ImportModeSelector, {
+  type ImportStockMode,
+} from "../components/ImportModeSelector";
 import {
   useActivosTriaje,
   useActualizarTriaje,
@@ -149,6 +152,7 @@ const Desmontes: React.FC = () => {
   const [isDesmonteModalOpen, setIsDesmonteModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [modoStock, setModoStock] = useState<ImportStockMode>("sumar");
 
   const procesarTriaje = async (id: number) => {
     // Abrir confirm modal
@@ -851,6 +855,7 @@ const Desmontes: React.FC = () => {
                       file,
                       selectedProjectId,
                       selectedClienteId,
+                      modoStock,
                     );
                     setSuccess(res.mensaje);
                     refetchTriaje();
@@ -894,6 +899,8 @@ const Desmontes: React.FC = () => {
               </div>
             </label>
           </div>
+
+          <ImportModeSelector value={modoStock} onChange={setModoStock} />
 
           <div className="flex gap-2">
             <Button

@@ -74,9 +74,11 @@ export const importInventory = async (
   file: File,
   idProyecto?: number,
   idCliente?: number,
+  modoStock: "sumar" | "reemplazar" = "sumar",
 ) => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("modo_stock", modoStock);
   if (idProyecto) formData.append("id_proyecto", idProyecto.toString());
   if (idCliente) formData.append("id_cliente", idCliente.toString());
 
