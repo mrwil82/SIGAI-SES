@@ -344,7 +344,11 @@ const Projects: React.FC = () => {
               </TR>
             ) : filteredProyectos.length > 0 ? (
               filteredProyectos.map((proj) => (
-                <TR key={proj.id_proyecto}>
+                <TR
+                  key={proj.id_proyecto}
+                  onClick={() => handleEdit(proj)}
+                  className="cursor-pointer"
+                >
                   <TD>
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-blue border border-bg4 shadow-neo shrink-0">
@@ -404,22 +408,20 @@ const Projects: React.FC = () => {
                   <TD>
                     <div className="flex justify-end gap-2">
                       <button
-                        onClick={() => handleEdit(proj)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(proj); }}
                         className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button
-                        onClick={() => openConfirm(proj.id_proyecto)}
+                        onClick={(e) => { e.stopPropagation(); openConfirm(proj.id_proyecto); }}
                         className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />
                       </button>
                       <button
                         className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
-                        onClick={() =>
-                          navigate(`/projects/${proj.id_proyecto}`)
-                        }
+                        onClick={(e) => { e.stopPropagation(); navigate(`/projects/${proj.id_proyecto}`); }}
                       >
                         <ChevronRight size={13} />
                       </button>

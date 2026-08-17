@@ -35,6 +35,7 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(
         select(Usuario)
         .options(joinedload(Usuario.regional_rel))
+        .order_by(Usuario.id_usuario.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -165,7 +166,7 @@ async def delete_user(db: AsyncSession, user_id: int, current_user_id: int):
 
 # CRUD Regionales
 async def get_regionales(db: AsyncSession):
-    result = await db.execute(select(Regional))
+    result = await db.execute(select(Regional).order_by(Regional.id_regional.asc()))
     return result.scalars().all()
 
 

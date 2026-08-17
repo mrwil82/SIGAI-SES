@@ -36,6 +36,7 @@ async def get_clientes(db: AsyncSession, skip: int = 0, limit: int = 100):
         select(Cliente)
         .options(joinedload(Cliente.regional_rel))
         .filter(Cliente.deleted_at == None)
+        .order_by(Cliente.id_cliente.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -152,7 +153,7 @@ async def get_proveedores(db: AsyncSession, skip: int = 0, limit: int = 100):
     )
     total = total_result.scalar() or 0
     result = await db.execute(
-        select(Proveedor).filter(Proveedor.deleted_at == None).offset(skip).limit(limit)
+        select(Proveedor).filter(Proveedor.deleted_at == None).order_by(Proveedor.id_proveedor.asc()).offset(skip).limit(limit)
     )
     return result.scalars().all(), total
 
@@ -256,6 +257,7 @@ async def get_proyectos(db: AsyncSession, skip: int = 0, limit: int = 100):
             joinedload(Proyecto.cliente),
             joinedload(Proyecto.regional_rel),
         )
+        .order_by(Proyecto.id_proyecto.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -438,6 +440,7 @@ async def get_garantias(db: AsyncSession, skip: int = 0, limit: int = 100):
             .joinedload(Item.stock_bulk),
             joinedload(Garantia.proveedor),
         )
+        .order_by(Garantia.id_garantia.asc())
         .offset(skip)
         .limit(limit)
     )

@@ -320,7 +320,11 @@ const UsersPage: React.FC = () => {
               </TR>
             ) : filteredUsers.length > 0 ? (
               filteredUsers.map((u) => (
-                <TR key={u.id_usuario}>
+                <TR
+                  key={u.id_usuario}
+                  onClick={() => handleEdit(u)}
+                  className="cursor-pointer"
+                >
                   <TD>
                     <div className="flex items-center gap-4">
                       <AvatarImg
@@ -380,13 +384,13 @@ const UsersPage: React.FC = () => {
                   <TD>
                     <div className="flex justify-end gap-2">
                       <button
-                        onClick={() => handleEdit(u)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(u); }}
                         className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button
-                        onClick={() => openConfirm(u.id_usuario)}
+                        onClick={(e) => { e.stopPropagation(); openConfirm(u.id_usuario); }}
                         className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />

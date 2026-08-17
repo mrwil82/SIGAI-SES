@@ -462,7 +462,11 @@ const Guarantees: React.FC = () => {
               </TR>
             ) : filteredGarantias.length > 0 ? (
               filteredGarantias.map((garantia) => (
-                <TR key={garantia.id_garantia}>
+                <TR
+                  key={garantia.id_garantia}
+                  onClick={() => handleEdit(garantia)}
+                  className="cursor-pointer"
+                >
                   <TD>
                     <div className="space-y-1">
                       <div className="font-bold text-xs md:text-sm text-content-primary font-mono">
@@ -529,22 +533,20 @@ const Guarantees: React.FC = () => {
                   <TD>
                     <div className="flex justify-end gap-1.5 md:gap-2">
                       <button
-                        onClick={() => handleEdit(garantia)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(garantia); }}
                         className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                       >
                         <Edit2 size={13} />
                       </button>
                       <button
-                        onClick={() => openConfirm(garantia.id_garantia)}
+                        onClick={(e) => { e.stopPropagation(); openConfirm(garantia.id_garantia); }}
                         className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                       >
                         <Trash2 size={13} />
                       </button>
                       <button
                         className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
-                        onClick={() =>
-                          navigate(`/guarantees/${garantia.id_garantia}`)
-                        }
+                        onClick={(e) => { e.stopPropagation(); navigate(`/guarantees/${garantia.id_garantia}`); }}
                       >
                         <ExternalLink size={13} />
                       </button>

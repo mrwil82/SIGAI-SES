@@ -54,6 +54,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
             select(Item)
             .outerjoin(StockBulk)
             .options(contains_eager(Item.stock_bulk))
+            .order_by(Item.id_item.asc())
             .execution_options(yield_per=CHUNK_SIZE)
         )
         result = await db.stream(stmt)
@@ -92,7 +93,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
 
     elif module == "guarantees":
         from app.models.guarantees import Garantia
-        stmt = select(Garantia).execution_options(yield_per=CHUNK_SIZE)
+        stmt = select(Garantia).order_by(Garantia.id_garantia.asc()).execution_options(yield_per=CHUNK_SIZE)
         result = await db.stream(stmt)
         async for row in result:
             g = row[0]
@@ -107,7 +108,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
 
     elif module == "projects":
         from app.models.business import Proyecto
-        stmt = select(Proyecto).options(joinedload(Proyecto.cliente)).execution_options(yield_per=CHUNK_SIZE)
+        stmt = select(Proyecto).options(joinedload(Proyecto.cliente)).order_by(Proyecto.id_proyecto.asc()).execution_options(yield_per=CHUNK_SIZE)
         result = await db.stream(stmt)
         async for row in result:
             p = row[0]
@@ -125,7 +126,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
 
     elif module == "desmontes":
         from app.models.inventory import Activo
-        stmt = select(Activo).options(joinedload(Activo.item)).where(Activo.estado_actual == "LABORATORIO").execution_options(yield_per=CHUNK_SIZE)
+        stmt = select(Activo).options(joinedload(Activo.item)).where(Activo.estado_actual == "LABORATORIO").order_by(Activo.id_activo.asc()).execution_options(yield_per=CHUNK_SIZE)
         result = await db.stream(stmt)
         async for row in result:
             a = row[0]
@@ -159,7 +160,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
 
     elif module == "clientes":
         from app.models.business import Cliente
-        stmt = select(Cliente).execution_options(yield_per=CHUNK_SIZE)
+        stmt = select(Cliente).order_by(Cliente.id_cliente.asc()).execution_options(yield_per=CHUNK_SIZE)
         result = await db.stream(stmt)
         async for row in result:
             c = row[0]
@@ -173,7 +174,7 @@ async def get_data_generator(module: str, db: AsyncSession, mapping: Dict[str, s
 
     elif module == "users":
         from app.models.user import Usuario
-        stmt = select(Usuario).execution_options(yield_per=CHUNK_SIZE)
+        stmt = select(Usuario).order_by(Usuario.id_usuario.asc()).execution_options(yield_per=CHUNK_SIZE)
         result = await db.stream(stmt)
         async for row in result:
             u = row[0]

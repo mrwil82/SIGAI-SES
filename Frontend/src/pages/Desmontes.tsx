@@ -375,10 +375,14 @@ const Desmontes: React.FC = () => {
               </TR>
             ) : activos.length > 0 ? (
               pageActivos.map((activo) => (
-                <TR key={activo.id_activo}>
+                <TR
+                  key={activo.id_activo}
+                  onClick={() => openDetail(activo.id_activo)}
+                  className="cursor-pointer"
+                >
                   <TD>
                     <button
-                      onClick={() => openDetail(activo.id_activo)}
+                      onClick={(e) => { e.stopPropagation(); openDetail(activo.id_activo); }}
                       className="font-bold font-mono text-emerald-primary hover:text-emerald-bright transition-colors flex items-center gap-1.5"
                     >
                       {activo.serial}
@@ -413,6 +417,7 @@ const Desmontes: React.FC = () => {
                   <TD>
                     <NeoSelect
                       className="text-xs"
+                      onClick={(e) => e.stopPropagation()}
                       value={
                         triajeValues[activo.id_activo]?.calificacion || "BUENO"
                       }
@@ -435,6 +440,7 @@ const Desmontes: React.FC = () => {
                     <NeoTextarea
                       rows={1}
                       className="text-xs"
+                      onClick={(e) => e.stopPropagation()}
                       placeholder="Observaciones (opcional)"
                       value={triajeValues[activo.id_activo]?.observaciones || ""}
                       onChange={(e) =>
@@ -454,12 +460,12 @@ const Desmontes: React.FC = () => {
                         variant="primary"
                         className="h-9 px-2.5 text-[10px]"
                         disabled={loading}
-                        onClick={() => procesarTriaje(activo.id_activo)}
+                        onClick={(e) => { e.stopPropagation(); procesarTriaje(activo.id_activo); }}
                       >
                         <ClipboardCheck size={14} /> Guardar
                       </Button>
                       <button
-                        onClick={() => handleDeleteClick(activo.id_activo)}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(activo.id_activo); }}
                         className="h-9 w-9 rounded-lg border border-danger/20 text-danger/80 hover:bg-danger/10 transition-colors flex items-center justify-center"
                         title="Eliminar de triaje"
                       >

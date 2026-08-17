@@ -124,11 +124,15 @@ async def evaluar_alertas(db: AsyncSession):
     """Motor de reglas para inventario y garantías."""
 
     try:
+        from datetime import timedelta
+
         # 1. Regla: Stock Bajo
+        # Nota: se excluyen items eliminados (soft delete) para no generar alertas de equipos retirados
 
         items = await db.execute(
             select(Item, StockBulk.cantidad_actual)
             .join(StockBulk)
+            .where(Item.deleted_at.is_(None))
             .where(StockBulk.cantidad_actual <= Item.stock_minimo)
         )
         for item, actual in items.all():
@@ -142,6 +146,24 @@ async def evaluar_alertas(db: AsyncSession):
                 )
             )
             if not existe.scalars().first():
+                # No recrear la alerta si ya fue resuelta recientemente (cooldown 24h),
+                # evitando que el scheduler la vuelva a generar de inmediato
+                ultima_resuelta = await db.execute(
+                    select(Alert)
+                    .where(
+                        and_(
+                            Alert.item_id == item.id_item,
+                            Alert.tipo == "stock_bajo",
+                            Alert.estado.in_(["resuelta", "ignorada"]),
+                            Alert.resolved_at.isnot(None),
+                        )
+                    )
+                    .order_by(Alert.resolved_at.desc())
+                    .limit(1)
+                )
+                ultima = ultima_resuelta.scalars().first()
+                if ultima and datetime.now() - ultima.resolved_at < timedelta(hours=24):
+                    continue
                 db.add(
                     Alert(
                         tipo="stock_bajo",
@@ -155,9 +177,31 @@ async def evaluar_alertas(db: AsyncSession):
                     )
                 )
 
+        # 1b. Auto-resolver alertas de stock cuando el stock se restablece
+
+        items_ok = await db.execute(
+            select(Item, StockBulk.cantidad_actual)
+            .join(StockBulk)
+            .where(Item.deleted_at.is_(None))
+            .where(StockBulk.cantidad_actual > Item.stock_minimo)
+        )
+        for item, _actual in items_ok.all():
+            abiertas = await db.execute(
+                select(Alert).where(
+                    and_(
+                        Alert.item_id == item.id_item,
+                        Alert.tipo == "stock_bajo",
+                        Alert.estado.in_(["activa", "reconocida"]),
+                    )
+                )
+            )
+            for alerta in abiertas.scalars().all():
+                setattr(alerta, "estado", "resuelta")
+                setattr(alerta, "resolved_at", datetime.now())
+                setattr(alerta, "solucion", "Stock restablecido automáticamente")
+
         # 2. Regla: Garantías Estancadas Más de 15 días
         from app.models.guarantees import Garantia
-        from datetime import timedelta
 
         fecha_limite = datetime.now() - timedelta(days=15)
 

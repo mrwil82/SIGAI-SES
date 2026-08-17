@@ -1,7 +1,8 @@
 Add-Type -AssemblyName System.Drawing
 
-$src = "Frontend\public\icon-512.png"
-$resDir = "Frontend\android\app\src\main\res"
+$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$src = Join-Path $Root "Frontend\public\icon-512.png"
+$resDir = Join-Path $Root "Frontend\android\app\src\main\res"
 
 $sizes = @{
     "mipmap-mdpi" = 48
@@ -11,12 +12,16 @@ $sizes = @{
     "mipmap-xxxhdpi" = 192
 }
 
+# Crear TODOS los directorios de forma robusta (sin depender del cwd ni del orden)
+foreach ($folder in $sizes.Keys) {
+    New-Item -ItemType Directory -Path (Join-Path $resDir $folder) -Force | Out-Null
+}
+
 $img = [System.Drawing.Image]::FromFile((Get-Item $src).FullName)
 
 foreach ($folder in $sizes.Keys) {
     $size = $sizes[$folder]
     $path = Join-Path $resDir $folder
-    if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path -Force | Out-Null }
 
     $bmp = New-Object System.Drawing.Bitmap($size, $size)
     $g = [System.Drawing.Graphics]::FromImage($bmp)

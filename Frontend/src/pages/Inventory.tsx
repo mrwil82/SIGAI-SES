@@ -526,11 +526,12 @@ const Inventory: React.FC = () => {
                 filteredItems.map((item) => (
                   <TR
                     key={item.id_item}
-                    className={
+                    onClick={() => handleEdit(item)}
+                    className={`cursor-pointer ${
                       item.deleted_at
                         ? "opacity-50 [&_td]:line-through [&_td]:decoration-danger/30 [&_td]:decoration-1"
                         : ""
-                    }
+                    }`}
                   >
                     <TD>
                       <div className="flex items-center gap-3">
@@ -601,13 +602,13 @@ const Inventory: React.FC = () => {
                     <TD>
                       <div className="flex justify-end gap-1.5">
                         <button
-                          onClick={() => handleEdit(item)}
+                          onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
                           className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
                         >
                           <Edit2 size={13} />
                         </button>
                         <button
-                          onClick={() => openConfirm(item.id_item)}
+                          onClick={(e) => { e.stopPropagation(); openConfirm(item.id_item); }}
                           className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
                         >
                           <Trash2 size={13} />

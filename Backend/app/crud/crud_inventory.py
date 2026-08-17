@@ -66,11 +66,11 @@ async def get_items(
     total_result = await db.execute(select(func.count()).select_from(query.subquery()))
     total = total_result.scalar() or 0
 
-    # Ordenamiento alfabético y paginación
+    # Ordenamiento por ID y paginación
 
     result = await db.execute(
         query.options(joinedload(Item.stock_bulk))
-        .order_by(Item.nombre_equipo.asc())
+        .order_by(Item.id_item.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -250,6 +250,23 @@ async def delete_item(db: AsyncSession, item_id: int, current_user_id: int):
     db_item = result.scalars().first()
     if db_item:
         setattr(db_item, "deleted_at", datetime.now())
+        # Auto-resolver alertas activas del item retirado
+        from app.models.alerts import Alert
+        from sqlalchemy import and_
+
+        alertas = await db.execute(
+            select(Alert).where(
+                and_(
+                    Alert.item_id == item_id,
+                    Alert.tipo == "stock_bajo",
+                    Alert.estado.in_(["activa", "reconocida"]),
+                )
+            )
+        )
+        for alerta in alertas.scalars().all():
+            setattr(alerta, "estado", "resuelta")
+            setattr(alerta, "resolved_at", datetime.now())
+            setattr(alerta, "solucion", "Equipo retirado del inventario")
         await db.commit()
         logger.info("Item eliminado exitosamente", extra={"item_id": item_id})
         await create_audit_log(
@@ -276,6 +293,7 @@ async def get_activos(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(
         select(Activo)
         .options(joinedload(Activo.item).joinedload(Item.stock_bulk))
+        .order_by(Activo.id_activo.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -400,7 +418,7 @@ async def get_epp_assignments(db: AsyncSession):
     result = await db.execute(
         select(EPPAssignacion).options(
             joinedload(EPPAssignacion.activo), joinedload(EPPAssignacion.usuario)
-        )
+        ).order_by(EPPAssignacion.id_asignacion.asc())
     )
     return result.scalars().all()
 
@@ -433,6 +451,7 @@ async def get_activos_by_estado(
             joinedload(Activo.cliente_actual),
         )
         .filter(Activo.estado_actual == estado)
+        .order_by(Activo.id_activo.asc())
         .offset(skip)
         .limit(limit)
     )

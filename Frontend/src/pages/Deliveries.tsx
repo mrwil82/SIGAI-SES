@@ -915,7 +915,11 @@ const Deliveries: React.FC = () => {
                   </TR>
                 ) : (
                   filteredActas.map((a, idx: number) => (
-                    <TR key={a.id_acta || idx}>
+                    <TR
+                      key={a.id_acta || idx}
+                      onClick={() => handleViewActa(a.id_acta)}
+                      className="cursor-pointer"
+                    >
                       <TD className="font-bold">{idx + 1}</TD>
                       <TD>
                         <p className="text-xs font-semibold">
@@ -956,7 +960,7 @@ const Deliveries: React.FC = () => {
                         <div className="flex gap-2">
                           <button
                             title="Ver"
-                            onClick={() => handleViewActa(a.id_acta)}
+                            onClick={(e) => { e.stopPropagation(); handleViewActa(a.id_acta); }}
                             className="p-1 text-content-muted hover:text-content"
                           >
                             <FileText size={16} />
@@ -964,7 +968,7 @@ const Deliveries: React.FC = () => {
                           {currentUser?.rol === "ADMIN" && (
                             <button
                               title="Editar"
-                              onClick={() => handleEditActa(a)}
+                              onClick={(e) => { e.stopPropagation(); handleEditActa(a); }}
                               className="p-1 text-content-muted hover:text-content"
                             >
                               <Pen size={16} />
@@ -972,7 +976,7 @@ const Deliveries: React.FC = () => {
                           )}
                           <button
                             title="Descargar"
-                            onClick={() => generateActaPDF(a.id_acta)}
+                            onClick={(e) => { e.stopPropagation(); generateActaPDF(a.id_acta); }}
                             className="p-1 text-content-muted hover:text-content"
                           >
                             <Download size={16} />
@@ -980,7 +984,7 @@ const Deliveries: React.FC = () => {
                           {currentUser?.rol === "ADMIN" && (
                             <button
                               title="Eliminar"
-                              onClick={() => handleDeleteActa(a.id_acta)}
+                              onClick={(e) => { e.stopPropagation(); handleDeleteActa(a.id_acta); }}
                               className="p-1 text-content-muted hover:text-danger"
                             >
                               <Trash2 size={16} />

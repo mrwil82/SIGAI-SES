@@ -225,7 +225,11 @@ const Audit: React.FC = () => {
               </TR>
             ) : logs.length > 0 ? (
               logs.map((log) => (
-                <TR key={log.id_log}>
+                <TR
+                  key={log.id_log}
+                  onClick={() => setSelectedLog(log)}
+                  className="cursor-pointer"
+                >
                   <TD className="hidden sm:table-cell whitespace-nowrap">
                     <div className="flex items-center gap-2 text-content-secondary">
                       <Calendar size={12} className="text-content-muted" />
@@ -254,7 +258,7 @@ const Audit: React.FC = () => {
                   </TD>
                   <TD className="text-center">
                     <button
-                      onClick={() => setSelectedLog(log)}
+                      onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}
                       title="Ver detalle completo"
                       className="p-1.5 rounded-lg text-emerald-primary bg-emerald-primary/10 hover:bg-emerald-primary/20 transition-colors"
                     >
