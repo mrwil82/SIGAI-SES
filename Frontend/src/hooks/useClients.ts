@@ -20,10 +20,10 @@ export interface ClientePayload {
   ceco_asociado?: string;
 }
 
-export const useClientes = (skip = 0, limit = 1000) => {
+export const useClientes = (page = 1, pageSize = 500) => {
   return useQuery({
-    queryKey: ["clientes", skip, limit],
-    queryFn: () => getClientes(skip, limit),
+    queryKey: ["clientes", page, pageSize],
+    queryFn: () => getClientes(page, pageSize),
   });
 };
 

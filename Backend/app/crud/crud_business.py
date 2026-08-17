@@ -1,9 +1,11 @@
 from typing import List, Optional, Any
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 from app.models.business import Cliente, Proveedor, Proyecto
+from app.models.deliveries import ActaEntrega
 from app.models.inventory import MovimientoInventario, Item, Activo
 from app.models.guarantees import Garantia
 from app.schemas.business import (
@@ -446,7 +448,9 @@ async def get_garantia_by_id(db: AsyncSession, id_garantia: int):
     result = await db.execute(
         select(Garantia)
         .options(
-            joinedload(Garantia.activo).joinedload(Activo.item),
+            joinedload(Garantia.activo)
+            .joinedload(Activo.item)
+            .joinedload(Item.stock_bulk),
             joinedload(Garantia.proveedor),
         )
         .filter(Garantia.id_garantia == id_garantia)
@@ -457,8 +461,51 @@ async def get_garantia_by_id(db: AsyncSession, id_garantia: int):
 async def create_garantia(
     db: AsyncSession, garantia: GarantiaCreate, current_user_id: int
 ):
+    data = garantia.model_dump()
+
+    activo = await db.execute(
+        select(Activo).filter(Activo.id_activo == data["id_activo"])
+    )
+    if not activo.scalars().first():
+        raise HTTPException(
+            status_code=400,
+            detail=f"El activo con id {data['id_activo']} no existe.",
+        )
+
+    if data.get("id_proveedor") is not None:
+        proveedor = await db.execute(
+            select(Proveedor).filter(Proveedor.id_proveedor == data["id_proveedor"])
+        )
+        if not proveedor.scalars().first():
+            raise HTTPException(
+                status_code=400,
+                detail=f"El proveedor con id {data['id_proveedor']} no existe.",
+            )
+
+    if data.get("id_acta_devolucion") is not None:
+        acta = await db.execute(
+            select(ActaEntrega).filter(ActaEntrega.id_acta == data["id_acta_devolucion"])
+        )
+        if not acta.scalars().first():
+            raise HTTPException(
+                status_code=400,
+                detail=f"El acta de devolución con id {data['id_acta_devolucion']} no existe. Verifique el ID digitado o déjelo vacío.",
+            )
+
+    if data.get("numero_caso_interno"):
+        caso = await db.execute(
+            select(Garantia).filter(
+                Garantia.numero_caso_interno == data["numero_caso_interno"]
+            )
+        )
+        if caso.scalars().first():
+            raise HTTPException(
+                status_code=400,
+                detail=f"El número de caso interno '{data['numero_caso_interno']}' ya está en uso. Utilice otro número.",
+            )
+
     try:
-        db_gar = Garantia(**garantia.model_dump())
+        db_gar = Garantia(**data)
         db.add(db_gar)
         await db.commit()
 

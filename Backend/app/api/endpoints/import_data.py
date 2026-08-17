@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, update
+from sqlalchemy import select, update, or_
 import pandas as pd
 import io
 import logging
@@ -12,8 +12,9 @@ from typing import Optional, Dict, Any, List, cast
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.models.inventory import Item, Activo, StockBulk
-from app.models.business import Cliente, Proyecto
+from app.models.business import Cliente, Proyecto, Proveedor
 from app.models.guarantees import Garantia
+from app.crud.crud_audit import create_audit_log
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -466,7 +467,18 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
 
     # Hoja GARANTIAS
     if "GARANTIAS" in xl.sheet_names:
-        df = xl.parse("GARANTIAS", header=1)
+        try:
+            df = xl.parse("GARANTIAS", header=1)
+        except (ValueError, StopIteration, IndexError) as e:
+            logger.warning(
+                f"Hoja GARANTIAS sin filas de datos suficientes: {e}"
+            )
+            df = None
+        if df is None or len(df) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="El archivo no contiene filas de datos en la hoja GARANTIAS. Descargue la plantilla, llénela y súbala nuevamente.",
+            )
         df.columns = [str(c).strip() for c in df.columns]
 
         ESTADO_MAP = {
@@ -665,6 +677,409 @@ async def _procesar_garantias(xl: pd.ExcelFile, db: AsyncSession):
     return {"garantias": garantias_creadas, "items_stock": items_stock_creados, "clientes": clientes_creados, "proyectos": proyectos_creados}
 
 
+async def _procesar_desmontes(
+    xl: pd.ExcelFile,
+    db: AsyncSession,
+    id_proyecto: Optional[int] = None,
+    id_cliente: Optional[int] = None,
+):
+    """
+    Procesa Plantilla_Desmontes.xlsx (hoja DESMONTES).
+    Crea items, stock y activos desmontados que ingresan al laboratorio.
+    """
+    items_creados = 0
+    activos_creados = 0
+    clientes_creados = 0
+    proyectos_creados = 0
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    from app.models.inventory import MovimientoInventario
+
+    sheet_name = next(
+        (s for s in xl.sheet_names if "DESMONTE" in str(s).upper()), None
+    )
+    if not sheet_name:
+        logger.warning("Plantilla de desmontes sin hoja 'DESMONTES'.")
+        return {"items": 0, "activos": 0, "clientes": 0, "proyectos": 0}
+
+    df = xl.parse(sheet_name)
+    df.columns = [str(c).strip() for c in df.columns]
+
+    desc_col = next(
+        (c for c in df.columns if "DESCRIPCION" in c.upper() or "DESCRIPCIÓN" in c.upper()),
+        None,
+    )
+    modelo_col = next(
+        (c for c in df.columns if c.upper() in ("MODELO", "REFERENCIA")),
+        None,
+    )
+    marca_col = next((c for c in df.columns if "MARCA" in c.upper()), None)
+    cantidad_col = next((c for c in df.columns if "CANTIDAD" in c.upper()), None)
+    ubicacion_col = next((c for c in df.columns if "UBICACI" in c.upper()), None)
+    serial_col = next((c for c in df.columns if c.upper() == "SERIAL"), None)
+    activo_fijo_col = next(
+        (c for c in df.columns if "ACTIVO" in c.upper() and "FIJO" in c.upper()),
+        None,
+    )
+    estado_col = next((c for c in df.columns if c.upper() == "ESTADO"), None)
+    obs_col = next(
+        (c for c in df.columns if "OBSERVACION" in c.upper()), None
+    )
+    cliente_col = next((c for c in df.columns if c.upper() == "CLIENTE"), None)
+    proyecto_col = next((c for c in df.columns if c.upper() == "PROYECTO"), None)
+
+    if not desc_col:
+        logger.warning(f"Hoja '{sheet_name}' sin columna de descripción.")
+        return {"items": 0, "activos": 0, "clientes": 0, "proyectos": 0}
+
+    condicion_map = {
+        "NUEVO": "NUEVO",
+        "BUEN ESTADO": "USADO_BUENO",
+        "USADO BUEN ESTADO": "USADO_BUENO",
+        "BUENO": "USADO_BUENO",
+        "PARA REPARAR": "PARA_REPARAR",
+        "SULFATADO": "SULFATADO",
+        "DAÑADO": "DAÑADO",
+        "DANADO": "DAÑADO",
+        "DESMONTE": "USADO_BUENO",
+    }
+
+    for _, row in df.iterrows():
+        nombre = _clean(row.get(desc_col))
+        if not nombre:
+            continue
+
+        marca = _clean(row.get(marca_col)) if marca_col else None
+        modelo = _clean(row.get(modelo_col)) if modelo_col else None
+        cantidad = int(_to_float(row.get(cantidad_col, 0) if cantidad_col else 0))
+        if cantidad < 1:
+            cantidad = 1
+        ubicacion = _clean(row.get(ubicacion_col)) if ubicacion_col else None
+        serial_row = _clean(row.get(serial_col)) if serial_col else None
+        activo_fijo = _clean(row.get(activo_fijo_col)) if activo_fijo_col else None
+        obs = _clean(row.get(obs_col)) if obs_col else None
+        estado_raw = _clean(row.get(estado_col)) if estado_col else None
+
+        condicion = "USADO_BUENO"
+        if estado_raw:
+            condicion = condicion_map.get(estado_raw.upper().strip(), "USADO_BUENO")
+
+        # Resolver cliente/proyecto del parámetro o de las columnas
+        cliente_id = id_cliente
+        proyecto_id = id_proyecto
+        cliente_nombre = _clean(row.get(cliente_col)) if cliente_col else None
+        if cliente_nombre and not cliente_id:
+            cliente_id = await _crear_cliente_si_no_existe(db, cliente_nombre)
+            if cliente_id:
+                clientes_creados += 1
+        proyecto_nombre = _clean(row.get(proyecto_col)) if proyecto_col else None
+        if proyecto_nombre and not proyecto_id:
+            result = await db.execute(
+                select(Proyecto).where(
+                    Proyecto.nombre_proyecto == proyecto_nombre,
+                    Proyecto.id_cliente == cliente_id,
+                )
+            )
+            existing_p = result.scalars().first()
+            if existing_p:
+                proyecto_id = existing_p.id_proyecto
+            else:
+                p = Proyecto(
+                    nombre_proyecto=proyecto_nombre,
+                    id_cliente=cliente_id,
+                    estado="ACTIVO",
+                )
+                db.add(p)
+                await db.flush()
+                await db.refresh(p)
+                proyecto_id = p.id_proyecto
+                proyectos_creados += 1
+
+        item = await _upsert_item_and_stock(
+            db=db,
+            nombre=nombre,
+            referencia=modelo,
+            codigo=None,
+            marca=marca,
+            categoria="INSTALACION",
+            sub_categoria="DESMONTE",
+            cantidad=cantidad,
+            stock_min=2,
+            compra_max=10,
+        )
+        items_creados += 1
+
+        # Crear activos (uno por unidad)
+        seriales_creados = []
+        for i in range(cantidad):
+            if serial_row and i == 0:
+                serial = serial_row
+            elif serial_row:
+                serial = f"{serial_row}-{i + 1}"
+            else:
+                serial = f"AUTO-{item.id_item}-{timestamp}-{activos_creados + i + 1}"
+
+            res = await db.execute(select(Activo).where(Activo.serial == serial))
+            if res.scalars().first():
+                continue
+
+            observaciones = f"Desmontado: {nombre}"
+            if obs:
+                observaciones += f" | {obs}"
+            if activo_fijo:
+                observaciones += f" | AF: {activo_fijo}"
+
+            activo = Activo(
+                id_item=item.id_item,
+                serial=serial,
+                estado_actual="LABORATORIO",
+                condicion_fisica=condicion,
+                ubicacion_fisica=ubicacion or "LABORATORIO",
+                activo_fijo_securitas=activo_fijo,
+                area_asignada="LABORATORIO",
+                id_proyecto_actual=proyecto_id,
+                id_cliente_actual=cliente_id,
+                observaciones=observaciones,
+            )
+            db.add(activo)
+            activos_creados += 1
+            seriales_creados.append(serial)
+
+        if seriales_creados:
+            origen_str = "IMPORTACION_DESMONTES"
+            if proyecto_id:
+                origen_str = f"PROYECTO: {proyecto_id}"
+            elif cliente_id:
+                origen_str = f"CLIENTE: {cliente_id}"
+            movimiento = MovimientoInventario(
+                id_item=item.id_item,
+                tipo_movimiento="INGRESO_DESMONTE",
+                cantidad=cantidad,
+                origen=origen_str,
+                destino="LABORATORIO",
+                notes=f"Importado desde plantilla de desmontes - Seriales: {', '.join(seriales_creados)}",
+            )
+            db.add(movimiento)
+
+        await db.flush()
+
+    return {
+        "items": items_creados,
+        "activos": activos_creados,
+        "clientes": clientes_creados,
+        "proyectos": proyectos_creados,
+    }
+
+
+async def _procesar_clientes(xl: pd.ExcelFile, db: AsyncSession):
+    """
+    Procesa Plantilla_Clientes.xlsx (hoja CLIENTES).
+    """
+    creados = 0
+    actualizados = 0
+
+    sheet_name = next((s for s in xl.sheet_names if "CLIENTE" in str(s).upper()), None)
+    if not sheet_name:
+        logger.warning("Plantilla de clientes sin hoja 'CLIENTES'.")
+        return {"clientes": 0, "actualizados": 0}
+
+    df = xl.parse(sheet_name)
+    df.columns = [str(c).strip() for c in df.columns]
+
+    TIPO_MAP = {
+        "CORPORATIVO": "CORPORATIVO",
+        "CORPORATIVA": "CORPORATIVO",
+        "INTERNO": "INTERNO",
+        "GENERAL": "GENERAL",
+        "PUBLICO": "GENERAL",
+    }
+
+    for _, row in df.iterrows():
+        nombre = _clean(row.get("NOMBRE"))
+        if not nombre:
+            continue
+
+        nit = _clean(row.get("NIT"))
+        if nit and nit.upper() in ("NAN", "SIN NIT"):
+            nit = None
+
+        result = await db.execute(
+            select(Cliente).where(
+                or_(
+                    Cliente.nombre == nombre,
+                    Cliente.nit == nit,
+                )
+                if nit
+                else (Cliente.nombre == nombre)
+            )
+        )
+        existing = result.scalars().first()
+        if existing:
+            actualizados += 1
+            continue
+
+        tipo_raw = _clean(row.get("TIPO_CLIENTE"))
+        tipo = TIPO_MAP.get((tipo_raw or "CORPORATIVO").upper(), "CORPORATIVO")
+
+        cliente = Cliente(
+            nombre=nombre,
+            nit=nit,
+            contacto=_clean(row.get("CONTACTO")),
+            email_contacto=_clean(row.get("EMAIL")) or _clean(row.get("CORREO")),
+            telefono=_clean(row.get("TELEFONO")),
+            direccion=_clean(row.get("DIRECCION")),
+            ciudad=_clean(row.get("CIUDAD")),
+            departamento=_clean(row.get("DEPARTAMENTO")),
+            tipo_cliente=tipo,
+            ceco_asociado=_clean(row.get("CECO")) or _clean(row.get("CECO_ASOCIADO")),
+        )
+        db.add(cliente)
+        creados += 1
+
+    await db.flush()
+    return {"clientes": creados, "actualizados": actualizados}
+
+
+async def _procesar_proveedores(xl: pd.ExcelFile, db: AsyncSession):
+    """
+    Procesa Plantilla_Proveedores.xlsx (hoja PROVEEDORES).
+    """
+    creados = 0
+    actualizados = 0
+
+    sheet_name = next(
+        (s for s in xl.sheet_names if "PROVEEDOR" in str(s).upper()), None
+    )
+    if not sheet_name:
+        logger.warning("Plantilla de proveedores sin hoja 'PROVEEDORES'.")
+        return {"proveedores": 0, "actualizados": 0}
+
+    df = xl.parse(sheet_name)
+    df.columns = [str(c).strip() for c in df.columns]
+
+    CAT_MAP = {
+        "FABRICANTE": "FABRICANTE",
+        "DISTRIBUIDOR": "DISTRIBUIDOR",
+        "DISTRIBUIDORA": "DISTRIBUIDOR",
+        "SERVICIO TECNICO": "SERVICIO_TECNICO",
+        "SERVICIO_TECNICO": "SERVICIO_TECNICO",
+        "LOGISTICA": "LOGISTICA",
+        "LOGÍSTICA": "LOGISTICA",
+    }
+
+    for _, row in df.iterrows():
+        nombre = _clean(row.get("NOMBRE"))
+        if not nombre:
+            continue
+
+        nit = _clean(row.get("NIT"))
+        if nit and nit.upper() in ("NAN", "SIN NIT"):
+            nit = None
+
+        result = await db.execute(
+            select(Proveedor).where(
+                or_(
+                    Proveedor.nombre == nombre,
+                    Proveedor.nit == nit,
+                )
+                if nit
+                else (Proveedor.nombre == nombre)
+            )
+        )
+        existing = result.scalars().first()
+        if existing:
+            actualizados += 1
+            continue
+
+        cat_raw = _clean(row.get("CATEGORIA"))
+        categoria = CAT_MAP.get((cat_raw or "DISTRIBUIDOR").upper(), "DISTRIBUIDOR")
+
+        proveedor = Proveedor(
+            nombre=nombre,
+            nit=nit,
+            contacto=_clean(row.get("CONTACTO")),
+            telefono=_clean(row.get("TELEFONO")),
+            email=_clean(row.get("EMAIL")) or _clean(row.get("CORREO")),
+            direccion=_clean(row.get("DIRECCION")),
+            ciudad=_clean(row.get("CIUDAD")),
+            dias_credito=int(_to_float(row.get("DIAS_CREDITO", 30) if "DIAS_CREDITO" in df.columns else 30, 30)),
+            categoria=categoria,
+        )
+        db.add(proveedor)
+        creados += 1
+
+    await db.flush()
+    return {"proveedores": creados, "actualizados": actualizados}
+
+
+async def _procesar_proyectos(xl: pd.ExcelFile, db: AsyncSession):
+    """
+    Procesa Plantilla_Proyectos.xlsx (hoja PROYECTOS).
+    """
+    creados = 0
+    actualizados = 0
+    clientes_creados = 0
+
+    sheet_name = next(
+        (s for s in xl.sheet_names if "PROYECTO" in str(s).upper()), None
+    )
+    if not sheet_name:
+        logger.warning("Plantilla de proyectos sin hoja 'PROYECTOS'.")
+        return {"proyectos": 0, "actualizados": 0}
+
+    df = xl.parse(sheet_name)
+    df.columns = [str(c).strip() for c in df.columns]
+
+    ESTADO_MAP = {
+        "ACTIVO": "ACTIVO",
+        "FINALIZADO": "FINALIZADO",
+        "TERMINADO": "FINALIZADO",
+        "CERRADO": "FINALIZADO",
+        "PAUSADO": "PAUSADO",
+        "SUSPENDIDO": "PAUSADO",
+    }
+
+    for _, row in df.iterrows():
+        nombre = _clean(row.get("NOMBRE_PROYECTO")) or _clean(row.get("NOMBRE"))
+        if not nombre:
+            continue
+
+        cliente_nombre = _clean(row.get("CLIENTE"))
+        id_cliente = None
+        if cliente_nombre:
+            id_cliente = await _crear_cliente_si_no_existe(db, cliente_nombre)
+            if id_cliente:
+                clientes_creados += 1
+
+        result = await db.execute(
+            select(Proyecto).where(
+                Proyecto.nombre_proyecto == nombre,
+                Proyecto.id_cliente == id_cliente,
+            )
+        )
+        existing = result.scalars().first()
+        if existing:
+            actualizados += 1
+            continue
+
+        estado_raw = _clean(row.get("ESTADO"))
+        estado = ESTADO_MAP.get((estado_raw or "ACTIVO").upper(), "ACTIVO")
+
+        proyecto = Proyecto(
+            id_cliente=id_cliente,
+            nombre_proyecto=nombre,
+            descripcion=_clean(row.get("DESCRIPCION")),
+            ubicacion=_clean(row.get("DIRECCION")) or _clean(row.get("CIUDAD")),
+            estado=estado,
+            fecha_inicio=_to_date(row.get("FECHA_INICIO")),
+            fecha_fin_estimada=_to_date(row.get("FECHA_FIN_ESTIMADA")),
+        )
+        db.add(proyecto)
+        creados += 1
+
+    await db.flush()
+    return {"proyectos": creados, "actualizados": actualizados, "clientes_creados": clientes_creados}
+
+
 # ============================================================
 # Endpoint principal: detecta el archivo y llama al procesador correcto
 # ============================================================
@@ -673,6 +1088,10 @@ ARCHIVO_TIPO = {
     "inventario_laboratorio": _procesar_inventario_laboratorio,
     "formato_inventario_clientes": _procesar_inventario_clientes,
     "asignacion_numero": _procesar_garantias,
+    "desmontes": _procesar_desmontes,
+    "clientes": _procesar_clientes,
+    "proveedores": _procesar_proveedores,
+    "proyectos": _procesar_proyectos,
 }
 
 
@@ -686,10 +1105,18 @@ def _detectar_tipo(filename: str) -> str | None:
     )
     if "inventario_laboratorio" in name:
         return "inventario_laboratorio"
-    if "formato_inventario" in name or "clientes_corporativos" in name:
+    if "inventario_clientes" in name or "formato_inventario" in name or "clientes_corporativos" in name:
         return "formato_inventario_clientes"
     if "asignacion" in name or "garantia" in name or "numero_de_caso" in name:
         return "asignacion_numero"
+    if "desmonte" in name:
+        return "desmontes"
+    if "cliente" in name:
+        return "clientes"
+    if "proveedor" in name:
+        return "proveedores"
+    if "proyecto" in name:
+        return "proyectos"
     return None
 
 
@@ -875,8 +1302,10 @@ async def import_excel(
             detail=(
                 f"Archivo '{file.filename}' no reconocido. "
                 "Sube uno de: Inventario_laboratorio.xlsx, "
-                "Formato_Inventario_Clientes_*.xlsx, o "
-                "ASIGNACION_NUMERO_DE_CASO_*.xlsx"
+                "Formato_Inventario_Clientes_*.xlsx, "
+                "ASIGNACION_NUMERO_DE_CASO_*.xlsx, "
+                "Plantilla_Desmontes.xlsx, Plantilla_Clientes.xlsx, "
+                "Plantilla_Proveedores.xlsx o Plantilla_Proyectos.xlsx"
             ),
         )
 
@@ -888,7 +1317,7 @@ async def import_excel(
 
     procesador = ARCHIVO_TIPO[tipo]
     try:
-        if tipo == "inventario_laboratorio":
+        if tipo in ("inventario_laboratorio", "desmontes"):
             resultado = await procesador(
                 xl, db, id_proyecto=id_proyecto, id_cliente=id_cliente
             )
@@ -901,15 +1330,36 @@ async def import_excel(
             await evaluar_alertas(db)
         except Exception:
             pass
+        await create_audit_log(
+            db,
+            getattr(current_user, "id_usuario", 0),
+            "importacion_datos",
+            "CREATE",
+            nuevo={
+                "archivo": file.filename,
+                "tipo_detectado": tipo,
+                "resultado": resultado,
+            },
+        )
         return {
             "mensaje": "Importación completada exitosamente.",
             "archivo": file.filename,
             "tipo_detectado": tipo,
             "resultado": resultado,
         }
+    except HTTPException:
+        await db.rollback()
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error importando '{file.filename}': {e}", exc_info=True)
+        if isinstance(e, (ValueError, StopIteration, IndexError)) and (
+            "header" in str(e) or "lines in file" in str(e)
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="La plantilla no contiene filas de datos. Descargue la plantilla, llénela y súbala nuevamente.",
+            )
         raise HTTPException(status_code=500, detail="Error durante la importación. Consulte los logs.")
 
 

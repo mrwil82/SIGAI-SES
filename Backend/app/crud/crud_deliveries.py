@@ -51,7 +51,14 @@ async def create_acta(
 
         result = await db.execute(
             select(ActaEntrega)
-            .options(selectinload(ActaEntrega.detalles))
+            .options(
+                selectinload(ActaEntrega.detalles).selectinload(DetalleActaEntrega.item),
+                selectinload(ActaEntrega.detalles).selectinload(DetalleActaEntrega.activo),
+                selectinload(ActaEntrega.tecnico),
+                selectinload(ActaEntrega.representante),
+                selectinload(ActaEntrega.proyecto),
+                selectinload(ActaEntrega.regional_rel),
+            )
             .where(ActaEntrega.id_acta == db_acta.id_acta)
         )
         final_acta = result.scalars().first()
@@ -172,7 +179,14 @@ async def update_acta(
 
         result = await db.execute(
             select(ActaEntrega)
-            .options(selectinload(ActaEntrega.detalles))
+            .options(
+                selectinload(ActaEntrega.detalles).selectinload(DetalleActaEntrega.item),
+                selectinload(ActaEntrega.detalles).selectinload(DetalleActaEntrega.activo),
+                selectinload(ActaEntrega.tecnico),
+                selectinload(ActaEntrega.representante),
+                selectinload(ActaEntrega.proyecto),
+                selectinload(ActaEntrega.regional_rel),
+            )
             .where(ActaEntrega.id_acta == acta_id)
         )
         updated = result.scalars().first()

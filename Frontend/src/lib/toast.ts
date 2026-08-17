@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useMemo } from "react";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -44,15 +44,18 @@ export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast must be inside <ToastProvider>");
 
+  const add = ctx.add;
+  const dismiss = ctx.dismiss;
+
   const fire = useCallback(
     (type: ToastType, title: string, opts?: ToastOpts) =>
-      ctx.add({
+      add({
         type,
         title,
         description: opts?.description,
         duration: opts?.duration ?? 4000,
       }),
-    [ctx],
+    [add],
   );
 
   const success = useCallback(
@@ -72,5 +75,8 @@ export function useToast() {
     [fire],
   );
 
-  return { success, error, warning, info, dismiss: ctx.dismiss };
+  return useMemo(
+    () => ({ success, error, warning, info, dismiss }),
+    [success, error, warning, info, dismiss],
+  );
 }

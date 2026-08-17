@@ -10,6 +10,7 @@ import {
   Edit2,
   Trash2,
   Download,
+  Upload,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +41,7 @@ import {
   useDeleteCliente,
 } from "../hooks/useClients";
 import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
-import { downloadTemplate } from "../services/inventory";
+import { downloadTemplate, importInventory } from "../services/inventory";
 import { logger } from "../lib/logger";
 
 interface Cliente {
@@ -86,7 +87,11 @@ interface ApiError {
 const Clients: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
   const [alert, setAlert] = useState<{
     type: "success" | "error";
@@ -97,8 +102,9 @@ const Clients: React.FC = () => {
   const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
   const [creatingRegional, setCreatingRegional] = useState(false);
 
-  const { data: clientesData, isLoading } = useClientes();
+  const { data: clientesData, isLoading } = useClientes(currentPage, pageSize);
   const clientes = (clientesData?.items || []) as Cliente[];
+  const totalClientes = clientesData?.total || 0;
   const { data: regionales } = useRegionales();
   const regionalesList = (regionales || []) as Regional[];
   const createClienteMut = useCreateCliente();
@@ -248,7 +254,7 @@ const Clients: React.FC = () => {
             Gestión de cuentas corporativas e internas
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2">
           <ExportMenu module="clientes" />
           <Button
             variant="neo"
@@ -257,6 +263,14 @@ const Clients: React.FC = () => {
           >
             <Download size={14} />
             Plantilla
+          </Button>
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <Upload size={16} />
+            Carga Excel
           </Button>
           <Button
             className="flex items-center gap-2"
@@ -288,7 +302,10 @@ const Clients: React.FC = () => {
             placeholder="Buscar por nombre, NIT o CECO..."
             className="pl-10 h-12"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
       </Card>
@@ -415,6 +432,30 @@ const Clients: React.FC = () => {
           </TBody>
         </TableContainer>
       </Card>
+
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
+        <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
+          Mostrando {filteredClientes.length} de {totalClientes} registros
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={totalClientes <= currentPage * pageSize}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
 
       {/* Modal de Registro / Edición */}
 
@@ -571,6 +612,98 @@ const Clients: React.FC = () => {
               placeholder="Ej: Medellín"
             />
           </FormGroup>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Carga Masiva de Clientes (Excel)"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsImportModalOpen(false)}>
+              Cerrar
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <div className="p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 text-center">
+            <input
+              type="file"
+              id="clientes-excel-upload"
+              className="hidden"
+              accept=".xlsx,.xls,.csv"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImporting(true);
+                  try {
+                    const res = await importInventory(file);
+                    setAlert({ type: "success", message: res.mensaje });
+                    setCurrentPage(1);
+                    setIsImportModalOpen(false);
+                  } catch (err) {
+                    const detail = (
+                      err as { response?: { data?: { detail?: unknown } } }
+                    ).response?.data?.detail;
+                    setAlert({
+                      type: "error",
+                      message:
+                        typeof detail === "string"
+                          ? detail
+                          : "Error al importar archivo",
+                    });
+                  } finally {
+                    setImporting(false);
+                  }
+                }
+              }}
+            />
+            <label
+              htmlFor="clientes-excel-upload"
+              className="cursor-pointer flex flex-col items-center gap-3"
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${importing ? "bg-gold animate-pulse" : "bg-emerald-primary/10 text-emerald-primary"}`}
+              >
+                <Download size={24} className="rotate-180" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-sm">
+                  {importing
+                    ? "Procesando registros..."
+                    : "Click para subir archivo"}
+                </p>
+                <p className="text-[10px] text-content-muted">
+                  Soporta el formato Plantilla_Clientes (.xlsx)
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="neo"
+              className="flex-1 text-[10px] py-2"
+              onClick={() => downloadTemplate("clientes")}
+            >
+              <Download size={14} className="mr-1" />
+              Plantilla Clientes
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-primary">
+              Instrucciones
+            </h4>
+            <ul className="text-[10px] text-content-secondary space-y-2 list-disc pl-4">
+              <li>
+                El sistema detecta automáticamente el formato de clientes.
+              </li>
+              <li>Los clientes existentes se actualizan por NIT.</li>
+              <li>Se recomienda limpiar filas vacías antes de cargar.</li>
+            </ul>
+          </div>
         </div>
       </Modal>
     </DashboardLayout>

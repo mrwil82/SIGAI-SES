@@ -91,17 +91,24 @@ const Desmontes: React.FC = () => {
     () => (triajeData?.items || []) as ActivoTriaje[],
     [triajeData],
   );
+  const totalTriaje = triajeData?.total || activos.length;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50);
+  const pageActivos = activos.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
   const { refetch: refetchTriaje } = useActivosTriaje();
   const actualizarTriajeMut = useActualizarTriaje();
   const crearDesmonteMut = useCrearDesmonteBulk();
   const deleteTriajeMut = useDeleteActivoTriaje();
   const { data: inventoryData } = useInventoryItems();
   const items = (inventoryData?.items || []) as ItemCatalogo[];
-  const { data: projectsData } = useProyectos(0, 100);
+  const { data: projectsData } = useProyectos(1, 100);
   const projects = (projectsData?.items ||
     (Array.isArray(projectsData) ? projectsData : []) ||
     []) as ProyectoCatalogo[];
-  const { data: clientesData } = useClientes(0, 100);
+  const { data: clientesData } = useClientes(1, 100);
   const clientes = (clientesData?.items ||
     (Array.isArray(clientesData) ? clientesData : []) ||
     []) as ClienteCatalogo[];
@@ -300,7 +307,7 @@ const Desmontes: React.FC = () => {
             Evaluación técnica de equipos retirados en laboratorio
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2">
           <ExportMenu module="desmontes" />
           <Button
             variant="neo"
@@ -367,7 +374,7 @@ const Desmontes: React.FC = () => {
                 </TD>
               </TR>
             ) : activos.length > 0 ? (
-              activos.map((activo) => (
+              pageActivos.map((activo) => (
                 <TR key={activo.id_activo}>
                   <TD>
                     <button
@@ -488,6 +495,30 @@ const Desmontes: React.FC = () => {
         </TableContainer>
       </Card>
 
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
+        <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
+          Mostrando {pageActivos.length} de {totalTriaje} registros
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={totalTriaje <= currentPage * pageSize}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
+
       {/* Modal Registrar Desmonte Manual */}
       <Modal
         isOpen={isDesmonteModalOpen}
@@ -498,7 +529,7 @@ const Desmontes: React.FC = () => {
           setDesmonteCatFilter("all");
         }}
         title="Ingreso de Desmonte (Manual)"
-        className="max-w-4xl"
+        className="max-w-4xl w-[calc(100vw-2rem)]"
         footer={
           <>
             <Button
@@ -909,7 +940,7 @@ const Desmontes: React.FC = () => {
           </div>
         ) : selectedActivo ? (
           <div className="space-y-5 text-[11px] md:text-xs">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <span className="text-[9px] uppercase tracking-widest text-content-muted font-bold">
                   Serial

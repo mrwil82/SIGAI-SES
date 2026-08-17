@@ -31,11 +31,11 @@ async def get_dashboard_stats(db: AsyncSession, time_range: str = "hoy"):
     else:
         threshold = now - timedelta(days=365)
 
-    # Activos con actividad en el período (filtrados por updated_at)
+    # Distribución global de activos por estado actual (sin filtro temporal:
+    # la comparativa debe reflejar todo el inventario, no solo lo actualizado hoy)
 
     res_status = await db.execute(
         select(Activo.estado_actual, func.count(Activo.id_activo))
-        .where(Activo.updated_at >= threshold)
         .group_by(Activo.estado_actual)
     )
     activos_status = {row[0]: row[1] for row in res_status.all()}

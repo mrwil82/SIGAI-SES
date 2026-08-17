@@ -18,7 +18,9 @@ from app.core.security import verify_password, get_password_hash
 from app.schemas.user import UsuarioUpdate
 from app.crud.crud_audit import create_audit_log
 from datetime import datetime
-import base64
+import os
+import time
+from pathlib import Path
 
 router = APIRouter()
 
@@ -94,6 +96,20 @@ _AVATAR_SIGNATURES = {
     'image/vnd.microsoft.icon': (b'\x00\x00\x01\x00',),
 }
 
+_AVATAR_EXT = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/webp': '.webp',
+}
+
+def _avatar_file_path() -> Path:
+    """Directorio donde se guardan los avatares: app/static/avatars"""
+    base = Path(__file__).resolve().parent.parent.parent  # app/
+    path = base / "static" / "avatars"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
 @router.post('/me/avatar')
 async def upload_avatar(file: UploadFile = File(...), db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
     """Sube una imagen de avatar y actualiza la URL en el usuario."""
@@ -110,18 +126,33 @@ async def upload_avatar(file: UploadFile = File(...), db: AsyncSession = Depends
     )
     if not is_valid:
         raise HTTPException(status_code=400, detail='El contenido del archivo no corresponde a una imagen válida.')
-    b64 = base64.b64encode(content).decode('utf-8')
-    data_url = f"data:{file.content_type};base64,{b64}"
+
+    # Guardar el archivo en disco (avatar_url es varchar(255): el base64 no cabe)
+    filename = f"avatar_{current_user.id_usuario}_{int(time.time())}{_AVATAR_EXT.get(file.content_type, '.jpg')}"
+    avatar_path = _avatar_file_path() / filename
+    avatar_path.write_bytes(content)
+    url = f"/static/avatars/{filename}"
 
     result = await db.execute(select(UserModel).where(UserModel.id_usuario == current_user.id_usuario))
     db_user = result.scalars().first()
     if not db_user:
         raise HTTPException(status_code=404, detail='Usuario no encontrado')
-    setattr(db_user, 'avatar_url', data_url)
+    old_url = getattr(db_user, 'avatar_url', None)
+    setattr(db_user, 'avatar_url', url)
     await db.commit()
     await db.refresh(db_user)
-    await create_audit_log(db, getattr(current_user, 'id_usuario', 0), 'usuarios', 'UPDATE', getattr(current_user, 'id_usuario', 0), nuevo={'avatar_url': data_url})
-    return {'avatar_url': data_url}
+    await create_audit_log(db, getattr(current_user, 'id_usuario', 0), 'usuarios', 'UPDATE', getattr(current_user, 'id_usuario', 0), nuevo={'avatar_url': url})
+
+    # Eliminar el avatar anterior del disco (si era un archivo propio)
+    if old_url and old_url.startswith('/static/avatars/'):
+        try:
+            old_file = _avatar_file_path() / Path(old_url).name
+            if old_file.exists() and old_file.resolve().is_relative_to(_avatar_file_path().resolve()):
+                old_file.unlink()
+        except Exception:
+            pass
+
+    return {'avatar_url': url}
 
 
 @router.put('/me/password')

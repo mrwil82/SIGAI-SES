@@ -55,7 +55,7 @@ const ActaViewModal: React.FC<ActaViewModalProps> = ({
         </div>
 
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-[10px] text-content-muted">Número</p>
               <p className="font-bold">{acta.numero_acta || "—"}</p>

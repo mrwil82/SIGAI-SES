@@ -98,7 +98,7 @@ const UsersPage: React.FC = () => {
   const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
   const [creatingRegional, setCreatingRegional] = useState(false);
 
-  const effectivePageSize = debouncedSearch ? 1000 : pageSize;
+  const effectivePageSize = debouncedSearch ? 500 : pageSize;
   const { data: usersData, isLoading } = useUsers(currentPage, effectivePageSize);
   const users = (usersData?.items || []) as UserRow[];
   const totalUsers = usersData?.total || 0;

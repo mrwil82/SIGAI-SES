@@ -43,12 +43,23 @@ const ClientDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     setLoading(true);
     getClienteById(parseInt(id))
-      .then(setCliente)
-      .catch(() => toastError("Error al cargar el cliente"))
-      .finally(() => setLoading(false));
-  }, [id, toastError]);
+      .then((data) => {
+        if (!cancelled) setCliente(data);
+      })
+      .catch(() => {
+        if (!cancelled) toastError("Error al cargar el cliente");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   if (loading) {
     return (

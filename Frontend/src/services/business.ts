@@ -1,10 +1,10 @@
 import api from "./api";
 
 // --- CLIENTES ---
-export const getClientes = async (skip = 0, limit = 1000) => {
-  const response = await api.get(
-    `/business/clientes?skip=${skip}&limit=${limit}`,
-  );
+export const getClientes = async (page = 1, pageSize = 500) => {
+  const response = await api.get("/business/clientes", {
+    params: { page, page_size: pageSize },
+  });
   return response.data;
 };
 
@@ -29,10 +29,10 @@ export const deleteCliente = async (id: number) => {
 };
 
 // --- PROYECTOS ---
-export const getProyectos = async (skip = 0, limit = 1000) => {
-  const response = await api.get(
-    `/business/proyectos?skip=${skip}&limit=${limit}`,
-  );
+export const getProyectos = async (page = 1, pageSize = 500) => {
+  const response = await api.get("/business/proyectos", {
+    params: { page, page_size: pageSize },
+  });
   return response.data;
 };
 
@@ -92,8 +92,10 @@ export const createMovimiento = async (movData: object) => {
 };
 
 // --- GARANTÍAS ---
-export const getGarantias = async () => {
-  const response = await api.get("/business/garantias");
+export const getGarantias = async (page = 1, pageSize = 50) => {
+  const response = await api.get("/business/garantias", {
+    params: { page, page_size: pageSize },
+  });
   return response.data;
 };
 

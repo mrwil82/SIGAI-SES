@@ -43,12 +43,23 @@ const GuaranteeDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     setLoading(true);
     getGarantiaById(parseInt(id))
-      .then(setGarantia)
-      .catch(() => toast.error("Error al cargar la garantía"))
-      .finally(() => setLoading(false));
-  }, [id, toast]);
+      .then((data) => {
+        if (!cancelled) setGarantia(data);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Error al cargar la garantía");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, { color: string; bg: string }> = {

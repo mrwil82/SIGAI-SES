@@ -20,10 +20,10 @@ export interface ProyectoPayload {
   descripcion?: string | null;
 }
 
-export const useProyectos = (skip = 0, limit = 1000) => {
+export const useProyectos = (page = 1, pageSize = 500) => {
   return useQuery({
-    queryKey: ["proyectos", skip, limit],
-    queryFn: () => getProyectos(skip, limit),
+    queryKey: ["proyectos", page, pageSize],
+    queryFn: () => getProyectos(page, pageSize),
   });
 };
 

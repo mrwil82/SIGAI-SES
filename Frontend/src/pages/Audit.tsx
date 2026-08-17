@@ -5,6 +5,7 @@ import {
   User,
   Calendar,
   X,
+  Eye,
 } from "lucide-react";
 import {
   Card,
@@ -19,8 +20,10 @@ import {
   NeoInput,
   NeoSelect,
   Badge,
+  Modal,
 } from "../components/Fusion";
 import { useAuditLogs } from "../hooks/useAudit";
+import { auditEntries, humanizeKey } from "../lib/auditFormat";
 
 interface AuditLog {
   id_log: number;
@@ -86,6 +89,7 @@ const Audit: React.FC = () => {
   const [actionFilter, setActionFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -206,13 +210,14 @@ const Audit: React.FC = () => {
             <TH>Acción</TH>
             <TH className="hidden md:table-cell">Módulo / Tabla</TH>
             <TH className="hidden lg:table-cell">Valor Anterior</TH>
-            <TH className="hidden xl:table-cell">Detalles (Nuevo Valor)</TH>
+            <TH>Detalles (Nuevo Valor)</TH>
+            <TH className="w-16 text-center">Ver</TH>
           </THead>
           <TBody>
             {isLoading ? (
               <TR>
                 <TD
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center py-20 text-content-primary font-bold"
                 >
                   Consultando Bitácora...
@@ -244,15 +249,24 @@ const Audit: React.FC = () => {
                   <TD className="hidden lg:table-cell">
                     <AuditDetails data={log.valor_anterior} />
                   </TD>
-                  <TD className="hidden xl:table-cell">
+                  <TD>
                     <AuditDetails data={log.valor_nuevo} />
+                  </TD>
+                  <TD className="text-center">
+                    <button
+                      onClick={() => setSelectedLog(log)}
+                      title="Ver detalle completo"
+                      className="p-1.5 rounded-lg text-emerald-primary bg-emerald-primary/10 hover:bg-emerald-primary/20 transition-colors"
+                    >
+                      <Eye size={14} />
+                    </button>
                   </TD>
                 </TR>
               ))
             ) : (
               <TR>
                 <TD
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center py-10 text-content-muted italic"
                 >
                   No hay registros de auditoría.
@@ -286,7 +300,102 @@ const Audit: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <AuditDetailModal
+        log={selectedLog}
+        onClose={() => setSelectedLog(null)}
+      />
     </DashboardLayout>
+  );
+};
+
+const AuditDetailModal: React.FC<{
+  log: AuditLog | null;
+  onClose: () => void;
+}> = ({ log, onClose }) => {
+  const entriesNuevo = auditEntries(log?.valor_nuevo ?? null);
+  const entriesAnterior = auditEntries(log?.valor_anterior ?? null);
+
+  const renderEntries = (entries: { label: string; value: string }[]) => {
+    if (entries.length === 0)
+      return <span className="text-xs text-content-muted italic">Sin datos</span>;
+    return (
+      <div className="flex flex-col gap-1.5">
+        {entries.map((e) => (
+          <div
+            key={e.label}
+            className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-2 text-[11px] py-1 border-b border-bg4/60 last:border-0"
+          >
+            <span className="font-bold text-emerald-primary">
+              {e.label}:
+            </span>
+            <span className="text-content-secondary break-all">
+              {e.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Modal
+      isOpen={!!log}
+      onClose={onClose}
+      title={`Detalle de Auditoría #${log?.id_log ?? ""}`}
+      className="max-w-2xl"
+    >
+      {log && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
+            <div className="bg-bg2 p-3 rounded-xl border border-bg4">
+              <span className="block text-[9px] uppercase tracking-widest text-content-muted mb-1">
+                Usuario
+              </span>
+              <span className="font-bold">
+                {log.usuario?.nombre || `ID: ${log.id_usuario}`}
+              </span>
+            </div>
+            <div className="bg-bg2 p-3 rounded-xl border border-bg4">
+              <span className="block text-[9px] uppercase tracking-widest text-content-muted mb-1">
+                Acción
+              </span>
+              <span className="font-bold">{humanizeKey(log.accion)}</span>
+            </div>
+            <div className="bg-bg2 p-3 rounded-xl border border-bg4">
+              <span className="block text-[9px] uppercase tracking-widest text-content-muted mb-1">
+                Módulo / Tabla
+              </span>
+              <span className="font-bold uppercase">
+                {humanizeKey(log.tabla_afectada)}
+              </span>
+            </div>
+            <div className="bg-bg2 p-3 rounded-xl border border-bg4">
+              <span className="block text-[9px] uppercase tracking-widest text-content-muted mb-1">
+                Fecha / Hora
+              </span>
+              <span className="font-bold">
+                {new Date(log.fecha_accion).toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-content-muted mb-2">
+              Valor Anterior
+            </h4>
+            {renderEntries(entriesAnterior)}
+          </div>
+
+          <div>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-content-muted mb-2">
+              Valor Nuevo / Detalle
+            </h4>
+            {renderEntries(entriesNuevo)}
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 };
 

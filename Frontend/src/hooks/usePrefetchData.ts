@@ -21,11 +21,11 @@ type PrefetchEntry = {
 const PREFETCHES: PrefetchEntry[] = [
   // Maestros ligeros: se descargan 1 vez por sesion y solo se re-fetchean
   // al invalidar (mutaciones) o cuando el modulo vuelve a montarse.
-  { key: ["clientes", 0, 1000], fn: () => getClientes(0, 1000) },
-  { key: ["proyectos", 0, 1000], fn: () => getProyectos(0, 1000) },
+  { key: ["clientes", 1, 500], fn: () => getClientes(1, 500) },
+  { key: ["proyectos", 1, 500], fn: () => getProyectos(1, 500) },
   { key: ["proveedores"], fn: () => getProveedores() },
   { key: ["regionales"], fn: () => getRegionales() },
-  { key: ["garantias"], fn: () => getGarantias() },
+  { key: ["garantias", 1, 50], fn: () => getGarantias(1, 50) },
   // Dashboard: se refrescan en segundo plano al volver al modulo
   { key: ["dashboardStats", "hoy"], fn: () => getDashboardStats("hoy"), staleTime: LIVE_STALE_TIME },
   { key: ["predictions"], fn: () => getPredictions(), staleTime: LIVE_STALE_TIME },

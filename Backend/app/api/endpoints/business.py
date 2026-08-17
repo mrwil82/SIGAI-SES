@@ -30,6 +30,10 @@ async def save_acta(
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
+    if not acta_in.id_usuario_tecnico or acta_in.id_usuario_tecnico <= 0:
+        raise HTTPException(status_code=400, detail="Debe seleccionar un técnico válido para el acta")
+    if not acta_in.id_usuario_representante or acta_in.id_usuario_representante <= 0:
+        raise HTTPException(status_code=400, detail="Debe seleccionar un representante válido para el acta")
     return await crud_deliveries.create_acta(db, acta_in=acta_in, current_user_id=current_user.id_usuario)
 
 @router.get("/actas", response_model=PaginatedResponse[ActaEntrega])

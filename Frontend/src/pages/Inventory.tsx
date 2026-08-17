@@ -391,7 +391,7 @@ const Inventory: React.FC = () => {
             Administra tu catálogo de equipos, herramientas y consumibles
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2">
           <ExportMenu module="inventory" />
           <Button
             variant="neo"

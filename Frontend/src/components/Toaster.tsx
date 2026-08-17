@@ -151,7 +151,7 @@ const ToasterPortal: React.FC<{
     <div
       aria-live="polite"
       aria-label="Notificaciones"
-      className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 w-[340px] pointer-events-none"
+      className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 w-[340px] max-w-[calc(100vw-2.5rem)] pointer-events-none"
     >
       {toasts.map((t) => (
         <div key={t.id} className="pointer-events-auto">
@@ -168,8 +168,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const store = useToastStore();
+  const value = React.useMemo(
+    () => ({ add: store.add, dismiss: store.dismiss, toasts: store.toasts }),
+    [store.add, store.dismiss, store.toasts],
+  );
   return (
-    <ToastContext.Provider value={store}>
+    <ToastContext.Provider value={value}>
       {children}
       <ToasterPortal toasts={store.toasts} dismiss={store.dismiss} />
     </ToastContext.Provider>

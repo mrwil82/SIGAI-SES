@@ -101,7 +101,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     except SQLAlchemyError as e:
         logger.error(f"Error de base de datos: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error de base de datos: {e}")
-    except RequestValidationError:
+    except (HTTPException, RequestValidationError):
         raise
     except Exception as e:
         logger.error(f"Error inesperado en get_db: {e}", exc_info=True)

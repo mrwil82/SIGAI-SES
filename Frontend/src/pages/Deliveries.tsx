@@ -166,11 +166,11 @@ const Deliveries: React.FC = () => {
   const actas = (actasData?.items || []) as ActaListRow[];
   const actasTotal = actasData?.total || 0;
   const saveActaMut = useSaveActa();
-  const { data: projectsData } = useProyectos(0, 1000);
+  const { data: projectsData } = useProyectos(1, 500);
   const projects = (projectsData?.items || []) as ProyectoRow[];
-  const { data: clientsData } = useClientes(0, 1000);
+  const { data: clientsData } = useClientes(1, 500);
   const clients = (clientsData?.items || []) as ClienteRow[];
-  const { data: usersData } = useUsers(1, 1000);
+  const { data: usersData } = useUsers(1, 500);
   const allUsers = (usersData?.items || []) as User[];
   const users = allUsers.filter((x) =>
     ["TECNICO", "TECNICO_LABORATORIO"].includes(x.rol),
@@ -298,6 +298,10 @@ const Deliveries: React.FC = () => {
     setItems(items.filter((_, i) => i !== index));
 
   const saveActaOnly = async () => {
+    if (!formData.id_usuario_tecnico || formData.id_usuario_tecnico === 0) {
+      setError("Debe seleccionar un técnico de la lista");
+      return;
+    }
     if (!formData.nombre_tecnico) {
       setError("Debe seleccionar un técnico");
       return;
@@ -748,7 +752,7 @@ const Deliveries: React.FC = () => {
 
         <div className="lg:col-span-3 space-y-6">
           <Card className="p-0 overflow-hidden">
-            <div className="p-5 border-b border-bg4 flex justify-between items-center bg-bg2/30">
+            <div className="p-5 border-b border-bg4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-bg2/30">
               <div className="flex items-center gap-3">
                 <Package className="text-emerald-primary" size={18} />
                 <SectionTitle>

@@ -44,6 +44,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useDashboardStats, usePredictions } from "../hooks/useAnalytics";
 import { useAuditLogs } from "../hooks/useAudit";
 import { useNavigate } from "react-router-dom";
+import { formatActivityDetail } from "../lib/auditFormat";
 
 const COLORS = [
   "rgb(var(--emerald-primary))",
@@ -158,6 +159,7 @@ const Dashboard: React.FC = () => {
       proveedores: "Proveedor",
       garantias: "Garantía",
       notificaciones: "Notificación",
+      importacion_datos: "Carga",
     };
     return map[tabla] || tabla;
   };
@@ -224,37 +226,21 @@ const Dashboard: React.FC = () => {
   const timeRangeLabel =
     timeRange === "hoy" ? "hoy" : timeRange === "semana" ? "7 días" : "30 días";
 
-  const pieData =
-    stats?.activos_por_estado &&
-    Object.keys(stats.activos_por_estado).length > 0
-      ? Object.entries(stats.activos_por_estado).map(([name, value]) => ({
-          name: name.replace(/_/g, " "),
-          value: Number(value),
-        }))
-      : stats?.items_por_categoria
-        ? Object.entries(stats.items_por_categoria).map(([name, value]) => ({
-            name: name.replace(/_/g, " "),
-            value: Number(value),
-          }))
-        : [];
+  const pieData = stats?.items_por_categoria
+    ? Object.entries(stats.items_por_categoria).map(([name, value]) => ({
+        name: name.replace(/_/g, " "),
+        value: Number(value),
+      }))
+    : [];
 
-  const barData =
-    stats?.activos_por_estado &&
-    Object.keys(stats.activos_por_estado).length > 0
-      ? Object.entries(stats.activos_por_estado)
-          .map(([name, value]) => ({
-            name: name.replace(/_/g, " "),
-            count: Number(value),
-          }))
-          .sort((a, b) => b.count - a.count)
-      : stats?.items_por_categoria
-        ? Object.entries(stats.items_por_categoria)
-            .map(([name, value]) => ({
-              name: name.replace(/_/g, " "),
-              count: Number(value),
-            }))
-            .sort((a, b) => b.count - a.count)
-        : [];
+  const barData = stats?.activos_por_estado
+    ? Object.entries(stats.activos_por_estado)
+        .map(([name, value]) => ({
+          name: name.replace(/_/g, " "),
+          count: Number(value),
+        }))
+        .sort((a, b) => b.count - a.count)
+    : [];
 
   return (
     <DashboardLayout>
@@ -305,10 +291,10 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-10">
         <StatCard
-          title={`Activos (${timeRangeLabel})`}
+          title="Activos Totales"
           value={totalActivos}
           icon={<Package />}
-          trend="En período"
+          trend="Global"
           color="blue"
         />
         <StatCard
@@ -476,23 +462,11 @@ const Dashboard: React.FC = () => {
                         a.usuario?.email ||
                         `ID ${a.id_usuario}`}
                     </TD>
-                    <TD className="text-[10px] text-content-muted max-w-[120px] lg:max-w-[250px] truncate">
-                      {(() => {
-                        try {
-                          if (!a.valor_nuevo) return "---";
-                          const parsed = JSON.parse(a.valor_nuevo);
-                          const keys = Object.keys(parsed);
-                          if (keys.length === 0) return "---";
-                          return keys
-                            .slice(0, 3)
-                            .map(
-                              (k) => `${k}: ${String(parsed[k]).slice(0, 40)}`,
-                            )
-                            .join(", ");
-                        } catch {
-                          return "---";
-                        }
-                      })()}
+                    <TD
+                      className="text-[10px] text-content-muted max-w-[140px] lg:max-w-[280px] truncate"
+                      title={formatActivityDetail(a.valor_nuevo, a.tabla_afectada)}
+                    >
+                      {formatActivityDetail(a.valor_nuevo, a.tabla_afectada)}
                     </TD>
                     <TD className="text-[10px] text-content-muted text-right whitespace-nowrap">
                       {formatTimeAgo(a.fecha_accion)}

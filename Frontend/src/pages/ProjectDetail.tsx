@@ -41,12 +41,23 @@ const ProjectDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     setLoading(true);
     getProyectoById(parseInt(id))
-      .then(setProyecto)
-      .catch(() => toast.error("Error al cargar el proyecto"))
-      .finally(() => setLoading(false));
-  }, [id, toast]);
+      .then((data) => {
+        if (!cancelled) setProyecto(data);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Error al cargar el proyecto");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   if (loading) {
     return (

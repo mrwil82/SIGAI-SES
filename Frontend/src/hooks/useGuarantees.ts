@@ -26,10 +26,10 @@ export interface GarantiaPayload {
   estado_proceso?: string;
 }
 
-export const useGarantias = () => {
+export const useGarantias = (page = 1, pageSize = 50) => {
   return useQuery({
-    queryKey: ["garantias"],
-    queryFn: () => getGarantias(),
+    queryKey: ["garantias", page, pageSize],
+    queryFn: () => getGarantias(page, pageSize),
   });
 };
 

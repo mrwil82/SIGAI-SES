@@ -9,6 +9,7 @@ import {
   ExternalLink,
   ClipboardList,
   Download,
+  Upload,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +43,7 @@ import {
 } from "../hooks/useGuarantees";
 import { useProveedores, useCreateProveedor } from "../hooks/useProveedores";
 import { useActivos } from "../hooks/useActivos";
-import { downloadTemplate } from "../services/inventory";
+import { downloadTemplate, importInventory } from "../services/inventory";
 import { logger } from "../lib/logger";
 
 interface GarantiaRow {
@@ -103,8 +104,12 @@ interface GarantiaFormValues {
 
 const Guarantees: React.FC = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [editingGarantia, setEditingGarantia] = useState<GarantiaRow | null>(
     null,
   );
@@ -118,8 +123,9 @@ const Guarantees: React.FC = () => {
   const [newProvTelefono, setNewProvTelefono] = useState("");
   const [creatingProv, setCreatingProv] = useState(false);
 
-  const { data: garData, isLoading } = useGarantias();
+  const { data: garData, isLoading } = useGarantias(currentPage, pageSize);
   const garantias = (garData?.items || []) as GarantiaRow[];
+  const totalGarantias = garData?.total || 0;
   const { data: provData } = useProveedores();
   const proveedores = (provData?.items || []) as ProveedorRow[];
   const { data: actData } = useActivos();
@@ -245,6 +251,19 @@ const Guarantees: React.FC = () => {
       } else {
         delete payload.meses_garantia;
       }
+      if (payload.id_acta_devolucion === "") {
+        delete payload.id_acta_devolucion;
+      } else if (payload.id_acta_devolucion !== undefined) {
+        payload.id_acta_devolucion = Number(payload.id_acta_devolucion);
+      }
+      if (payload.id_proveedor === "") {
+        delete payload.id_proveedor;
+      } else if (payload.id_proveedor !== undefined) {
+        payload.id_proveedor = Number(payload.id_proveedor);
+      }
+      if (payload.id_activo !== undefined) {
+        payload.id_activo = Number(payload.id_activo);
+      }
       const body = payload as unknown as GarantiaPayload;
       if (editingGarantia) {
         await updateGarantiaMut.mutateAsync({
@@ -363,7 +382,7 @@ const Guarantees: React.FC = () => {
             Seguimiento de procesos de retorno y soporte técnico
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2">
           <ExportMenu module="guarantees" />
           <Button
             variant="neo"
@@ -372,6 +391,14 @@ const Guarantees: React.FC = () => {
           >
             <Download size={14} />
             Plantilla
+          </Button>
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <Upload size={16} />
+            Carga Excel
           </Button>
           <Button
             className="flex items-center gap-2"
@@ -403,7 +430,10 @@ const Guarantees: React.FC = () => {
             placeholder="Buscar por caso, serial o RMA..."
             className="pl-10 h-12"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
       </Card>
@@ -535,6 +565,30 @@ const Guarantees: React.FC = () => {
           </TBody>
         </TableContainer>
       </Card>
+
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
+        <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
+          Mostrando {filteredGarantias.length} de {totalGarantias} registros
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={totalGarantias <= currentPage * pageSize}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
 
       {/* Modal de Garantía / Edición */}
       <Modal
@@ -721,6 +775,102 @@ const Guarantees: React.FC = () => {
         onCancel={() => setConfirmOpen(false)}
         onConfirm={performDelete}
       />
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Carga Masiva de Garantías (Excel)"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsImportModalOpen(false)}>
+              Cerrar
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <div className="p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 text-center">
+            <input
+              type="file"
+              id="garantias-excel-upload"
+              className="hidden"
+              accept=".xlsx,.xls,.csv"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImporting(true);
+                  try {
+                    const res = await importInventory(file);
+                    setAlert({ type: "success", message: res.mensaje });
+                    setCurrentPage(1);
+                    setIsImportModalOpen(false);
+                  } catch (err) {
+                    const detail = (
+                      err as { response?: { data?: { detail?: unknown } } }
+                    ).response?.data?.detail;
+                    setAlert({
+                      type: "error",
+                      message:
+                        typeof detail === "string"
+                          ? detail
+                          : "Error al importar archivo",
+                    });
+                  } finally {
+                    setImporting(false);
+                  }
+                }
+              }}
+            />
+            <label
+              htmlFor="garantias-excel-upload"
+              className="cursor-pointer flex flex-col items-center gap-3"
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${importing ? "bg-gold animate-pulse" : "bg-emerald-primary/10 text-emerald-primary"}`}
+              >
+                <Download size={24} className="rotate-180" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-sm">
+                  {importing
+                    ? "Procesando registros..."
+                    : "Click para subir archivo"}
+                </p>
+                <p className="text-[10px] text-content-muted">
+                  Soporta el formato ASIGNACION_NUMERO_DE_CASO (.xlsx)
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="neo"
+              className="flex-1 text-[10px] py-2"
+              onClick={() => downloadTemplate("garantias")}
+            >
+              <Download size={14} className="mr-1" />
+              Plantilla Garantías
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-primary">
+              Instrucciones
+            </h4>
+            <ul className="text-[10px] text-content-secondary space-y-2 list-disc pl-4">
+              <li>
+                El sistema detecta automáticamente el formato de asignación de
+                casos de garantía.
+              </li>
+              <li>
+                Los activos deben existir en el inventario (se buscan por
+                serial).
+              </li>
+              <li>Se recomienda limpiar filas vacías antes de cargar.</li>
+            </ul>
+          </div>
+        </div>
+      </Modal>
       <Modal
         isOpen={provModalOpen}
         onClose={() => setProvModalOpen(false)}

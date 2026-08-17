@@ -280,14 +280,14 @@ const ItemModal: React.FC<ItemModalProps> = ({
         </div>
 
         <div
-          className="flex items-center gap-3 px-6 py-3.5 border-t border-bg4"
+          className="flex flex-wrap items-center gap-3 px-6 py-3.5 border-t border-bg4"
           style={{ background: "rgba(255,255,255,0.01)" }}
         >
           <span className="text-[10px] uppercase tracking-widest text-emerald-primary">
             {selectedCount} item{selectedCount !== 1 ? "s" : ""} seleccionado
             {selectedCount !== 1 ? "s" : ""}
           </span>
-          <div className="ml-auto flex gap-3">
+          <div className="ml-auto flex flex-wrap gap-3">
             <Button variant="neo" onClick={onClose}>
               Cancelar
             </Button>
