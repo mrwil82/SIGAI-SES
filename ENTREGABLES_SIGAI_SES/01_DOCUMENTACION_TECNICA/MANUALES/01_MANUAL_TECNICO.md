@@ -21,7 +21,7 @@ title: "Manual Técnico — SIGAI-SES"
 
 ---
 
-## 1. Introduccion
+## 1. Introduccion {#1-introduccion}
 
 > [!IMPORTANT]
 > Este manual esta dirigido al **equipo de desarrollo** y **administradores de sistemas** responsables del mantenimiento, configuracion y operacion tecnica del **Sistema Integral de Gestion de Activos e Inventario (SIGAI-SES)** para **Securitas Colombia S.A.**
@@ -38,7 +38,7 @@ title: "Manual Técnico — SIGAI-SES"
 
 ---
 
-## 2. Arquitectura del Sistema
+## 2. Arquitectura del Sistema {#2-arquitectura-del-sistema}
 
 ### 2.1 Diagrama de Capas
 
@@ -46,7 +46,7 @@ title: "Manual Técnico — SIGAI-SES"
 graph TB
     subgraph "🖥️ CAPA PRESENTACIÓN"
         C1["⚛️ React 18 + TypeScript
-        Vite 5.2 · Tailwind CSS 3.4
+        Vite 7.3 · Tailwind CSS 3.4
         Fusion UI Design System"]
     end
     subgraph "⚡ CAPA DE SERVICIOS"
@@ -55,9 +55,9 @@ graph TB
         10 modulos API"]
     end
     subgraph "🗄️ CAPA DE DATOS"
-        D1["🐬 MySQL 8.0 / MariaDB 10.5
+        D1["🐬 MySQL 8.0 / PostgreSQL 16 / MariaDB 10.5
         SQLAlchemy 2.0 Async
-        18 tablas · 9 migraciones"]
+        18 tablas · 15 migraciones"]
     end
 
     C1 -->|🔐 Axios JWT| S1
@@ -74,7 +74,7 @@ graph TB
 | Migraciones | ![Alembic](https://img.shields.io/badge/Alembic-1.18.4-orange) | `1.18.4` |
 | Autenticacion | `python-jose` + `bcrypt` | `3.5.0` / `4.0.1` |
 | Framework Frontend | ![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react) (TypeScript) | `18.2.0` |
-| Bundler | ![Vite](https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite) | `5.2.0` |
+| Bundler | ![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?logo=vite) | `7.3.0` |
 | Estilos | ![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss) | `3.4.19` |
 | Reportes | `XlsxWriter` + `ReportLab` | `3.2.9` / `4.5.1` |
 | Excel | `Pandas` + `openpyxl` | `3.0.3` / `3.1.5` |
@@ -83,7 +83,7 @@ graph TB
 
 ---
 
-## 3. Estructura del Backend
+## 3. Estructura del Backend {#3-estructura-del-backend}
 
 ### 3.1 Arbol de Directorios
 
@@ -135,7 +135,7 @@ Backend/
 │   │       └── import_data.py
 │   └── services/
 │       └── import_service.py         # Motor de importacion Excel
-├── migrations/                    # Scripts Alembic (9 versiones)
+├── migrations/                    # Scripts Alembic (15 versiones)
 ├── tests/
 │   └── test_import_service.py
 ├── requirements.txt
@@ -244,7 +244,7 @@ Backend/
 
 ---
 
-## 4. API Endpoints Completos
+## 4. API Endpoints Completos {#4-api-endpoints-completos}
 
 ### 4.1 Autenticacion (`/api/v1/auth`)
 
@@ -345,7 +345,7 @@ Backend/
 
 ---
 
-## 5. Autenticacion y Seguridad
+## 5. Autenticacion y Seguridad {#5-autenticacion-y-seguridad}
 
 ### 5.1 Flujo de Autenticacion
 
@@ -362,7 +362,7 @@ sequenceDiagram
     S-->>C: {access_token, refresh_token}
     deactivate S
 
-    Note over C: Almacena en localStorage
+    Note over C: Almacena en sessionStorage
 
     C->>S: GET /auth/me (Bearer access_token)
     activate S
@@ -397,7 +397,7 @@ sequenceDiagram
 
 ---
 
-## 6. Importacion de Datos
+## 6. Importacion de Datos {#6-importacion-de-datos}
 
 ### 6.1 Motor de Importacion (`import_service.py`)
 
@@ -457,7 +457,7 @@ Serial │ Caso │ Proveedor │ Fecha Envio │ Estado │ Falla Reportada
 
 ---
 
-## 7. Reportes
+## 7. Reportes {#7-reportes}
 
 ### 7.1 Generacion de Reportes
 
@@ -481,7 +481,7 @@ Serial │ Caso │ Proveedor │ Fecha Envio │ Estado │ Falla Reportada
 
 ---
 
-## 8. Frontend
+## 8. Frontend {#8-frontend}
 
 ### 8.1 Estructura de Rutas
 
@@ -516,7 +516,7 @@ Serial │ Caso │ Proveedor │ Fecha Envio │ Estado │ Falla Reportada
 
 ---
 
-## 9. Mantenimiento y Operaciones
+## 9. Mantenimiento y Operaciones {#9-mantenimiento-y-operaciones}
 
 ### 9.1 Respaldo de Base de Datos
 
@@ -553,7 +553,7 @@ mysql -u usuario -p sigai_ses_db < respaldo_20260701.sql
 
 ---
 
-## 10. Deuda Tecnica y Roadmap
+## 10. Deuda Tecnica y Roadmap {#10-deuda-tecnica-y-roadmap}
 
 ### v1.0.0 (Actual) — Release Candidate
 

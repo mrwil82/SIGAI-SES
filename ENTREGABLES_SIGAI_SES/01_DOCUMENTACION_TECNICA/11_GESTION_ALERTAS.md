@@ -1,36 +1,39 @@
 ---
-title: "Gestion de Alertas -- Inventario_SE (PROYECTO_SECURITAS)"
+title: "Gestión de Alertas — SIGAI-SES"
 ---
 
-
-# Gestion de Alertas -- SIGAI-SES
+# Gestión de Alertas — SIGAI-SES
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
 ![Status](https://img.shields.io/badge/Status-En%20Produccion-green)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-009688)
 ![React](https://img.shields.io/badge/React-18-61DAFB)
-![Database](https://img.shields.io/badge/PostgreSQL-4169E1)
+![Database](https://img.shields.io/badge/PostgreSQL%20%2F%20MySQL-4169E1)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB)
 
-> Guia completa de arquitectura, UX y mejores practicas para el modulo de alertas de SIGAI-SES.
+> Guía completa del **módulo de alertas** de SIGAI-SES: arquitectura, modelo de datos, motor de reglas, endpoints REST, panel de React y programación automática.
 
 ---
 
-## 1. Arquitectura del modulo de alertas
+## 1. Arquitectura del módulo de alertas
 
 ### 1.1 Estructura actual (FastAPI + React + SQLAlchemy)
+
+El módulo está implementado de forma transversal en el stack:
 
 ```
 Backend/
 └── app/
     ├── models/alerts.py          # Modelos Alert y AlertRule (SQLAlchemy)
-    ├── schemas/alerts.py         # Schemas Pydantic (AlertRead, AlertUpdate)
+    ├── schemas/alerts.py         # Schemas Pydantic (AlertRead, AlertUpdate, AlertEstado)
     ├── api/endpoints/alerts.py   # Endpoints REST /api/v1/alerts
-    └── crud/crud_alerts.py       # Logica de BD para alertas
+    ├── crud/crud_alerts.py       # Lógica de BD + motor de reglas (evaluar_alertas)
+    └── core/scheduler.py         # APScheduler — evaluación automática (AsyncIOScheduler)
 
 Frontend/src/
-├── services/alerts.ts            # API service (list, update, delete, evaluar)
-├── hooks/useAlerts.ts            # React Query hooks
+├── services/alerts.ts            # API service (summary del dashboard)
+├── hooks/useAlerts.ts            # React Query hooks (CRUD + estado de alertas)
+├── hooks/useAlertsSummary.ts     # React Query hook del resumen del navbar
 └── pages/Alerts.tsx              # Centro de alertas (tabla + tarjetas)
 ```
 
@@ -38,7 +41,7 @@ Frontend/src/
 
 ## 2. Modelo de datos
 
-### 2.1 Tabla `alerts` en PostgreSQL
+### 2.1 Tabla `alerts`
 
 <details open>
 <summary><b>Ver DDL de la tabla <code>alerts</code></b></summary>
@@ -49,9 +52,9 @@ CREATE TABLE alerts (
     created_at    TIMESTAMP DEFAULT NOW(),
     updated_at    TIMESTAMP,
     resolved_at   TIMESTAMP,
-    tipo          VARCHAR(50) NOT NULL,
-    prioridad     alerta_prioridad NOT NULL DEFAULT 'media',
-    estado        alerta_estado NOT NULL DEFAULT 'activa',
+    tipo          VARCHAR(50) NOT NULL,          -- stock_bajo, garantia_vencida, manual
+    prioridad     alerta_prioridad NOT NULL DEFAULT 'media',  -- critica|alta|media|baja
+    estado        alerta_estado NOT NULL DEFAULT 'activa',    -- activa|reconocida|resuelta|ignorada
     titulo        VARCHAR(200) NOT NULL,
     descripcion   TEXT,
     item_id       INTEGER NOT NULL REFERENCES items(id_item),
@@ -62,10 +65,6 @@ CREATE TABLE alerts (
     asignado_a    INTEGER REFERENCES usuarios(id_usuario),
     solucion      TEXT
 );
-
-CREATE INDEX idx_alerts_estado ON alerts(estado);
-CREATE INDEX idx_alerts_tipo ON alerts(tipo);
-CREATE INDEX idx_alerts_prioridad ON alerts(prioridad);
 ```
 
 </details>
@@ -82,7 +81,7 @@ CREATE TABLE alert_rules (
     tipo        VARCHAR(50) NOT NULL,
     activa      BOOLEAN NOT NULL DEFAULT TRUE,
     prioridad   regla_prioridad NOT NULL,
-    condicion   TEXT NOT NULL,
+    condicion   TEXT NOT NULL,       -- condición almacenada como JSON
     descripcion TEXT,
     cooldown_h  INTEGER DEFAULT 24
 );
@@ -94,70 +93,40 @@ CREATE TABLE alert_rules (
 
 ## 3. Motor de reglas
 
-**Archivo:** `Backend/app/crud/crud_alerts.py` — función `evaluar_alertas()`
+**Archivo:** `Backend/app/crud/crud_alerts.py` — función `evaluar_alertas(db)`
 
 > [!NOTE]
-> El motor recorre todos los items activos y evalua las reglas predefinidas. Solo crea una alerta si **no existe ya una activa o reconocida** para el mismo item.
+> El motor recorre los items y garantías y genera alertas automáticamente. Solo crea una alerta si **no existe ya una activa o reconocida** para el mismo item/tipo (evita duplicados).
 
-<details open>
-<summary><b>Ver implementacion del motor de reglas</b></summary>
+### 3.1 Reglas implementadas
 
-```python
-# Reglas evaluadas por el motor:
+| Tipo | Disparador | Prioridad |
+|:---|:---|:---:|
+| **`stock_bajo`** | `cantidad_actual <= stock_minimo` (StockBulk vs Item) | **crítica** |
+| **`garantia_vencida`** | Caso `ENVIADO_PROVEEDOR` con `fecha_envio` con más de **15 días** | **alta** |
 
-REGLAS_ACTIVAS = [
-    {"tipo": "stock_bajo", "prioridad": "critica",
-     "titulo": "Stock crítico: {nombre}",
-     "descripcion": "Stock actual ({actual}) por debajo del mínimo ({umbral})"},
+### 3.2 Comportamiento
 
-    {"tipo": "stock_bajo", "prioridad": "alta",
-     "titulo": "Stock por agotarse: {nombre}",
-     "descripcion": "Quedan {actual} unidades (mínimo: {umbral})"},
-
-    {"tipo": "garantia_estancada", "prioridad": "media",
-     "titulo": "Garantía estancada: {nombre}",
-     "descripcion": "Sin avance por más de 15 días en garantía {id}"},
-]
-```
-        "titulo": "Sin movimiento: {nombre}",
-        "condicion": lambda item: item.ultima_transaccion and
-                     item.ultima_transaccion < datetime.now() - timedelta(days=90),
-        "descripcion": "Sin movimiento desde hace {dias} dias",
-    },
-    {
-        "tipo": "sobrestock",
-        "prioridad": "baja",
-        "titulo": "Exceso de inventario: {nombre}",
-        "condicion": lambda item: item.stock_maximo and item.cantidad > item.stock_maximo,
-        "descripcion": "Cantidad {actual} supera maximo {umbral}",
-    },
-]
-
-def evaluar_alertas():
-    """Corre el motor de reglas. Llamar desde un scheduler periodico."""
-    db = SessionLocal()
-    items = db.query(Item).filter(Item.activo == True).all()
-    db.commit()
-    return nuevas
-```
-
-</details>
+- Recorre `items JOIN stock_bulk` donde `cantidad_actual <= stock_minimo` y crea alerta crítica si no existe una activa/reconocida.
+- Recorre `garantias` en estado `ENVIADO_PROVEEDOR` con `fecha_envio` anterior a hace 15 días y crea alerta de alta prioridad.
+- Registra todo en una transacción (`db.commit()` / `db.rollback()` en caso de error) y usa el logger estructurado.
 
 ---
 
 ## 4. Endpoints REST (FastAPI)
 
 > [!TIP]
-> Todos los endpoints viven bajo el prefijo `/api/v1/alerts` y retornan respuestas en formato JSON estandar.
+> Todos los endpoints viven bajo el prefijo `/api/v1/alerts` y retornan respuestas en formato JSON estándar.
 
 <details open>
 <summary><b>Ver endpoints disponibles</b></summary>
 
 | Metodo | Ruta | Descripcion |
 |--------|------|-------------|
-| `GET` | `/api/v1/alerts/` | Lista alertas (paginated, filtrable por estado/prioridad/tipo) |
-| `GET` | `/api/v1/alerts/summary` | Conteo de alertas agrupadas (dashboard) |
-| `PATCH` | `/api/v1/alerts/{id}/estado` | Cambia estado: reconocida, resuelta, ignorada |
+| `GET` | `/api/v1/alerts/` | Lista alertas (paginado, filtrable por estado/prioridad/tipo) |
+| `GET` | `/api/v1/alerts/alerts` | Alias de listado de alertas |
+| `GET` | `/api/v1/alerts/summary` | Resumen para el Dashboard y navbar |
+| `PATCH` | `/api/v1/alerts/{id}/estado` | Cambia estado: reconocida, resuelta, ignorada (con notas, valor_actual, solución, asignación) |
 | `DELETE` | `/api/v1/alerts/{id}` | Elimina alerta |
 | `POST` | `/api/v1/alerts/evaluar` | Disparo manual del motor de reglas |
 | `POST` | `/api/v1/alerts/` | Crear alerta manual |
@@ -167,11 +136,8 @@ def evaluar_alertas():
 ```json
 {
   "total": 8,
-  "critica": 3,
-  "alta": 2,
-  "media": 2,
-  "baja": 1,
-  "por_estado": { "activa": 5, "reconocida": 2, "resuelta": 1 }
+  "stock": [ { "id": 12, "title": "Stock crítico: Cámara Dome", "count": 3.0 } ],
+  "garantias": [ { "id": 5, "title": "Garantía estancada: GSES-045" } ]
 }
 ```
 
@@ -181,295 +147,119 @@ def evaluar_alertas():
 
 ## 5. Panel de alertas en React (frontend)
 
-### 5.1 Pagina Alerts.tsx
+### 5.1 Página `Alerts.tsx`
 
 El centro de alertas se encuentra en `Frontend/src/pages/Alerts.tsx`. Incluye:
 
-- **Vista mixta**: tabla paginada + tarjetas de resumen
-- **Filtros**: por estado (activa/reconocida/resuelta/ignorada) y prioridad
-- **Acciones**: reconocer, resolver, ignorar, reasignar
-- **Busqueda**: por titulo o tipo de alerta
-- **Colores**: codificados por prioridad segun el tema activo
-
-```tsx
-// Estructura simplificada del componente Alertas
-<DashboardLayout>
-  <SectionTitle icon={Bell} title="Centro de Alertas" />
-  <SummaryCards data={summary} />
-  <FiltersBar />
-  <AlertTable data={alerts} onAction={handleAction} />
-</DashboardLayout>
-```
+- **Vista mixta**: tabla paginada + tarjetas de resumen.
+- **Filtros**: por estado (activa/reconocida/resuelta/ignorada) y paginación.
+- **Acciones**: actualizar estado con notas, valor actual y solución; crear y eliminar alertas.
+- **React Query**: hooks `useAlerts`, `useCreateAlert`, `useUpdateAlertEstado`, `useDeleteAlert` (staleTime 5 min, invalidación automática de la caché `["alerts"]`).
 
 ### 5.2 Badge en el Navbar
 
-El conteo de alertas activas se muestra en el Navbar (dentro de Fusion.tsx) como un badge rojo sobre el icono de campana:
+El conteo de alertas activas se muestra en el Navbar (dentro de `Fusion.tsx`) como un badge sobre el icono de campana. Usa el hook `useDashboardAlerts()` que llama a `GET /alerts/summary` (caché de 5 min).
 
-```tsx
-<button className="relative">
-  <Bell size={20} />
-  {alertasActivas > 0 && (
-    <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger
-                     text-white text-[10px] font-bold rounded-full
-                     flex items-center justify-center">
-      {alertasActivas > 9 ? '9+' : alertasActivas}
-    </span>
-  )}
-</button>
-```
+### 5.3 Dashboard
 
-### 5.3 Dashboard summary
-
-Las alertas se muestran en el Dashboard principal como tarjetas de resumen que enlazan al centro de alertas:
-
-```tsx
-<StatCard
-  title="Alertas Críticas"
-  value={alertasCriticas}
-  icon={AlertTriangle}
-  color="danger"
-  onClick={() => navigate('/alerts')}
-/>
-```
-        bgcolor=colores.get(prioridad, ft.colors.GREY_700),
-        duration=5000,
-        action="Ver",
-        on_action=lambda e: page.go("/alertas"),
-    )
-    page.overlay.append(snack)
-    snack.open = True
-    page.update()
-```
-
-</details>
+Las alertas se muestran en el Dashboard principal como tarjetas de resumen que enlazan al centro de alertas, junto con el widget "SIGAI-SES AI" que predice **stock por agotarse** y **garantías por vencer** (endpoint `/analytics/predictions`).
 
 ---
 
-## 6. Scheduler automatico de evaluacion
+## 6. Scheduler automático de evaluación
 
 > [!IMPORTANT]
-> El scheduler ejecuta `evaluar_alertas()` cada **15 minutos**. Se integra con el ciclo de vida de FastAPI mediante el patron `lifespan`.
+> El scheduler ejecuta `evaluar_alertas()` cada **30 minutos**, y también una vez inmediatamente al arrancar. Se integra con el ciclo de vida de FastAPI mediante el patrón `lifespan` usando **APScheduler `AsyncIOScheduler`** (no `BackgroundScheduler`).
 
 <details open>
-<summary><b>Ver configuracion del scheduler</b></summary>
+<summary><b>Ver configuración real del scheduler</b></summary>
+
+Archivo `Backend/app/core/scheduler.py`:
 
 ```python
-# En main.py o en un worker aparte con APScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
-from app.alerts.rules import evaluar_alertas
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(evaluar_alertas, "interval", minutes=15, id="motor_alertas")
-scheduler.start()
+scheduler = AsyncIOScheduler()
+
+async def evaluate_alerts_job():
+    from app.crud.crud_alerts import evaluar_alertas
+    # ... crea engine y sesión asíncrona, ejecuta evaluar_alertas(db) ...
+
+def start_scheduler():
+    if not scheduler.running:
+        scheduler.add_job(
+            evaluate_alerts_job,
+            trigger=IntervalTrigger(minutes=30),
+            id="evaluate_alerts",
+        )
+        scheduler.start()
+        scheduler.add_job(evaluate_alerts_job, trigger="date",
+                          id="evaluate_alerts_startup")  # evalúa al inicio
 ```
 
-</details>
-
-Opcionalmente, con FastAPI `lifespan`:
-
-<details>
-<summary><b>Ver integracion con lifespan</b></summary>
+Integración con `lifespan` en `app/main.py`:
 
 ```python
-from contextlib import asynccontextmanager
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    scheduler.start()
+    start_scheduler()
     yield
-    scheduler.shutdown()
-
-app = FastAPI(lifespan=lifespan)
+    stop_scheduler()
 ```
 
 </details>
 
 ---
 
-## 7. Tipos de alertas recomendados
+## 7. Estados de alerta
 
-| Tipo | Disparador | Prioridad | Frecuencia |
-|:---|:---|:---:|:---:|
-| **Stock minimo** | `cantidad < stock_minimo` | **Critica** | Cada 15 min |
-| **Agotado** | `cantidad == 0` | **Critica** | Cada 15 min |
-| **Proximo a vencer** | `fecha_vencimiento <= 30 dias` | **Alta** | Diaria |
-| **Vencido** | `fecha_vencimiento < hoy` | **Critica** | Diaria |
-| **Sin movimiento** | ultima transaccion > 90 dias | **Media** | Semanal |
-| **Sobrestock** | `cantidad > stock_maximo` | **Baja** | Diaria |
-| **Discrepancia** | diferencia fisico vs sistema > 5% | **Alta** | Tras conteo |
-| **Proveedor tardio** | orden compra vencida sin recibir | **Alta** | Diaria |
-| **Valor alto estancado** | item costoso sin rotacion | **Media** | Semanal |
+| Estado | Significado | Acción |
+|:---|:---|:---|
+| `activa` | Recién generada, sin gestionar | Reconocer / resolver / ignorar |
+| `reconocida` | En revisión por un responsable | Resolver / ignorar |
+| `resuelta` | Atendida (se marca `resolved_at`) | Histórico |
+| `ignorada` | Descartada (se marca `resolved_at`) | Histórico |
 
 ---
 
-## 8. Vistas recomendadas
-
-### 8.1 Dashboard (vista principal)
+## 8. KPIs del módulo de alertas
 
 > [!TIP]
-> Agrupa la informacion mas critica en la parte superior para que el usuario pueda tomar accion inmediata.
-
-- **4 tarjetas metricas**: total activas, criticas, tiempo prom. resolucion, resueltas hoy
-- **Grafica de barras**: alertas por categoria
-- **Grafica de linea**: tendencia de alertas por dia (ultimos 7 dias)
-- **Tabla de cola** con filtros por prioridad y estado
-
-### 8.2 Vista de detalle de alerta
-
-- Encabezado con titulo, badge de prioridad y estado
-- Linea de tiempo de cambios de estado
-- Campo de notas / comentarios
-- Botones: **Reconocer**, **Resolver**, **Asignar**, **Ignorar**
-
-### 8.3 Configuracion de reglas
-
-- Lista de reglas con toggle activar/desactivar
-- Formulario para editar umbrales (stock minimo, dias de anticipacion, etc.)
-- Historial de disparos por regla
-
-### 8.4 Historial
-
-- Tabla de alertas resueltas e ignoradas
-- Filtros por rango de fechas, tipo, item
-- Exportacion a Excel
-
----
-
-## 9. Mejoras adicionales recomendadas
-
-### 9.1 Agrupacion de alertas
-
-> [!TIP]
-> Evita ruido visual agrupando alertas del mismo tipo en una sola tarjeta resumen.
-
-```python
-# En lugar de 50 alertas de stock bajo separadas:
-# -> "15 items con stock bajo en categoria EPP"
-```
-
-### 9.2 Silenciar / posponer alertas (snooze)
-
-```sql
-ALTER TABLE alerts ADD COLUMN snoozed_until DATETIME NULL;
-```
-
-> [!NOTE]
-> El motor salta alertas con `snoozed_until > NOW()` para respetar el periodo de snooze.
-
-### 9.3 Asignacion de alertas
-
-```python
-# Asignar alerta a un usuario responsable
-PATCH /alerts/{id}/asignar
-{"asignado_a": user_id}
-```
-
-### 9.4 Notificaciones push / WhatsApp
-
-> [!WARNING]
-> Las integraciones externas requieren claves de API. Guardalas en **variables de entorno** o en un vault de secretos.
-
-```python
-import httpx
-
-async def notificar_whatsapp(numero, mensaje):
-    # Integracion con WhatsApp Business API o Twilio
-    async with httpx.AsyncClient() as client:
-        await client.post(WHATSAPP_URL, json={"to": numero, "message": mensaje})
-```
-
-### 9.5 SLA y escalamiento automatico
-
-> [!IMPORTANT]
-> Si una alerta **critica** lleva mas de **2 horas** sin reconocer -> escalar al supervisor automaticamente.
-
-```python
-def escalar_alertas_vencidas():
-    alertas = db.query(Alert).filter(
-        Alert.prioridad == "critica",
-        Alert.estado == "activa",
-        Alert.created_at < datetime.now() - timedelta(hours=2)
-    ).all()
-    for a in alertas:
-        notificar_supervisor(a)
-```
-
-### 9.6 KPIs del modulo de alertas
-
-> [!TIP]
-> Calcula y muestra estos KPIs en el dashboard para medir la *salud* del proceso de alertas.
+> El dashboard permite medir la *salud* del proceso de alertas.
 
 | KPI | Descripcion |
 |:---|:---|
-| **MTTR** | *Mean Time To Resolve* -- promedio de minutos desde creacion hasta resolucion |
-| **Tasa de reconocimiento** | % de alertas reconocidas en < 30 min |
-| **Top items problematicos** | Items con mas alertas historicas |
-| **Eficacia de reglas** | Cuales reglas generan mas alertas validas vs ignoradas |
-
-### 9.7 Deduplicacion inteligente
-
-> [!NOTE]
-> Antes de crear una alerta, se verifica el **cooldown** configurado en la regla para evitar duplicados.
-
-```python
-ultima = db.query(Alert).filter(
-    Alert.item_id == item.id,
-    Alert.tipo == tipo,
-    Alert.created_at > datetime.now() - timedelta(hours=cooldown_horas)
-).first()
-if ultima:
-    continue  # No re-disparar en el periodo de cooldown
-```
-
-### 9.8 Exportacion de reporte de alertas
-
-<details>
-<summary><b>Ver generador de Excel</b></summary>
-
-```python
-import openpyxl
-
-def exportar_alertas_excel(alertas, ruta_salida):
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Alertas"
-    ws.append(["ID", "Tipo", "Prioridad", "Titulo", "Item", "Estado", "Creada", "Resuelta"])
-    for a in alertas:
-        ws.append([a.id, a.tipo, a.prioridad, a.titulo, a.item_nombre,
-                   a.estado, str(a.created_at), str(a.resolved_at or "")])
-    wb.save(ruta_salida)
-```
-
-</details>
+| **Total activas** | Alertas sin gestionar (resumen del navbar/dashboard) |
+| **Stock crítico** | Items bajo el mínimo, con `valor_actual` vs `valor_umbral` |
+| **Garantías estancadas** | Casos sin avance por más de 15 días |
+| **Tiempo de resolución** | `resolved_at - created_at` por alerta |
 
 ---
 
-## 10. Checklist de implementacion
+## 9. Checklist de implementación
 
-### Base
-- [x] Crear tabla `alerts` y `alert_rules` en MySQL
-- [ ] Implementar modelo SQLAlchemy `Alert`
-- [ ] Implementar motor de reglas `evaluar_alertas()`
-- [ ] Conectar scheduler (APScheduler) cada 15 minutos
+### Base (implementado)
+- [x] Tabla `alerts` y `alert_rules` en la BD (Alembic)
+- [x] Modelos SQLAlchemy `Alert` y `AlertRule`
+- [x] Motor de reglas `evaluar_alertas()` (stock bajo + garantías estancadas)
+- [x] Scheduler (APScheduler `AsyncIOScheduler`) cada 30 minutos + evaluación al arrancar
+- [x] Deduplicación: no re-crea alertas activas/reconocidas del mismo item/tipo
 
-### API REST
-- [ ] Endpoints REST: GET, PATCH estado, GET resumen
+### API REST (implementado)
+- [x] Endpoints: GET listado, GET summary, PATCH estado, DELETE, POST evaluar, POST crear
 
-### Frontend Flet
-- [ ] Vista Flet: dashboard con metricas + tabla + filtros
-- [ ] Badge de alertas en el sidebar
-- [ ] Toast de nueva alerta critica
+### Frontend (implementado)
+- [x] Centro de alertas `Alerts.tsx` con tabla paginada y filtros
+- [x] Badge de alertas en el Navbar (campana)
+- [x] Resumen de alertas en el Dashboard
 
-### Detalle y configuracion
-- [ ] Vista de detalle con linea de tiempo
-- [ ] Configuracion de reglas (toggle + umbrales)
-- [ ] Historial y exportacion Excel
-
-### Mejoras
-- [ ] Logica de cooldown (deduplicacion)
-- [ ] Logica de escalamiento por SLA
-- [ ] (Opcional) Integracion WhatsApp para criticas
+### Mejoras futuras (pendiente)
+- [ ] Configuración visual de reglas (toggle + umbrales) en el frontend
+- [ ] Historial detallado y exportación Excel de alertas
+- [ ] Escalamiento automático por SLA (críticas sin reconocer > 2h)
+- [ ] Notificaciones push / WhatsApp / correo para alertas críticas
 
 ---
 
-> *Documento generado para **PROYECTO_SECURITAS -- Inventario_SE** - Compatible con FastAPI + Flet + MySQL + APScheduler*
+> *Documento actualizado: Agosto 2026 — v1.1 — Compatible con FastAPI + React + SQLAlchemy + APScheduler*

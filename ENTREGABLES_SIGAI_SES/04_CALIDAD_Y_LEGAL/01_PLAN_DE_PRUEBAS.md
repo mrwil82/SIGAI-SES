@@ -39,7 +39,7 @@ title: "**Plan de Pruebas — SIGAI-SES** `v1.0.0`"
 |Proyectos|CRUD, asociación con clientes, cambios de estado|Cobertura completa|
 |Proveedores|CRUD, categorías, soft delete|Cobertura completa|
 |Garantías|Flujo completo de estados, cálculo de alertas|Cobertura completa|
-|Actas de Entrega|Creación con detalles, generación de PDF, firmas|Cobertura completa|
+|Actas de Entrega|Creación con detalles, generación de PDF, estados|Cobertura completa|
 |Desmontes y Triaje|Registro masivo, calificación técnica, cambio de estado|Cobertura completa|
 |Movimientos (Kardex)|Registro automático, integridad transaccional|Cobertura completa|
 |Alertas|Reglas, generación automática, cambios de estado|Cobertura completa|
@@ -96,7 +96,7 @@ title: "**Plan de Pruebas — SIGAI-SES** `v1.0.0`"
 |Dashboard|Visualización de métricas, búsqueda global|
 |Inventario|Filtros, paginación, creación, edición, eliminación, importación|
 |Garantías|Creación, cambio de estados, alerta de estancamiento|
-|Actas de Entrega|Creación con detalles, captura de firma, generación PDF|
+|Actas de Entrega|Creación con detalles, generación PDF, cambios de estado|
 |Desmontes|Registro masivo, triaje, cambio de estado|
 |Alertas|Visualización, filtros, cambio de estado, resolución|
 |Usuarios|CRUD, cambio de rol, activación/desactivación|

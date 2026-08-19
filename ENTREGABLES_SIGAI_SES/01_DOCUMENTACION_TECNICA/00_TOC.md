@@ -71,7 +71,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Documento | Descripción | Enlace |
 |---|---|---|
-| `Especificación OpenAPI` | **60+ endpoints** REST documentados | [Leer](API_SPEC/openapi.yaml) |
+| `Especificación OpenAPI` | **82 endpoints** REST documentados | [Leer](API_SPEC/openapi.yaml) |
 | `Catálogo de Errores` | Códigos HTTP y mensajes de error por endpoint | [Leer](08_CATALOGO_ERRORES_API.md) |
 
 ---
@@ -110,7 +110,7 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 
 | Documento | Descripción | Enlace |
 |---|---|---|
-| `Propuesta Técnica` | Propuesta original v2.0 (documento fundacional) | [Leer](../02_DOCUMENTACION_GESTION/00_PROPUESTA_TECNICA.md) |
+| `Propuesta Técnica` | Propuesta original v1.0.0 (documento fundacional) | [Leer](../02_DOCUMENTACION_GESTION/00_PROPUESTA_TECNICA.md) |
 | `Especificación de Requisitos` | **24 RF**, 5 RNF, roadmap | [Leer](../02_DOCUMENTACION_GESTION/01_ESPECIFICACION_REQUISITOS.md) |
 | `Estado Final del Proyecto` | Auditoría y deuda técnica | [Leer](../02_DOCUMENTACION_GESTION/02_ESTADO_FINAL_PROYECTO.md) |
 
@@ -149,8 +149,8 @@ title: "SIGAI-SES — Tabla de Contenidos Técnicos"
 |---|---|
 | **Total de documentos** | **30 archivos** |
 | **Módulos del sistema** | 14 rutas, 10 modulos API |
-| **Endpoints API** | 60+ REST |
-| **Tablas BD** | 18 (14 migraciones Alembic) |
+| **Endpoints API** | 82 REST |
+| **Tablas BD** | 18 (15 migraciones Alembic) |
 | **Historias de Usuario** | 24 |
 | **Requisitos Funcionales** | 24 |
 | **Preguntas FAQ** | 30+ |

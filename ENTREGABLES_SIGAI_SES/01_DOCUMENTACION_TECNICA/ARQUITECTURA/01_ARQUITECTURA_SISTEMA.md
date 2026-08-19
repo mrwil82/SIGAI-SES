@@ -6,7 +6,7 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge&logo=github)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=for-the-badge&logo=checkmarx)
 ![Last Update](https://img.shields.io/badge/Last%20Update-Julio%202026-orange?style=for-the-badge&logo=calendar)
 ![Stack](https://img.shields.io/badge/Stack-React%20%7C%20FastAPI%20%7C%20SQL-3FCF8E?style=for-the-badge&logo=codeigniter)
@@ -92,7 +92,7 @@ flowchart LR
 | **Bundler** | ![Vite](https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite) |
 | **Estilos** | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss) — **Fusion UI** (Emerald Core × Neomorphic Hub) |
 | **HTTP** | ![Axios](https://img.shields.io/badge/Axios-1.6-5A29E4?logo=axios) con interceptores JWT |
-| **Ruteo** | React Router DOM — **11 rutas** (2 públicas, 9 protegidas) |
+| **Ruteo** | React Router DOM — **16 rutas** (1 pública, 15 protegidas) |
 | **Estado** | `AuthContext` + ![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery) |
 
 #### Módulos del Frontend
@@ -109,7 +109,7 @@ flowchart LR
 | Desmontes | `/desmontes` | `TECNICO_LAB` | Triage de equipos |
 | Usuarios | `/users` | `ADMIN` | CRUD usuarios, roles, regionales |
 | Auditoría | `/audit` | `ADMIN` | Bitácora de cambios |
-| Entregas | `/deliveries` | `ADMIN` | Actas de entrega + firma digital |
+| Entregas | `/deliveries` | `ADMIN` | Actas de entrega + PDF |
 
 > [!TIP]
 > Los modulos de **Usuarios**, **Auditoria** y **Entregas** son exclusivos para rol `ADMIN`.
@@ -133,13 +133,13 @@ flowchart LR
 |:---|:---:|:---|
 | `/api/v1/auth` | `5` | Login, refresh, logout, register, me |
 | `/api/v1/users` | `10` | CRUD + audit + settings + avatar |
-| `/api/v1/inventory` | `16` | CRUD items, activos, ubicaciones, desmonte-bulk, epp |
-| `/api/v1/business` | `20+` | CRUD clientes, proyectos, proveedores, garantías, actas |
-| `/api/v1/analytics` | `2` | Summary dashboard, search global |
+| `/api/v1/inventory` | `17` | CRUD items, activos, ubicaciones, desmonte-bulk, epp |
+| `/api/v1/business` | `27` | CRUD clientes, proyectos, proveedores, garantías, actas |
+| `/api/v1/analytics` | `3` | Summary dashboard, search global, predicciones |
 | `/api/v1/reports` | `1` | Export Excel/PDF (5 módulos) |
-| `/api/v1/alerts` | `5` | CRUD alertas + summary + evaluar |
-| `/api/v1/regionales` | `1` | Listado de regionales |
-| `/api/v1/import` | `2` | Importación Excel (auto-detección) |
+| `/api/v1/alerts` | `7` | CRUD alertas + summary + evaluar |
+| `/api/v1/regionales` | `4` | CRUD de regionales |
+| `/api/v1/import` | `3` | Importación Excel (auto-detección) + plantillas |
 | `/api/v1/monitoring` | `3` | Health check, health/db, metrics |
 
 ---
@@ -212,11 +212,11 @@ sequenceDiagram
 | **ADR-01** | **FastAPI** sobre Django | Rendimiento async nativo, tipado con Pydantic, OpenAPI automático | Django REST (síncrono, más pesado) |
 | **ADR-02** | **React + Vite** sobre Next.js | SPA ligera, HMR rápido, deploy simple en Vercel | Next.js (SSR complejo para PWA) |
 | **ADR-03** | **SQLAlchemy Async** sobre Tortoise ORM | Madurez, documentación, Alembic | Tortoise ORM (menos maduro) |
-| **ADR-04** | **JWT en localStorage** sobre httpOnly cookies | Simplicidad, SPA sin SSR | httpOnly cookies (más seguro, pero complejo) |
+| **ADR-04** | **JWT en sessionStorage** sobre httpOnly cookies | Simplicidad, SPA sin SSR | httpOnly cookies (más seguro, pero complejo) |
 | **ADR-05** | **Compatibilidad multiple** PostgreSQL / MySQL / MariaDB | Soporta el motor que TI defina, mediante SQLAlchemy abstracto | Dependencia de un solo motor (menos flexible) |
 
 > [!WARNING]
-> **ADR-04** (JWT en localStorage) es un riesgo de seguridad asumido. Mitigado con expiración de 8h y sesiones revocables.
+> **ADR-04** (JWT en sessionStorage) es un riesgo de seguridad asumido. Mitigado con expiración de 8h y sesiones revocables (token de refresh almacenado en la tabla `sesiones_usuario`).
 
 ---
 
@@ -263,7 +263,7 @@ graph LR
 
 <div align="center">
 
-![Separator](https://img.shields.io/badge/---Documento%20actualizado%20al%20Julio%202026%20--%20v2.0-lightgrey?style=for-the-badge)
+![Separator](https://img.shields.io/badge/---Documento%20actualizado%20al%20Julio%202026%20--%20v1.0.0-lightgrey?style=for-the-badge)
 
 </div>
 

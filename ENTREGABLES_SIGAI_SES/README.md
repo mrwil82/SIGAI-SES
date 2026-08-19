@@ -19,10 +19,10 @@
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?logo=react" alt="React">
-  <img src="https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/Vite-7.3-646CFF?logo=vite" alt="Vite">
   <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss" alt="Tailwind">
-  <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql" alt="MySQL">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4479A1?logo=postgresql" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker" alt="Docker">
 </p>
 
@@ -44,7 +44,7 @@
 | **Destinatario** | Elkin David Velasquez Hernandez -- Gerente de Mantenimiento SES |
 | **Version Actual** | `v1.0.0` -- Release Candidate |
 | **Fecha** | Julio 2026 |
-| **Stack** | FastAPI + React + Vite + MySQL + Tailwind CSS |
+| **Stack** | FastAPI + React + Vite + PostgreSQL + Tailwind CSS |
 
 ---
 
@@ -58,10 +58,10 @@ ENTREGABLES_SIGAI_SES/
 ├── 01_DOCUMENTACION_TECNICA/         # Documentacion para el equipo de desarrollo y TI
 │   ├── 00_README_TECNICO.md           # Resumen tecnologico del proyecto
 │   ├── 00_TOC.md                     # Tabla de contenidos tecnicos
-│   ├── 02_GUIA_INSTALACION_BACKEND   # Instalacion del backend (FastAPI + MySQL)
+│   ├── 02_GUIA_INSTALACION_BACKEND   # Instalacion del backend (FastAPI + PostgreSQL)
 │   ├── 03_GUIA_INSTALACION_FRONTEND  # Instalacion del frontend (React + Vite)
 │   ├── 04_DICCIONARIO_DE_DATOS       # 18 tablas documentadas con campos y relaciones
-│   ├── 05_GUIA_DESPLIEGUE_PRODUCCION # Despliegue cloud (GitHub + Railway + Vercel + TiDB)
+│   ├── 05_GUIA_DESPLIEGUE_PRODUCCION # Despliegue cloud (GitHub + Render + Supabase)
 │   ├── ARQUITECTURA/
 │   │   ├── 01_ARQUITECTURA_SISTEMA   # Arquitectura por capas y componentes
 │   │   └── 02_DIAGRAMAS_FLUJO       # Diagramas de procesos del negocio
@@ -83,7 +83,7 @@ ENTREGABLES_SIGAI_SES/
 ├── 02_DOCUMENTACION_GESTION/         # Documentacion para la gestion del proyecto
 │   ├── 01_ESPECIFICACION_REQUISITOS  # 13 RF, 5 RNF, Roadmap 12 semanas
 │   ├── 02_ESTADO_FINAL_PROYECTO      # Estado v1.0.0, auditoria, deuda tecnica
-│   ├── 00_PROPUESTA_TECNICA          # Propuesta tecnica original v2.0 (documento fundacional)
+│   ├── 00_PROPUESTA_TECNICA          # Propuesta tecnica original v1.0.0 (documento fundacional)
 │   └── 03_ACTA_DE_ENTREGA.pdf        # Acta de entrega formal firmada (PDF)
 │
 ├── 03_DOCUMENTACION_USUARIO/         # Documentacion para usuarios del sistema
@@ -131,8 +131,8 @@ ENTREGABLES_SIGAI_SES/
 |---|---|---|
 | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="16"> **Python** | `3.12+` | Lenguaje base |
 | **FastAPI** | `0.136.1` | Framework web asincrono |
-| **SQLAlchemy** | `2.0.49` | ORM asincrono (aiomysql) |
-| **MySQL/MariaDB** | `8.0+` | Base de datos relacional |
+| **SQLAlchemy** | `2.0.49` | ORM asincrono (asyncpg) |
+| **PostgreSQL** | `16+` | Base de datos relacional |
 | **Alembic** | `1.18.4` | Migraciones de BD |
 | **python-jose** | `3.5.0` | Tokens JWT (HS256) |
 | **passlib[bcrypt]** | `1.7.4` | Hashing de contrasenas |
@@ -148,15 +148,13 @@ ENTREGABLES_SIGAI_SES/
 |---|---|---|
 | **React** | `18.2` | Framework de interfaz de usuario |
 | **TypeScript** | `5.2` | Tipado estatico |
-| **Vite** | `5.2` | Bundler y dev server |
+| **Vite** | `7.3` | Bundler y dev server |
 | **Tailwind CSS** | `3.4` | Estilos utilitarios |
 | **TanStack React Query** | `5.101` | Fetching de datos con cache |
 | **Axios** | `1.6.8` | HTTP client con interceptores JWT |
-| **React Router DOM** | `6.22` | Ruteo SPA (11 rutas) |
+| **React Router DOM** | `7.18` | Ruteo SPA (16 rutas) |
 | **Recharts** | `2.12` | Graficos (PieChart, BarChart) |
 | **Lucide React** | `0.363` | Iconos |
-| **react-signature-canvas** | `1.1` | Firmas digitales en actas |
-| **xlsx** | `0.18.5` | Exportacion a Excel |
 
 ---
 
@@ -188,7 +186,7 @@ ENTREGABLES_SIGAI_SES/
 <summary><b>3. Operaciones y Movimientos (Kardex Digital)</b></summary>
 
 - Registro inmutable de entradas, salidas, traslados y devoluciones
-- Actas de entrega digitales con firma tactile y PDF
+- Actas de entrega digitales con PDF
 - Desmontes con triaje (`BUENO`, `RECUPERABLE`, `DESECHO`)
 - Integridad transaccional (movimiento siempre genera kardex)
 
@@ -207,11 +205,10 @@ ENTREGABLES_SIGAI_SES/
 <details>
 <summary><b>5. Alertas</b></summary>
 
-- Motor de reglas automatico (APScheduler cada 15 min)
-- 4 reglas predefinidas: `stock_bajo`, `vencimiento`, `sin_movimiento`, `sobrestock`
+- Motor de reglas automatico (APScheduler cada 30 min)
+- Reglas implementadas: `stock_bajo` (critica), `garantia_vencida` (alta)
 - Estados: `activa`, `reconocida`, `resuelta`, `ignorada`
 - Cooldown inteligente para evitar duplicados
-- SLA con escalamiento automatico
 
 </details>
 
@@ -245,9 +242,9 @@ ENTREGABLES_SIGAI_SES/
 | Total de archivos de documentacion | `30 documentos` |
 | Total lineas de documentacion | `~4,200 lineas` |
 | Tablas de base de datos | `18` |
-| Endpoints de API | `60+` |
+| Endpoints de API | `82` |
 | Historias de usuario | `24` |
-| Requisitos funcionales | `13` |
+| Requisitos funcionales | `24` |
 | Roles de usuario | `3` |
 | Diagramas (MMD + PNG) | `13` |
 | Archivos Excel de datos reales | `3` (147 garantias, 17 clientes, 34 herramientas) |
@@ -264,7 +261,7 @@ ENTREGABLES_SIGAI_SES/
 | [GUIA INSTALACION BACKEND](./01_DOCUMENTACION_TECNICA/02_GUIA_INSTALACION_BACKEND.md) | Instalacion del backend FastAPI |
 | [GUIA INSTALACION FRONTEND](./01_DOCUMENTACION_TECNICA/03_GUIA_INSTALACION_FRONTEND.md) | Instalacion del frontend React |
 | [DICCIONARIO DE DATOS](./01_DOCUMENTACION_TECNICA/04_DICCIONARIO_DE_DATOS.md) | Diccionario de datos (18 tablas) |
-| [GUIA DESPLIEGUE](./01_DOCUMENTACION_TECNICA/05_GUIA_DESPLIEGUE_PRODUCCION.md) | Despliegue en Railway + Vercel + TiDB |
+| [GUIA DESPLIEGUE](./01_DOCUMENTACION_TECNICA/05_GUIA_DESPLIEGUE_PRODUCCION.md) | Despliegue en Render + Supabase |
 | [GUIA ON-PREMISE](./01_DOCUMENTACION_TECNICA/06_GUIA_ON_PREMISE.md) | Despliegue en servidor corporativo local |
 | [GESTION DE ALERTAS](./01_DOCUMENTACION_TECNICA/11_GESTION_ALERTAS.md) | Diseno del motor de alertas y reglas |
 | [API SPEC](./01_DOCUMENTACION_TECNICA/API_SPEC/openapi.yaml) | Especificacion OpenAPI de la API REST |
@@ -273,7 +270,7 @@ ENTREGABLES_SIGAI_SES/
 
 | Documento | Descripcion |
 |---|---|
-| [PROPUESTA TECNICA](./02_DOCUMENTACION_GESTION/00_PROPUESTA_TECNICA.md) | Propuesta tecnica original v2.0 |
+| [PROPUESTA TECNICA](./02_DOCUMENTACION_GESTION/00_PROPUESTA_TECNICA.md) | Propuesta tecnica original v1.0.0 |
 | [ESPECIFICACION REQUISITOS](./02_DOCUMENTACION_GESTION/01_ESPECIFICACION_REQUISITOS.md) | Requisitos funcionales y roadmap |
 
 ### Documentacion de Usuario

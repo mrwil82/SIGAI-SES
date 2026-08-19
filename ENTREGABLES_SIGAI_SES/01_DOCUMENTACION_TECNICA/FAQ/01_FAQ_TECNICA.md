@@ -6,7 +6,7 @@ title: "FAQ Técnica — SIGAI-SES"
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge&logo=github)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=for-the-badge&logo=checkmarx)
 ![Last Update](https://img.shields.io/badge/Last%20Update-Julio%202026-orange?style=for-the-badge&logo=calendar)
 ![Pages](https://img.shields.io/badge/Sections-7-informational?style=for-the-badge&logo=bookstack)
@@ -73,7 +73,7 @@ VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 ### ¿Que hago si cambia la URL del API en produccion?
 
-Actualice `VITE_API_BASE_URL` en las variables de entorno de **Vercel** (para despliegue cloud) o en el `.env` del build (para on-premise).
+Actualice `VITE_API_BASE_URL` en las variables de entorno de **Render** (para despliegue cloud) o en el `.env` del build (para on-premise).
 
 > [!WARNING]
 > Recuerde recompilar el frontend despues de cambiar variables de entorno: `npm run build`
@@ -112,7 +112,7 @@ El sistema usa **OAuth2 Password Flow** con **JWT**. El flujo completo:
 sequenceDiagram
     Cliente->>+Servidor: POST /api/v1/auth/login (email+password)
     Servidor-->>-Cliente: {access_token, refresh_token, user}
-    Note over Cliente: Almacena tokens en localStorage
+    Note over Cliente: Almacena tokens en sessionStorage
     Cliente->>+Servidor: GET /api/v1/auth/me (Bearer access_token)
     Servidor-->>-Cliente: {user data}
     Note over Cliente: Axios interceptor adjunta token automaticamente
@@ -134,15 +134,14 @@ Cuando el `access_token` expira (**HTTP 401**), el frontend intenta renovarlo us
 
 ### ¿Los tokens son seguros?
 
-Los tokens se almacenan en **localStorage** (riesgo asumido, mitigado por validacion en cada peticion). Los tokens JWT estan firmados con **HS256** y contienen:
+Los tokens se almacenan en **sessionStorage** (riesgo asumido, mitigado por validacion en cada peticion y sesiones revocables). Los tokens JWT estan firmados con **HS256** y contienen:
 
 | Claim | Contenido |
 |:---|---:|
-| `user_id` | ID del usuario |
+| `sub` | Email del usuario |
 | `rol` | Perfil de acceso |
-| `regional` | Regional asignada |
+| `type` | `access` o `refresh` |
 | `exp` | Fecha de expiracion |
-| `iat` | Fecha de emision |
 
 > [!WARNING]
 > Las sesiones son **revocables** via tabla `sesiones_usuario`. Si detecta actividad sospechosa, revoque inmediatamente.
@@ -248,13 +247,13 @@ FastAPI genera documentacion interactiva automaticamente:
 |:---:|:---|---:|:---|
 | 1 | `auth` | 5 | Autenticacion |
 | 2 | `users` | 10 | Usuarios |
-| 3 | `inventory` | 16 | Inventario |
-| 4 | `business` | 20+ | Negocio |
-| 5 | `analytics` | 2 | Analiticas |
+| 3 | `inventory` | 17 | Inventario |
+| 4 | `business` | 27 | Negocio |
+| 5 | `analytics` | 3 | Analiticas (summary, search, predicciones) |
 | 6 | `reports` | 1 | Reportes |
-| 7 | `alerts` | 5 | Alertas |
-| 8 | `regionales` | 1 | Regionales |
-| 9 | `import` | 2 | Importacion |
+| 7 | `alerts` | 7 | Alertas |
+| 8 | `regionales` | 4 | Regionales |
+| 9 | `import` | 3 | Importacion |
 | 10 | `monitoring` | 3 | Monitoreo |
 
 ### ¿Que formato acepta el endpoint de importacion Excel?
@@ -278,7 +277,7 @@ Aplica logica de **upsert** (inserta o actualiza segun corresponda).
 ### ¿Que diferencia hay entre `/import/excel` y `/import/full-system`?
 
 > [!NOTE]
-> `/full-system` es un **alias legacy** de `/excel`. Ambos endpoints ejecutan exactamente la misma logica.
+> `/import/full-system` es el **endpoint principal** usado por el frontend (recibe archivo Excel con proyecto/cliente asociados). `/excel` es un endpoint alternativo de importación directa. Ambos comparten el motor de importación con detección automática de tipo y lógica **upsert**.
 
 </details>
 
@@ -469,9 +468,9 @@ sudo systemctl reload nginx
 
 | Plataforma | Limitacion | Suficiente para? |
 |:---|---:|:---:|
-| Railway | 500h/mes (~17h/dia) | Pruebas |
+| Render | 750h/mes | Pruebas |
+| Supabase | 500MB storage | Pruebas |
 | Vercel | 100GB bandwidth/mes | Pruebas |
-| TiDB Cloud | 5GB storage | Pruebas |
 
 </details>
 
@@ -479,7 +478,7 @@ sudo systemctl reload nginx
 
 <div align="center">
 
-![Separator](https://img.shields.io/badge/---Documento%20actualizado%20al%20Julio%202026%20--%20v2.0-lightgrey?style=for-the-badge)
+![Separator](https://img.shields.io/badge/---Documento%20actualizado%20al%20Julio%202026%20--%20v1.0.0-lightgrey?style=for-the-badge)
 
 </div>
 

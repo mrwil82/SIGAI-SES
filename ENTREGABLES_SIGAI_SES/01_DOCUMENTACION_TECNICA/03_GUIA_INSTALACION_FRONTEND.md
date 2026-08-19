@@ -9,7 +9,7 @@ title: "GUÍA DE INSTALACIÓN DEL FRONTEND — React + TypeScript + Vite"
   <img src="https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=nodedotjs" alt="Node.js">
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Vite-5.2-646CFF?style=for-the-badge&logo=vite" alt="Vite">
+  <img src="https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite" alt="Vite">
   <img src="https://img.shields.io/badge/Estado-Probado-2ea44f?style=for-the-badge&logo=checkmarx" alt="Estado">
 </p>
 
@@ -153,7 +153,7 @@ Frontend/src/
 | `/settings` | **Configuración** | Avatar, contraseña, selector de tema | Autenticados |
 | `/users` | **Usuarios** | Administración de usuarios | Solo ADMIN |
 | `/audit` | **Auditoría** | Bitácora de auditoría | Solo ADMIN |
-| `/deliveries` | **Entregas** | Actas de entrega con firma digital | Solo ADMIN |
+| `/deliveries` | **Entregas** | Actas de entrega con PDF | Solo ADMIN |
 
 ### Leyenda de Accesos
 
@@ -198,7 +198,7 @@ Se puede generar un APK nativo desde el mismo codigo:
 
 ```bash
 cd Frontend
-npx cap init SIGAI-SES com.securitas.sigaises
+npx cap init SIGAI-SES com.sigai.ses
 npx cap add android
 npx cap copy
 npx cap sync
@@ -207,6 +207,9 @@ cd android
 ```
 
 **Requisito:** Android Studio con SDK 34+, Gradle 8+
+
+> [!NOTE]
+> El `appId` de Capacitor configurado en `capacitor.config.json` es **`com.sigai.ses`**. En **Windows** usa `gradlew.bat assembleDebug`.
 
 ---
 

@@ -32,7 +32,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | **Kardex Digital Universal** | | Historial inmutable de cada movimiento de inventario |
 | **Importación Inteligente** | | Procesamiento de Excel con _upsert_ y normalización automática |
 | **Alertas Automáticas** | | Stock crítico, garantías estancadas, vencimientos |
-| **Actas Digitales** | | Generación de PDF con **firma táctil** desde dispositivos móviles |
+| **Actas Digitales** | | Generación de PDF con datos del técnico y del representante |
 | **Auditoría Completa** | | Registro detallado de cada acción con valores anterior/nuevo |
 
 ---
@@ -71,16 +71,14 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 |---|---|---|
 | **Framework** | <img src="https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white" height="20"> | `18.2` |
 | **Lenguaje** | <img src="https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white" height="20"> | `5.2` |
-| **Bundler** | <img src="https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white" height="20"> | `5.2` |
+| **Bundler** | <img src="https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white" height="20"> | `7.3` |
 | **Estilos** | <img src="https://img.shields.io/badge/-Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white" height="20"> | `3.4` |
-| **Ruteo** | <img src="https://img.shields.io/badge/-React%20Router-CA4245?logo=reactrouter&logoColor=white" height="20"> | `6.22` |
+| **Ruteo** | <img src="https://img.shields.io/badge/-React%20Router-CA4245?logo=reactrouter&logoColor=white" height="20"> | `7.18` |
 | **Datos** | <img src="https://img.shields.io/badge/-TanStack%20Query-FF4154?logo=reactquery&logoColor=white" height="20"> | `5.101` |
 | **HTTP** | <img src="https://img.shields.io/badge/-Axios-5A29E4?logo=axios&logoColor=white" height="20"> | `1.6.8` |
 | **Gráficos** | <img src="https://img.shields.io/badge/-Recharts-22B5BF?logo=recharts&logoColor=white" height="20"> | `2.12` |
 | **Iconos** | <img src="https://img.shields.io/badge/-Lucide-000?logo=lucide&logoColor=white" height="20"> | `0.363` |
 | **Formularios** | <img src="https://img.shields.io/badge/-React%20Hook%20Form-EC5990?logo=reacthookform&logoColor=white" height="20"> | `7.51` |
-| **Firmas** | <img src="https://img.shields.io/badge/-Signature%20Canvas-000?logo=signature&logoColor=white" height="20"> | `1.1` |
-| **Excel** | <img src="https://img.shields.io/badge/-xlsx-000?logo=microsoftexcel&logoColor=white" height="20"> | `0.18.5` |
 | **PWA** | <img src="https://img.shields.io/badge/-vite--plugin--pwa-646CFF?logo=pwa&logoColor=white" height="20"> | `1.3.0` |
 | **Móvil** | <img src="https://img.shields.io/badge/-Capacitor-119EFF?logo=capacitor&logoColor=white" height="20"> | `7.2.0` (Android) |
 | **Tema** | <img src="https://img.shields.io/badge/-CSS%20Variables-1572B6?logo=css3&logoColor=white" height="20"> | 3 temas (green/blue/bone) |
@@ -116,7 +114,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | Característica | | Descripción |
 |---|---|---|
 | **Motor de Importación** | | Upsert con lógica transaccional |
-| **Motor de Alertas** | | APScheduler — evaluación cada **15 min** |
+| **Motor de Alertas** | | APScheduler — evaluación cada **30 min** |
 | **Reglas Predefinidas** | | `stock_bajo` · `vencimiento` · `sin_movimiento` · `sobrestock` |
 | **Streaming** | | Reportes de **+30,000 registros** sin degradación |
 | **Búsqueda Global** | | Respuesta a partir de **2 caracteres** |
@@ -160,7 +158,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 │    Auth  │   CRUD  │   Reports  │   Import             │
 │    Analytics  │   Alerts  │   Monitoring                 │
 │                                                                  │
-│             60+ endpoints REST bajo /api/v1/                   │
+│             82 endpoints REST bajo /api/v1/                   │
 │             Despliegue: servidor corporativo o cloud           │
 └──────────────────────────────────────────────────────────────────┘
            │
@@ -173,7 +171,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 │    usuarios  │   items  │   activos  │   garantias     │
 │    audit_logs  │   alerts  │   clientes  │  ...           │
 │                                                                  │
-│    18 tablas ·  14 migraciones Alembic · Avatares en Base64  │
+│    18 tablas ·  15 migraciones Alembic · Avatares en Base64  │
 │    Motor: PostgreSQL / MySQL / MariaDB (segun entorno)        │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -392,9 +390,9 @@ npm run build
 | **Versión Actual** | | `v1.0.0` — Producción |
 | **Fecha** | | Julio 2026 |
 | **Cobertura de Tests** | | 32 tests (backend) — CI pasa |
-| **Endpoints API** | | 60+ REST (`/api/v1/`) |
+| **Endpoints API** | | 82 REST (`/api/v1/`) |
 | **Tablas en BD** | | 18 |
-| **Migraciones Alembic** | | 14 versiones |
+| **Migraciones Alembic** | | 15 versiones |
 | **Roles de Usuario** | | 3 (ADMIN, TECNICO, TECNICO_LABORATORIO) |
 | **Temas UI** | | 3 (Verde, Azul Cobalto, Blanco Hueso) |
 | **Despliegue** | | Servidor corporativo o cloud (GitHub Actions CI) |

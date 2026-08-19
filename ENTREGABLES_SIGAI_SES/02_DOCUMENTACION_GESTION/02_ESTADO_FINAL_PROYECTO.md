@@ -60,9 +60,9 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 
 | Caracteristica | Detalle |
 |:---|---:|
-| Motor de reglas con **4 reglas predefinidas** | `stock_bajo`, `vencimiento`, `sin_movimiento`, `sobrestock` |
-| Evaluacion automatica cada **15 minutos** | APScheduler |
-| Estados | `Activa` -> `Reconocida` -> `Resuelta` / `Ignorada` |
+| Motor de reglas implementado | `stock_bajo` (crítica) y `garantia_vencida` (alta) |
+| Evaluacion automatica cada **30 minutos** (+ al arrancar) | APScheduler (`AsyncIOScheduler`) |
+| Estados | `activa` -> `reconocida` -> `resuelta` / `ignorada` |
 | Gestion completa via CRUD endpoints | Completado |
 
 ### Auditoria y Trazabilidad
@@ -124,7 +124,6 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 | Paginacion real en todos los listados | Completado |
 | Filtros por categoria, estado, busqueda textual | Completado |
 | Importacion Excel con **arrastrar y soltar** | Completado |
-| Captura de firma digital tactil (`react-signature-canvas`) | Completado |
 | Notificaciones **toast** con animaciones CSS | Completado |
 | Exportacion a PDF/Excel por modulo | Completado |
 
@@ -228,13 +227,13 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 </details>
 
 <details>
-<summary><b>H7: Tests y CI</b> — <code>PENDIENTE v1.1.0</code></summary>
+<summary><b>H7: Tests y CI</b> — <code>CORREGIDO</code></summary>
 
 | Campo | Detalle |
 |:---|---:|
-| **Detectado** | Suite de tests parcial; hay `pytest.ini` pero falta CI automatizado |
-| **Recomendacion** | Anadir pipeline CI (pytest, npm build, linters) en PRs |
-| **Estado** | **PENDIENTE** (v1.1.0) |
+| **Detectado** | Suite de tests parcial; habia `pytest.ini` pero faltaba CI automatizado |
+| **Accion** | Pipeline CI implementado en `.github/workflows/main.yml` (backend-tests con pytest sobre SQLite async + frontend-lint con ESLint) y pre-commit hooks |
+| **Estado** | **CORREGIDO** |
 
 </details>
 
@@ -248,10 +247,10 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 | H4 — UX inconsistente | Medio | **Corregido** |
 | H5 — Logs y debug prints | Medio | **Corregido** |
 | H6 — Lazy loading async | Medio | **Corregido** |
-| H7 — Tests y CI | Bajo | **Pendiente v1.1.0** |
+| H7 — Tests y CI | Bajo | **Corregido** |
 
 > [!WARNING]
-> **6 de 7 hallazgos** fueron corregidos inmediatamente. Solo el hallazgo H7 (Tests/CI) queda pendiente para la version **v1.1.0**.
+> **Los 7 hallazgos** fueron corregidos. El pipeline CI (tests + lint) y los pre-commit hooks están operativos.
 
 ---
 
@@ -267,20 +266,19 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 | Autenticacion JWT con refresh token | Completado |
 | Auditoria completa con valores anterior/nuevo | Completado |
 | Motor de alertas automatico | Completado |
-| Actas digitales con firma tactil | Completado |
 | Desmontes con triaje | Completado |
+| Sistema de regionales completo | Completado |
 
 ### v1.1.0 (Planificado — Proximo Sprint)
 
 | # | Tarea | Tipo |
 |:---:|---|:---:|
-| 1 | **Dashboard Analytics Interactivo** — Graficos dinamicos con filtros avanzados | Mejora |
-| 2 | **Notificaciones Push/Email** — Integracion SMTP para notificar administradores | Nueva |
-| 3 | **Cobertura de Tests** — Ampliar pruebas unitarias y de integracion | Calidad |
-| 4 | **Pipeline CI/CD** — GitHub Actions con lint, tests, build | DevOps |
-| 5 | **Security Headers** — CSP, HSTS, X-Frame-Options | Seguridad |
-| 6 | **Bloqueo por intentos fallidos de login** | Seguridad |
-| 7 | **Rate limiting general** (no solo en login) | Seguridad |
+| 1 | **Notificaciones Push/Email** — Integracion SMTP para notificar administradores | Nueva |
+| 2 | **Cobertura de Tests** — Ampliar pruebas unitarias y de integracion | Calidad |
+| 3 | **Offline-ready (PWA)** — consultas en campo sin conexion | Mejora |
+| 4 | **Security Headers** — CSP, HSTS, X-Frame-Options | Seguridad |
+| 5 | **Bloqueo por intentos fallidos de login** | Seguridad |
+| 6 | **Rate limiting general** (no solo en login) | Seguridad |
 
 ### v1.2.0 (Planificado)
 
@@ -296,7 +294,7 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 ## 6. Conclusion
 
 > [!NOTE]
-> La aplicacion **SIGAI-SES v1.0.0** cumple con el **100%** de los requisitos funcionales de gestion de inventario, auditoria y alertas. La auditoria de seguridad encontro **7 hallazgos**, de los cuales **6 fueron corregidos inmediatamente**. Es una base **solida y escalable** para la operacion de Seguridad Electronica Securitas.
+> La aplicacion **SIGAI-SES v1.0.0** cumple con el **100%** de los requisitos funcionales de gestion de inventario, auditoria y alertas. La auditoria de seguridad encontro **7 hallazgos**, los **7 fueron corregidos** (incluido el pipeline CI). Es una base **solida y escalable** para la operacion de Seguridad Electronica Securitas.
 
 ### Cumplimiento de Requisitos
 
@@ -316,8 +314,8 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 | `Backend` | `FastAPI · SQLAlchemy Async · Python 3.12` |
 | `Frontend` | `React 18 · TypeScript 5.2 · Tailwind CSS 3.4` |
 | `Diseno` | `Fusion UI (Emerald Core x Neomorphic Hub)` |
-| `Deploy` | `Docker · Railway · Vercel · TiDB Cloud` |
-| `Auditorias corregidas` | `6 / 7` |
+| `Deploy` | `Render · Supabase (PostgreSQL) · Docker · On-premise` |
+| `Auditorias corregidas` | `7 / 7` |
 
 ### Acciones Inmediatas Recomendadas
 
@@ -326,7 +324,7 @@ title: "SIGAI-SES v1.0.0 — Reporte de Estado Final"
 
 1. **Rotar secrets** y asegurar `.env` en servidores de produccion
 2. **Ejecutar carga inicial** con `import_data.py` con los Excels oficiales finales
-3. **Configurar despliegue** con Railway + Vercel + TiDB Cloud (ver `GUIA_DESPLIEGUE_PRODUCCION.md`)
+3. **Configurar despliegue** con Render + Supabase (PostgreSQL) u on-premise (ver `GUIA_DESPLIEGUE_PRODUCCION.md`)
 4. **Configurar Nginx** como reverse proxy con HTTPS (Let's Encrypt)
 
 ---
