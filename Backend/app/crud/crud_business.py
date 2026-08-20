@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func
 from sqlalchemy.orm import joinedload
 from datetime import datetime
+from app.core.timeutils import utcnow
 from app.models.business import Cliente, Proveedor, Proyecto
 from app.models.deliveries import ActaEntrega
 from app.models.inventory import MovimientoInventario, Item, Activo
@@ -127,7 +128,7 @@ async def delete_cliente(db: AsyncSession, id_cliente: int, current_user_id: int
     db_cliente = result.scalars().first()
     if db_cliente:
         try:
-            setattr(db_cliente, "deleted_at", datetime.now())
+            setattr(db_cliente, "deleted_at", utcnow())
             await db.commit()
             await create_audit_log(
                 db,
@@ -228,7 +229,7 @@ async def delete_proveedor(db: AsyncSession, id_proveedor: int, current_user_id:
     db_proveedor = result.scalars().first()
     if db_proveedor:
         try:
-            setattr(db_proveedor, "deleted_at", datetime.now())
+            setattr(db_proveedor, "deleted_at", utcnow())
             await db.commit()
             await create_audit_log(
                 db,

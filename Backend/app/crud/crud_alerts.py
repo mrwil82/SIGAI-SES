@@ -4,6 +4,7 @@ from sqlalchemy import select, and_, update
 from app.models import Alert, Item, StockBulk
 from app.models.inventory import MovimientoInventario
 from datetime import datetime
+from app.core.timeutils import utcnow
 from app.crud.crud_audit import create_audit_log
 from app.core.logger import get_logger
 from app.core.alert_stream import alert_bus
@@ -154,10 +155,10 @@ async def update_alert_status(
             setattr(alerta, "asignado_a", asignado_a)
             changes["asignado_a"] = asignado_a
 
-        setattr(alerta, "updated_at", datetime.now())
+        setattr(alerta, "updated_at", utcnow())
         if estado in ["resuelta", "ignorada"]:
-            setattr(alerta, "resolved_at", datetime.now())
-            changes["resolved_at"] = datetime.now().isoformat()
+            setattr(alerta, "resolved_at", utcnow())
+            changes["resolved_at"] = utcnow().isoformat()
 
         # Auto-resolver la alerta si el stock real quedó sobre el umbral mínimo
         if (
@@ -168,7 +169,7 @@ async def update_alert_status(
             and alerta.estado in ("activa", "reconocida")
         ):
             setattr(alerta, "estado", "resuelta")
-            setattr(alerta, "resolved_at", datetime.now())
+            setattr(alerta, "resolved_at", utcnow())
             if not getattr(alerta, "solucion", None):
                 setattr(
                     alerta,
@@ -176,7 +177,7 @@ async def update_alert_status(
                     f"Stock actualizado a {alerta.valor_actual} (mínimo {alerta.valor_umbral})",
                 )
             changes["estado"] = "resuelta"
-            changes["resolved_at"] = datetime.now().isoformat()
+            changes["resolved_at"] = utcnow().isoformat()
 
         try:
             await db.commit()
@@ -240,7 +241,7 @@ async def evaluar_alertas(db: AsyncSession):
                     .limit(1)
                 )
                 ultima = ultima_resuelta.scalars().first()
-                if ultima and datetime.now() - ultima.resolved_at < timedelta(hours=24):
+                if ultima and utcnow() - ultima.resolved_at < timedelta(hours=24):
                     continue
                 creadas.append(
                     Alert(
@@ -275,7 +276,7 @@ async def evaluar_alertas(db: AsyncSession):
             )
             for alerta in abiertas.scalars().all():
                 setattr(alerta, "estado", "resuelta")
-                setattr(alerta, "resolved_at", datetime.now())
+                setattr(alerta, "resolved_at", utcnow())
                 setattr(alerta, "solucion", "Stock restablecido automáticamente")
 
         # 2. Regla: Garantías Estancadas Más de 15 días

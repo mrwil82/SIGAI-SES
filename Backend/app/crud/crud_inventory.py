@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func, String
 from sqlalchemy.orm import joinedload
 from datetime import datetime
+from app.core.timeutils import utcnow
 from app.models.inventory import (
     Item,
     Activo,
@@ -267,7 +268,7 @@ async def update_item(
         )
         for alerta in alertas.scalars().all():
             setattr(alerta, "estado", "resuelta")
-            setattr(alerta, "resolved_at", datetime.now())
+            setattr(alerta, "resolved_at", utcnow())
             setattr(
                 alerta,
                 "solucion",
@@ -300,7 +301,7 @@ async def delete_item(db: AsyncSession, item_id: int, current_user_id: int):
     result = await db.execute(select(Item).filter(Item.id_item == item_id))
     db_item = result.scalars().first()
     if db_item:
-        setattr(db_item, "deleted_at", datetime.now())
+        setattr(db_item, "deleted_at", utcnow())
         # Auto-resolver alertas activas del item retirado
         from app.models.alerts import Alert
         from sqlalchemy import and_
@@ -316,7 +317,7 @@ async def delete_item(db: AsyncSession, item_id: int, current_user_id: int):
         )
         for alerta in alertas.scalars().all():
             setattr(alerta, "estado", "resuelta")
-            setattr(alerta, "resolved_at", datetime.now())
+            setattr(alerta, "resolved_at", utcnow())
             setattr(alerta, "solucion", "Equipo retirado del inventario")
         await db.commit()
         logger.info("Item eliminado exitosamente", extra={"item_id": item_id})
@@ -422,7 +423,7 @@ async def update_activo(
                 HistorialUbicacion.id_activo == activo_id,
                 HistorialUbicacion.fecha_hasta == None,
             )
-            .values(fecha_hasta=datetime.now())
+            .values(fecha_hasta=utcnow())
         )
         nuevo_historial = HistorialUbicacion(
             id_activo=activo_id,
@@ -570,7 +571,7 @@ async def update_activo_triaje(
 
     # Campos automáticos
 
-    setattr(db_activo, "fecha_triaje", datetime.now())
+    setattr(db_activo, "fecha_triaje", utcnow())
 
     await db.commit()
     await db.refresh(db_activo)
@@ -594,7 +595,6 @@ async def crear_desmonte_bulk(
     current_user_id: int,
 ):
     from app.models.inventory import MovimientoInventario
-    from datetime import datetime
 
     origen_str = f"PROYECTO: {proyecto_id}" if proyecto_id else f"CLIENTE: {cliente_id}"
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")

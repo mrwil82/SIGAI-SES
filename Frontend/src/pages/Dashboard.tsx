@@ -45,6 +45,7 @@ import { useDashboardStats, usePredictions } from "../hooks/useAnalytics";
 import { useAuditLogs } from "../hooks/useAudit";
 import { useNavigate } from "react-router-dom";
 import { formatActivityDetail } from "../lib/auditFormat";
+import { parseServerDate } from "../utils/dates";
 
 const COLORS = [
   "rgb(var(--emerald-primary))",
@@ -181,7 +182,7 @@ const Dashboard: React.FC = () => {
 
   const formatTimeAgo = (dateStr: string) => {
     const now = new Date();
-    const date = new Date(dateStr);
+    const date = parseServerDate(dateStr) || new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMin = Math.floor(diffMs / 60000);
     if (diffMin < 1) return "Ahora";
@@ -196,7 +197,7 @@ const Dashboard: React.FC = () => {
   // Filtrado por rango de tiempo
   const filteredActividad = actividad.filter((a) => {
     if (!a.fecha_accion) return true;
-    const d = new Date(a.fecha_accion);
+    const d = parseServerDate(a.fecha_accion) || new Date();
     const now = new Date();
     if (timeRange === "hoy") return d.toDateString() === now.toDateString();
     if (timeRange === "semana") {

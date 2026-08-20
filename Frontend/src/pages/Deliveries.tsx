@@ -28,6 +28,7 @@ import {
   Modal,
   ConfirmModal,
 } from "../components/Fusion";
+import { formatServerDateTime } from "../utils/dates";
 import { ExportMenu } from "../components/ExportMenu";
 import { SearchableSelect } from "../components/SearchableSelect";
 import { useToast } from "../lib/toast";
@@ -952,7 +953,7 @@ const Deliveries: React.FC = () => {
                       <TD className="hidden sm:table-cell">
                         <p className="text-xs">
                           {a.fecha_entrega
-                            ? new Date(a.fecha_entrega).toLocaleString()
+                            ? formatServerDateTime(a.fecha_entrega)
                             : "—"}
                         </p>
                       </TD>

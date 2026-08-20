@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ExportMenu } from "../components/ExportMenu";
+import { formatServerDateTime } from "../utils/dates";
 import {
   Search,
   User,
@@ -234,7 +235,7 @@ const Audit: React.FC = () => {
                     <div className="flex items-center gap-2 text-content-secondary">
                       <Calendar size={12} className="text-content-muted" />
                       <span className="text-[10px]">
-                        {new Date(log.fecha_accion).toLocaleString()}
+                        {formatServerDateTime(log.fecha_accion)}
                       </span>
                     </div>
                   </TD>
@@ -379,7 +380,7 @@ const AuditDetailModal: React.FC<{
                 Fecha / Hora
               </span>
               <span className="font-bold">
-                {new Date(log.fecha_accion).toLocaleString()}
+                {formatServerDateTime(log.fecha_accion)}
               </span>
             </div>
           </div>

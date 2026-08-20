@@ -7,6 +7,7 @@ import { useToast } from '../lib/toast';
 import { ExportMenu } from '../components/ExportMenu';
 import { Check, AlertTriangle, Trash2, Plus, Edit2 } from 'lucide-react';
 import { logger } from '../lib/logger';
+import { formatServerDateTime } from '../utils/dates';
 import api from '../services/api';
 import {
   useAlerts,
@@ -132,14 +133,7 @@ const Alerts: React.FC = () => {
   };
 
   const formatDate = (date: string | null) => {
-    if (!date) return '---';
-    return new Date(date).toLocaleString('es-CO', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatServerDateTime(date);
   };
 
   return (

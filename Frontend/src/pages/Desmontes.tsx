@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { ExportMenu } from "../components/ExportMenu";
+import { formatServerDate } from "../utils/dates";
 import {
   ClipboardCheck,
   Package,
@@ -1060,15 +1061,13 @@ const Desmontes: React.FC = () => {
               {selectedActivo.fecha_ingreso_laboratorio && (
                 <span>
                   Ingreso:{" "}
-                  {new Date(
-                    selectedActivo.fecha_ingreso_laboratorio,
-                  ).toLocaleDateString()}
+                  {formatServerDate(selectedActivo.fecha_ingreso_laboratorio)}
                 </span>
               )}
               {selectedActivo.fecha_triaje && (
                 <span>
                   Evaluado:{" "}
-                  {new Date(selectedActivo.fecha_triaje).toLocaleDateString()}
+                  {formatServerDate(selectedActivo.fecha_triaje)}
                 </span>
               )}
             </div>
