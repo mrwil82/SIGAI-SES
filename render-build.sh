@@ -6,6 +6,7 @@ pip install -r Backend/requirements.txt
 
 echo "=== Compilando Frontend ==="
 cd Frontend
+npm install
 VITE_API_BASE_URL=https://sigai-ses-api.onrender.com/api/v1 npm run build
 cd ..
 
