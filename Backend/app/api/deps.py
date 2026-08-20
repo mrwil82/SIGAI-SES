@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,6 +6,7 @@ from app.db.session import get_db
 from app.core.config import settings
 from app.crud import crud_user
 from app.core.logger import set_user_id
+from typing import Optional
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
@@ -29,6 +30,32 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
+    user = await crud_user.get_user_by_email(db, email=email)
+    if user is None:
+        raise credentials_exception
+    set_user_id(int(getattr(user, "id_usuario", 0)))
+    return user
+
+
+async def get_current_user_from_query(
+    db: AsyncSession = Depends(get_db),
+    token: Optional[str] = Query(None),
+):
+    """Autentica un usuario a partir del token en un query param (para SSE,
+    donde el cliente no puede enviar cabeceras Authorization)."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No se pudieron validar las credenciales",
+    )
+    if not token:
+        raise credentials_exception
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email = payload.get("sub")
+        if email is None or payload.get("type") != "access":
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
     user = await crud_user.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception

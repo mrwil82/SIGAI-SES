@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { DataPrefetcher } from "./components/DataPrefetcher";
+import { AlertNotifier } from "./hooks/useAlertNotifications";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
@@ -33,6 +34,7 @@ function App() {
       <DataPrefetcher />
       <ThemeProvider>
         <ToastProvider>
+          <AlertNotifier />
           <Router>
             <ErrorBoundary>
               <Routes>

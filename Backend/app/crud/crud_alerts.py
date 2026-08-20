@@ -6,8 +6,25 @@ from app.models.inventory import MovimientoInventario
 from datetime import datetime
 from app.crud.crud_audit import create_audit_log
 from app.core.logger import get_logger
+from app.core.alert_stream import alert_bus
 
 logger = get_logger(__name__)
+
+
+def _emit_alert_event(alerta: Alert) -> None:
+    alert_bus.publish(
+        {
+            "type": "alert.created",
+            "alert": {
+                "id": getattr(alerta, "id", None),
+                "titulo": getattr(alerta, "titulo", None),
+                "descripcion": getattr(alerta, "descripcion", None),
+                "prioridad": getattr(alerta, "prioridad", None),
+                "tipo": getattr(alerta, "tipo", None),
+                "item_nombre": getattr(alerta, "item_nombre", None),
+            },
+        }
+    )
 
 # evaluar_alertas
 
@@ -53,6 +70,7 @@ async def create_alert(
             getattr(db_alerta, "id"),
             nuevo=alerta_in.model_dump(),
         )
+        _emit_alert_event(db_alerta)
         return db_alerta
     except Exception as e:
         await db.rollback()
@@ -184,6 +202,8 @@ async def evaluar_alertas(db: AsyncSession):
     try:
         from datetime import timedelta
 
+        creadas: list[Alert] = []
+
         # 1. Regla: Stock Bajo
         # Nota: se excluyen items eliminados (soft delete) para no generar alertas de equipos retirados
 
@@ -222,7 +242,7 @@ async def evaluar_alertas(db: AsyncSession):
                 ultima = ultima_resuelta.scalars().first()
                 if ultima and datetime.now() - ultima.resolved_at < timedelta(hours=24):
                     continue
-                db.add(
+                creadas.append(
                     Alert(
                         tipo="stock_bajo",
                         prioridad="critica",
@@ -279,7 +299,7 @@ async def evaluar_alertas(db: AsyncSession):
                 )
             )
             if not existe_gar.scalars().first():
-                db.add(
+                creadas.append(
                     Alert(
                         tipo="garantia_vencida",
                         prioridad="alta",
@@ -290,7 +310,13 @@ async def evaluar_alertas(db: AsyncSession):
                     )
                 )
 
+        if creadas:
+            db.add_all(creadas)
+
         await db.commit()
+
+        for alerta in creadas:
+            _emit_alert_event(alerta)
     except Exception as e:
         await db.rollback()
         logger.error(f"Error evaluating alerts: {e}", exc_info=True)

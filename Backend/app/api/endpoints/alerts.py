@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Any
 from sqlalchemy.future import select
@@ -8,8 +9,9 @@ from app.crud.crud_alerts import evaluar_alertas
 from app.schemas.alerts import AlertRead, AlertUpdate, AlertEstado
 from app.schemas.common import PaginatedResponse
 from app.core.pagination import paginate
+from app.core.alert_stream import alert_bus
 from app.models import Alert
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_from_query
 
 router = APIRouter()
 
@@ -32,6 +34,28 @@ async def listar_alertas(
 
     items, total = await paginate(db, query, page=page, page_size=page_size)
     return PaginatedResponse.create(items, total, page, page_size)
+
+@router.get("/stream")
+async def stream_alerts(current_user = Depends(get_current_user_from_query)):
+    """Stream SSE en tiempo real de alertas nuevas.
+
+    El cliente se suscribe con EventSource usando el token de acceso como
+    query param: /api/v1/alerts/stream?token=...
+    """
+    async def event_generator():
+        async for message in alert_bus.subscribe():
+            yield f"event: alert\ndata: {message}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
 
 @router.get("/summary")
 async def get_alerts_summary(db: AsyncSession = Depends(get_db)):
