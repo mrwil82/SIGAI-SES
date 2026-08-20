@@ -1,15 +1,15 @@
 ---
-title: "SIGAI-SES — Especificación de Requerimientos v2.0"
+title: "SIGAI-SES — Especificación de Requerimientos v1.0.0"
 ---
 
-# SIGAI-SES — Especificación de Requerimientos v2.0
+# SIGAI-SES — Especificación de Requerimientos v1.0.0
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-2.0--Senior-blue?style=for-the-badge&logo=target" alt="Version 2.0">
+  <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge&logo=target" alt="Version 1.0.0">
   <img src="https://img.shields.io/badge/Status-APROBADO-brightgreen?style=for-the-badge&logo=checkmarx" alt="Status">
   <img src="https://img.shields.io/badge/Cliente-ENEL%20Colombia-orange?style=for-the-badge&logo=flash" alt="Cliente">
   <img src="https://img.shields.io/badge/Proyecto-SIGAI--SES-important?style=for-the-badge&logo=codeigniter" alt="Proyecto">
-  <img src="https://img.shields.io/badge/Periodo-Mayo--Julio%202026-yellow?style=for-the-badge&logo=calendar" alt="Periodo">
+  <img src="https://img.shields.io/badge/Periodo-Marzo--Julio%202026-yellow?style=for-the-badge&logo=calendar" alt="Periodo">
   <img src="https://img.shields.io/badge/RFs-24%20Funcionales-9cf?style=for-the-badge&logo=bookstack" alt="RFs">
   <img src="https://img.shields.io/badge/RNFs-5%20No%20Funcionales-ff69b4?style=for-the-badge&logo=shield" alt="RNFs">
 </p>
@@ -24,8 +24,8 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 | **Empresa** | Securitas Colombia S.A. — Unidad de Seguridad Electronica (SES) |
 | **Cliente final** | ENEL Colombia (Subestaciones electricas de Cundinamarca) |
 | **Autor** | Wilson Ortiz — Pasante SENA |
-| **Version** | `2.0` (Revision Senior) |
-| **Fecha** | Mayo — Julio 2026 |
+| **Version** | `1.0.0` |
+| **Fecha** | Marzo — Julio 2026 (inicio 9 de Marzo 2026) |
 
 ---
 
@@ -59,7 +59,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 |:---:|:---|---:|:---:|
 | **RF-08** | Kardex Digital | Historial **inmutable** de cada movimiento (`ENTRADA_COMPRA`, `SALIDA_INSTALACION`, `TRASLADO`, `DEVOLUCION`, `BAJA_DAÑO`, `AJUSTE`, `INGRESO_DESMONTE`). Registro: usuario, fecha, origen, destino, cantidad. | **Alta** |
 | **RF-09** | Gestion de Desmontes | Proceso de triaje para equipos retirados con **3 calificaciones**: `BUENO` (reingreso), `RECUPERABLE` (reparacion), `DESECHO` (baja). Registro masivo via Excel. | **Media** |
-| **RF-10** | Actas Digitales | Generacion de actas **PDF** con firma tactil (`react-signature-canvas`). **5 tipos**: `ENTREGA_EPP`, `ENTREGA_HERRAMIENTA`, `DESPACHO_PROYECTO`, `DEVOLUCION`, `INGRESO_DESMONTE`. | **Alta** |
+| **RF-10** | Actas Digitales | Generacion de actas **PDF**. **5 tipos**: `ENTREGA_EPP`, `ENTREGA_HERRAMIENTA`, `DESPACHO_PROYECTO`, `DEVOLUCION`, `INGRESO_DESMONTE`. Estados: `BORRADOR`, `FIRMADA`, `ANULADA`. | **Alta** |
 | **RF-11** | Asignacion de Responsables | Vinculacion de activos a area del cliente, responsable en sitio, proyecto actual. Historial completo de asignaciones previas. | **Media** |
 
 ### 1.4 Modulo de Garantias
@@ -73,7 +73,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 
 | ID | Nombre | Descripcion | Prioridad |
 |:---:|:---|---:|:---:|
-| **RF-14** | Motor de Reglas | **4 reglas predefinidas**: `stock_bajo` (critica), `vencimiento` (alta), `sin_movimiento` (media), `sobrestock` (baja). Evaluacion cada **15 min** via `APScheduler`. | **Alta** |
+| **RF-14** | Motor de Reglas | Reglas implementadas: `stock_bajo` (critica) y `garantia_vencida` (alta). Evaluacion cada **30 min** via `APScheduler` (`AsyncIOScheduler`) + evaluacion al arrancar. | **Alta** |
 | **RF-15** | Gestion de Alertas | Estados: `activa`, `reconocida`, `resuelta`, `ignorada`. Cooldown configurable (default **24h**) para evitar duplicados. | **Media** |
 | **RF-16** | SLA y Escalamiento | Si alerta **CRITICA** no se reconoce en **> 2 horas**, escalar automaticamente al supervisor. | **Baja** |
 
@@ -123,7 +123,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 
 | Actividad | Tecnologia | Estado |
 |:---|---:|:---:|
-| Configuracion de entornos y Base de Datos | PostgreSQL / TiDB | Completado |
+| Configuracion de entornos y Base de Datos | PostgreSQL | Completado |
 | API de Autenticacion y Gestion de Usuarios | FastAPI + JWT | Completado |
 | Estructura base del Frontend | Vite + React + Tailwind | Completado |
 | Modelos iniciales | usuarios, regionales, sesiones_usuario | Completado |
@@ -150,7 +150,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 
 | Actividad | Tecnologia | Estado |
 |:---|---:|:---:|
-| Generacion de Actas PDF con firma digital | ReportLab + react-signature-canvas | Completado |
+| Generacion de Actas PDF | ReportLab | Completado |
 | Modulo completo de Garantias | Flujo de 5 estados | Completado |
 | Modelos | actas_entrega, detalles_acta, garantias | Completado |
 
@@ -167,7 +167,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 
 | Actividad | Tecnologia | Estado |
 |:---|---:|:---:|
-| Dockerizacion y despliegue | Railway + Vercel + TiDB Cloud | Completado |
+| Dockerizacion y despliegue | Render + Supabase (PostgreSQL) / on-premise | Completado |
 | Pruebas de integracion | pytest + httpx | Completado |
 | Documentacion tecnica final | Markdown + Swagger | Completado |
 | Capacitacion de usuarios | Sesiones guiadas | Completado |
@@ -177,7 +177,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 ## 4. Matriz de Funcionalidades por Modulo
 
 > [!NOTE]
-> **23 de 24** funcionalidades implementadas. Solo `SLA y escalamiento` permanece planificado para version futura.
+> **23 de 24** funcionalidades implementadas. Pendiente: **SLA y escalamiento** (planificado para versiones futuras).
 
 | Modulo | Funcionalidad | Prioridad | Estado |
 |:---|---|:---:|:---:|
@@ -191,7 +191,7 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 | Inventario | Historial de ubicaciones | Alta | **IMPLEMENTADO** |
 | Inventario | Asignacion EPP | Media | **IMPLEMENTADO** |
 | Operaciones | Kardex digital inmutable | Alta | **IMPLEMENTADO** |
-| Operaciones | Actas PDF con firma | Alta | **IMPLEMENTADO** |
+| Operaciones | Actas PDF | Alta | **IMPLEMENTADO** |
 | Operaciones | Desmontes y triaje | Alta | **IMPLEMENTADO** |
 | Garantias | Flujo de estados | Alta | **IMPLEMENTADO** |
 | Garantias | Alertas de estancamiento | Media | **IMPLEMENTADO** |
@@ -226,15 +226,15 @@ title: "SIGAI-SES — Especificación de Requerimientos v2.0"
 
 | Tag | Valor |
 |:---|:---|
-| `Version` | `v2.0` |
+| `Version` | `v1.0.0` |
 | `Empresa` | `Securitas Colombia S.A.` |
 | `Cliente` | `ENEL Colombia` |
 | `Backend` | `FastAPI · SQLAlchemy · Python 3.12` |
 | `Frontend` | `React 18 · TypeScript · Tailwind CSS` |
-| `Base de Datos` | `PostgreSQL / TiDB` |
-| `Deploy` | `Railway · Vercel · Docker` |
+| `Base de Datos` | `PostgreSQL / MySQL / MariaDB` |
+| `Deploy` | `Render · Supabase · Docker · On-premise` |
 | `Periodo` | `Mayo — Julio 2026` |
 
 ---
 
-> *Documento actualizado al: **Julio 2026 — v2.0***
+> *Documento actualizado al: **Julio 2026 — v1.0.0***

@@ -7,7 +7,7 @@ title: "Catalogo de Errores de API -- SIGAI-SES"
 
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Completo-brightgreen?style=for-the-badge)
-![Endpoints](https://img.shields.io/badge/Endpoints-40+-orange?style=for-the-badge)
+![Endpoints](https://img.shields.io/badge/Endpoints-82-blue?style=for-the-badge)
 ![HTTP](https://img.shields.io/badge/HTTP-REST-6DB33F?style=for-the-badge)
 
 ---

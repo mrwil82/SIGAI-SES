@@ -8,7 +8,7 @@ title: "**Informe de Seguridad — SIGAI-SES** `v1.0.0`"
  <img src="https://img.shields.io/badge/Estado-Aceptable-brightgreen?style=for-the-badge" alt="Estado">
  <img src="https://img.shields.io/badge/Auditoría-14_JUN_2026-blue?style=for-the-badge" alt="Auditoría">
  <img src="https://img.shields.io/badge/OWASP_Top_10-Evaluado-orange?style=for-the-badge" alt="OWASP">
- <img src="https://img.shields.io/badge/Vulnerabilidades-6_Pendientes-yellow?style=for-the-badge" alt="Vulnerabilidades">
+ <img src="https://img.shields.io/badge/Vulnerabilidades-5_Pendientes-yellow?style=for-the-badge" alt="Vulnerabilidades">
  <img src="https://img.shields.io/badge/Riesgos_Aceptados-2-lightgrey?style=for-the-badge" alt="Riesgos">
  <img src="https://img.shields.io/badge/JWT-HS256-9cf?style=for-the-badge" alt="JWT">
  <img src="https://img.shields.io/badge/RBAC-3_Roles-success?style=for-the-badge" alt="RBAC">
@@ -28,7 +28,7 @@ title: "**Informe de Seguridad — SIGAI-SES** `v1.0.0`"
 |Datos en reposo|**bcrypt** + hash SHA-256|
 |Auditoría|**Registro completo** de acciones CRUD|
 |OWASP Top 10|**9/10 mitigados** (1 no aplica)|
-|Hallazgos corregidos|**5/7** en auditoría Junio 2026|
+|Hallazgos corregidos|**6/7** en auditoría Junio 2026|
 
 ---
 
@@ -42,7 +42,7 @@ title: "**Informe de Seguridad — SIGAI-SES** `v1.0.0`"
 |Formato Token|**JWT** firmado con **HS256**|
 |Access Token|Válido por **8 horas** (configurable vía `ACCESS_TOKEN_EXPIRE_MINUTES`)|
 |Refresh Token|Válido por **7 días**, renovación sin credenciales|
-|Almacenamiento|`localStorage` del navegador|
+|Almacenamiento|`sessionStorage` del navegador|
 |Hash de Contraseñas|**bcrypt** con salt automático (`passlib 1.7.4`)|
 |Sesiones|Tabla `sesiones_usuario` para revocación manual y auditoría|
 |Rate Limiting|SlowAPI (**10 req/min** en endpoint de login)|
@@ -104,7 +104,6 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |Contraseñas|Hash **bcrypt** (PBKDF2-based) con salt automático|Seguro|
 |Tokens JWT|Almacenados hasheados (**SHA-256**) en `sesiones_usuario`|Seguro|
 |Credenciales de Equipos|Pendiente de encriptación **AES-256** en `activos`|Vulnerable|
-|Firmas Digitales|Almacenadas como texto **base64** en `actas_entrega`|Aceptable|
 |Datos Personales|Texto plano (identificación necesaria para operación)|Controlado|
 |Logs de auditoría|Valores anterior/nuevo en formato **JSON**, inmutables|Seguro|
 
@@ -154,7 +153,7 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |**A05**|Security Misconfiguration|**Mitigado parcialmente**|CORS desde env, DEBUG=False. Pendiente: security headers HTTP|
 |**A06**|Vulnerable Components|**Mitigado**|Dependencias con versiones fijas. Sin componentes vulnerables conocidos|
 |**A07**|Identification Failures|**Mitigado**|JWT (8h), refresh tokens (7d), sesiones revocables, bcrypt|
-|**A08**|Software Integrity Failures|**Mitigado**|CI/CD planificado, code review via PRs, versiones fijas|
+|**A08**|Software Integrity Failures|**Mitigado**|CI/CD con GitHub Actions, code review via PRs, versiones fijas|
 |**A09**|Logging Failures|**Mitigado**|Auditoría completa CRUD + logs con rotación|
 |**A10**|SSRF|**No aplica**|El sistema no realiza peticiones a URLs externas no controladas|
 
@@ -180,17 +179,19 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |ID|Severidad|Descripción|Mitigación Propuesta|
 |---|---|---|---|
 |V-01|**Media**|Credenciales técnicas de activos en texto plano (`credenciales_tecnicas`)|Encriptar con **AES-256** antes de almacenar|
-|V-02|**Media**|Tokens JWT en localStorage (vulnerable a XSS)|Migrar a **httpOnly cookies** o implementar refresh token rotation|
+|V-02|**Media**|Tokens JWT en sessionStorage (vulnerable a XSS)|Migrar a **httpOnly cookies** o implementar refresh token rotation|
 |V-03|**Baja**|Rate limiting solo en login|Agregar middleware **SlowAPI** a toda la API|
 |V-04|**Baja**|Security headers HTTP no configurados|Agregar middleware o configurar en **Nginx**|
 |V-05|**Baja**|Sin bloqueo por intentos fallidos de login|Bloqueo temporal tras **5 intentos fallidos**|
-|V-06|**Media**|Pipeline CI/CD no implementado|Añadir **GitHub Actions** con lint + tests + build|
+
+> [!NOTE]
+> **V-06 (Pipeline CI/CD)** fue **CORREGIDO**: GitHub Actions con lint + tests + build ya está operativo (`.github/workflows/main.yml`).
 
 ### 7.3 Riesgos Aceptados
 
 |ID|Justificación|
 |---|---|
-|**V-02**|El equipo asume el riesgo de localStorage por simplicidad. Mitigado parcialmente por validación de tokens y DEBUG=False en producción|
+|**V-02**|El equipo asume el riesgo de sessionStorage por simplicidad. Mitigado parcialmente por validación de tokens y DEBUG=False en producción|
 |** Almacenamiento datos personales en texto plano**|Necesario para la operación del sistema. Mitigado por RBAC + auditoría completa|
 
 ---
@@ -233,9 +234,8 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 1. **Encriptar credenciales técnicas** — AES-256 para `credenciales_tecnicas`
 2. **Security headers** — CSP, HSTS, X-Frame-Options, X-Content-Type-Options
 3. **Rate limiting general** — SlowAPI a todos los endpoints
-4. **Refresh token rotation** — Mitigar riesgo de localStorage
-5. **Pipeline CI/CD** — GitHub Actions con lint + tests + build
-6. **Bloqueo por intentos fallidos** — Tras 5 intentos en login
+4. **Refresh token rotation** — Mitigar riesgo de sessionStorage
+5. **Bloqueo por intentos fallidos** — Tras 5 intentos en login
 
 ### Mediano Plazo (v1.2.0)
 
@@ -263,8 +263,8 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |---|---|
 |Auditoría técnica|**14 Junio 2026**|
 |Hallazgos identificados|**7**|
-|Hallazgos corregidos|**5**|
-|Vulnerabilidades pendientes|**6** (Media/Baja)|
+|Hallazgos corregidos|**6**|
+|Vulnerabilidades pendientes|**5** (Media/Baja)|
 |Riesgos aceptados|**2**|
 |Vulnerabilidades críticas|**0**|
 

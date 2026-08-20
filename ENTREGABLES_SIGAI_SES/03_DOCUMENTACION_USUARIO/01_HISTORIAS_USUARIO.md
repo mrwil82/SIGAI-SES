@@ -212,8 +212,8 @@ title: "Historias de Usuario — SIGAI-SES"
 | **Beneficio** | Formalizar la salida de equipos a un proyecto |
 
 **Criterios de Aceptacion:**
-- El acta debe incluir **firma** del tecnico y del representante
-- Debe generar un **PDF inviolable**
+- El acta debe incluir los datos del **tecnico** y del **representante**
+- Debe generar un **PDF** del acta
 - Debe quedar registrada en el **kardex de movimientos**
 
 ---
@@ -227,7 +227,7 @@ title: "Historias de Usuario — SIGAI-SES"
 | **Beneficio** | Evaluar si se puede reutilizar |
 
 **Criterios de Aceptacion:**
-- Debe permitir marcar estado (`Funcional`, `Dañado`, `Chatarra`)
+- Debe permitir marcar el estado del triaje (`BUENO`, `RECUPERABLE`, `DESECHO`)
 - Debe quedar vinculado al **cliente de origen**
 - Debe generar un movimiento de **ingreso a laboratorio**
 
@@ -259,7 +259,7 @@ title: "Historias de Usuario — SIGAI-SES"
 **Criterios de Aceptacion:**
 - Debe permitir seleccionar el **tecnico** y los **EPP** a entregar
 - Debe registrar **talla** y **fecha de vencimiento**
-- Debe generar **PDF** para firma
+- Debe generar **PDF** del acta
 
 ---
 

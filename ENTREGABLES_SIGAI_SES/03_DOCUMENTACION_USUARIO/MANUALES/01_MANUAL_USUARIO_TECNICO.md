@@ -36,7 +36,7 @@ title: "Manual del Usuario Tecnico — SIGAI-SES"
 
 ---
 
-## 1. Introduccion
+## 1. Introduccion {#1-introduccion}
 
 **SIGAI-SES** es el Sistema Integral de Gestion de Activos e Inventario de **Securitas Colombia**, disenado para:
 
@@ -44,14 +44,14 @@ title: "Manual del Usuario Tecnico — SIGAI-SES"
 |---------|-------------|
 | **Inventario** | Gestion de equipos, stock y catalogo |
 | **Garantias** | Seguimiento de casos RMA |
-| **Entregas** | Actas digitales con firma |
+| **Entregas** | Actas digitales PDF |
 | **Desmontes** | Evaluacion y triaje de equipos |
 | **Alertas** | Notificaciones automaticas |
 | **Reportes** | Exportacion a Excel y PDF |
 
 ---
 
-## 2. Acceso al Sistema
+## 2. Acceso al Sistema {#2-acceso-al-sistema}
 
 ### 2.1 Inicio de Sesion
 
@@ -72,7 +72,7 @@ Haga clic en su **nombre** (esquina superior derecha) y seleccione **"Cerrar Ses
 
 ---
 
-## 3. Interfaz General
+## 3. Interfaz General {#3-interfaz-general}
 
 ### 3.1 Barra Lateral (Menu Principal)
 
@@ -99,7 +99,7 @@ Haga clic en su **nombre** (esquina superior derecha) y seleccione **"Cerrar Ses
 
 ---
 
-## 4. Modulo de Inventario
+## 4. Modulo de Inventario {#4-modulo-de-inventario}
 
 ### 4.1 Consultar Inventario
 
@@ -165,7 +165,7 @@ Para **cargas masivas**:
 
 ---
 
-## 5. Modulo de Garantias
+## 5. Modulo de Garantias {#5-modulo-de-garantias}
 
 ### 5.1 Reportar una Garantia
 
@@ -206,7 +206,7 @@ En la tabla de garantias puede ver el flujo de estados:
 
 ---
 
-## 6. Modulo de Entregas
+## 6. Modulo de Entregas {#6-modulo-de-entregas}
 
 ### 6.1 Crear Acta de Entrega
 
@@ -222,16 +222,15 @@ En la tabla de garantias puede ver el flujo de estados:
 
 3. Agregue los **items** (equipos) incluidos en la entrega
 4. Seleccione el **tecnico responsable** y el **proyecto** (si aplica)
-5. Capture la **firma digital** del receptor
-6. Haga clic en **"Generar Acta"**
-7. El sistema creara un **PDF** del acta para descargar e imprimir
+5. Haga clic en **"Generar Acta"**
+6. El sistema creara un **PDF** del acta para descargar e imprimir
 
 > [!TIP]
-> El PDF generado es **inviolable** e incluye todas las firmas digitales como evidencia.
+> El PDF generado incluye los datos del tecnico y del representante como evidencia.
 
 ---
 
-## 7. Modulo de Desmontes
+## 7. Modulo de Desmontes {#7-modulo-de-desmontes}
 
 ### 7.1 Registrar Equipo Desmontado
 
@@ -261,7 +260,7 @@ Para equipos en **laboratorio**:
 
 ---
 
-## 8. Centro de Alertas
+## 8. Centro de Alertas {#8-centro-de-alertas}
 
 ### 8.1 Visualizar Alertas
 
@@ -271,7 +270,6 @@ En **Alertas** puede ver las siguientes notificaciones:
 |:----:|:---------:|-------------|
 | **Stock Bajo** | Critica | Items por debajo del minimo configurado |
 | **Garantia Estancada** | Alta | Casos sin avance por mas de 15 dias |
-| **Movimiento No Autorizado** | Media | Cambios de ubicacion sin registro |
 
 ### 8.2 Gestionar Alertas
 
@@ -286,7 +284,7 @@ En **Alertas** puede ver las siguientes notificaciones:
 
 ---
 
-## 9. Consulta de Clientes y Proyectos
+## 9. Consulta de Clientes y Proyectos {#9-consulta-de-clientes-y-proyectos}
 
 ### 9.1 Clientes
 
@@ -307,7 +305,7 @@ En **Alertas** puede ver las siguientes notificaciones:
 
 ---
 
-## 10. Solucion de Problemas Comunes
+## 10. Solucion de Problemas Comunes {#10-solucion-de-problemas-comunes}
 
 <details>
 <summary><b>No puedo iniciar sesion</b></summary>
@@ -355,7 +353,7 @@ En **Alertas** puede ver las siguientes notificaciones:
 
 ---
 
-## 11. Buenas Practicas
+## 11. Buenas Practicas {#11-buenas-practicas}
 
 | # | Recomendacion |
 |:-:|---------------|

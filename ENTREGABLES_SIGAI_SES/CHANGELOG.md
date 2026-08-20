@@ -105,7 +105,7 @@
 | Importacion Excel | Upsert con validacion | [OK] 100% |
 | Dashboard | KPIs basicos | [OK] 100% |
 | Garantias | Modulo completo | [OK] 100% |
-| Actas de entrega | Firma digital incluida | [OK] 100% |
+| Actas de entrega | Generacion de PDF | [OK] 100% |
 | Desmontes | Triaje (BUENO, RECUPERABLE, DESECHO) | [OK] 100% |
 | Alertas | Motor automatico | [OK] 100% |
 | Auditoria | Registro de acciones | [OK] 100% |
@@ -138,7 +138,7 @@
 
 ### Documentacion Inicial
 
-- Propuesta tecnica v2.0 (`PROPUESTA_GESTION_INVENTARIO_SES.md`)
+- Propuesta tecnica v1.0.0 (`PROPUESTA_GESTION_INVENTARIO_SES.md`)
 - Especificacion de requisitos inicial
 - Historias de usuario iniciales (6 HU)
 - Documentos de arquitectura
@@ -146,7 +146,7 @@
 
 ---
 
-## v0.1.0 (Abril 2026)
+## v0.1.0 (Marzo 2026)
 
 <p align="center">
   <img src="https://img.shields.io/badge/STATUS-PROTOTIPO%20INICIAL-red?style=for-the-badge" alt="Prototipo">
@@ -163,7 +163,7 @@
 | Documentacion inicial | [OK] Creada |
 
 > [!NOTE]
-> **Inicio del desarrollo.** Abril 2026 marca el nacimiento de SIGAI-SES.
+> **Inicio del desarrollo.** El 9 de Marzo 2026 marca el nacimiento de SIGAI-SES.
 
 ---
 
@@ -176,7 +176,7 @@ gantt
     axisFormat  %b %Y
 
     section Prototipo
-    v0.1.0 - Prototipo inicial          :done, 2026-04, 1M
+    v0.1.0 - Prototipo inicial          :done, 2026-03, 1M
 
     section MVP
     v0.5.0 - MVP Funcional              :done, 2026-05, 1M
@@ -200,7 +200,7 @@ gantt
 | **v1.0.0** | Julio 2026 | Release Candidate | Docs completas, 10 nuevos docs, correcciones de seguridad |
 | **v0.9.0** | Junio 2026 | Pre-release | 10 modulos funcionales, documentacion completa |
 | **v0.5.0** | Mayo 2026 | MVP Funcional | CRUD base, login, arquitectura inicial |
-| **v0.1.0** | Abril 2026 | Prototipo | Configuracion inicial, estructura base |
+| **v0.1.0** | Marzo 2026 | Prototipo | Configuracion inicial, estructura base |
 
 ---
 

@@ -117,15 +117,13 @@ title: "Plan de Capacitacion -- SIGAI-SES"
 **Contenido:**
 1. Tipos de acta (EPP, Herramienta, Proyecto, Devolucion, Desmonte)
 2. Crear un acta paso a paso
-3. Captura de firma digital
-4. Generacion de PDF
-5. Registro de desmontes
-6. Evaluacion tecnica (triaje)
+3. Generacion de PDF
+4. Registro de desmontes
+5. Evaluacion tecnica (triaje)
 
 > [!TIP]
 > **Ejercicio practico:**
 > - Crear un acta de entrega de herramienta
-> - Firmar digitalmente
 > - Descargar el PDF
 > - Registrar un desmonte y realizar triaje
 

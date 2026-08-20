@@ -8,7 +8,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
   <img src="https://img.shields.io/badge/Tablas-18%20entidades-4479A1?style=for-the-badge&logo=mysql" alt="Tablas">
   <img src="https://img.shields.io/badge/Módulos-7%20dominios-2ea44f?style=for-the-badge&logo=diagram" alt="Módulos">
   <img src="https://img.shields.io/badge/Actualizado-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualizado">
-  <img src="https://img.shields.io/badge/Version-v2.0-6f42c1?style=for-the-badge&logo=semver" alt="Versión">
+  <img src="https://img.shields.io/badge/Version-v1.0.0-6f42c1?style=for-the-badge&logo=semver" alt="Versión">
 </p>
 
 ---
@@ -422,5 +422,5 @@ MovimientoInventario --> Kardex Digital
 <p align="center">
   <b>SIGAI-SES</b> — <i>Sistema Integral de Gestión de Activos e Inventario</i><br><br>
   <img src="https://img.shields.io/badge/Documento%20actualizado-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualizado"><br>
-   v2.0 — Completo con 18 tablas · 7 módulos
+   v1.0.0 — Completo con 18 tablas · 7 módulos
 </p>

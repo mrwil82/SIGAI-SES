@@ -6,7 +6,7 @@ title: "Diagramas de Procesos y Ciclo de Vida — SIGAI-SES"
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge&logo=github)
 ![Status](https://img.shields.io/badge/Status-Stable-success?style=for-the-badge&logo=checkmarx)
 ![Flows](https://img.shields.io/badge/Flows-7%20diagramados-ff69b4?style=for-the-badge&logo=diagramsdotnet)
 ![Last Update](https://img.shields.io/badge/Last%20Update-Julio%202026-orange?style=for-the-badge&logo=calendar)
@@ -20,7 +20,7 @@ title: "Diagramas de Procesos y Ciclo de Vida — SIGAI-SES"
 
 ---
 
-## 1. Ciclo de Vida de una Garantía
+## 1. Ciclo de Vida de una Garantía {#1-ciclo-de-vida-de-una-garantia}
 
 <div align="center">
 
@@ -32,10 +32,10 @@ title: "Diagramas de Procesos y Ciclo de Vida — SIGAI-SES"
 
 | Estado | Descripcion | Accion Requerida |
 |:---:|---|---|
-| **INICIADO** | Caso registrado, esperando recepción | Técnico entrega equipo en laboratorio |
-| **EN_LABORATORIO** | Equipo en evaluación técnica | Laboratorio diagnostica falla |
+| **REGISTRADO** | Caso registrado, esperando recepción | Técnico entrega equipo en laboratorio |
 | **ENVIADO_PROVEEDOR** | Equipo enviado a reparación | Registrar RMA, fecha envío, factura |
 | **RECIBIDO_PROVEEDOR** | Proveedor devolvió equipo reparado | Verificar reparación, actualizar estado |
+| **RESUELTO_REEMPLAZADO** | Caso resuelto (reparado o reemplazado) | Registrar resolución |
 | **ENTREGADO_CLIENTE** | Equipo instalado y entregado | Generar acta de entrega, cerrar caso |
 | **ALERTA_ESTANCADA** | Sin movimiento > 15 días | Acción correctiva requerida |
 
@@ -43,15 +43,14 @@ title: "Diagramas de Procesos y Ciclo de Vida — SIGAI-SES"
 
 ```mermaid
 stateDiagram-v2
-    [*] --> INICIADO: Técnico reporta falla
-    INICIADO --> EN_LABORATORIO: Entrega a laboratorio
-    EN_LABORATORIO --> ENVIADO_PROVEEDOR: Aplica garantía
-    EN_LABORATORIO --> ENTREGADO_CLIENTE: Reparación interna
+    [*] --> REGISTRADO: Técnico reporta falla
+    REGISTRADO --> ENVIADO_PROVEEDOR: Aplica garantía
     ENVIADO_PROVEEDOR --> RECIBIDO_PROVEEDOR: Proveedor devuelve
-    RECIBIDO_PROVEEDOR --> ENTREGADO_CLIENTE: Verificación OK
-    ENTREGADO_CLIENTE --> [*]: Acta firmada
+    RECIBIDO_PROVEEDOR --> RESUELTO_REEMPLAZADO: Verificación OK
+    RESUELTO_REEMPLAZADO --> ENTREGADO_CLIENTE: Acta generada
+    ENTREGADO_CLIENTE --> [*]: Caso cerrado
 
-    note right of EN_LABORATORIO
+    note right of ENVIADO_PROVEEDOR
         Si supera 15 días sin
         movimiento → ALERTA_ESTANCADA
     end note
@@ -63,19 +62,18 @@ stateDiagram-v2
 |:---:|---|---|
 | 1 | Reporte de falla | Técnico reporta equipo dañado en campo |
 | 2 | Generación de caso | Sistema crea número único `GSES-XXX` |
-| 3 | Diagnóstico | Equipo ingresa a laboratorio |
-| 4 | Evaluación | ¿Aplica garantía? (proveedor o reparación interna) |
-| 5 | Envío a proveedor | Se envía con RMA si aplica |
-| 6 | Devolución | Proveedor repara/reemplaza y devuelve |
-| 7 | Entrega y cierre | Equipo entregado al cliente, caso cerrado |
-| 8 | Alerta de estancamiento | Si > 15 días sin movimiento → `ALERTA_ESTANCADA` |
+| 3 | Envío a proveedor | Se envía con RMA si aplica |
+| 4 | Devolución | Proveedor repara/reemplaza y devuelve |
+| 5 | Resolución | Caso marcado como `RESUELTO_REEMPLAZADO` |
+| 6 | Entrega y cierre | Equipo entregado al cliente, caso cerrado |
+| 7 | Alerta de estancamiento | Si > 15 días sin movimiento → `ALERTA_ESTANCADA` |
 
 > [!WARNING]
-> Si un caso permanece en `EN_LABORATORIO` o `ENVIADO_PROVEEDOR` por más de **15 días**, el sistema automáticamente lo marca como `ALERTA_ESTANCADA`.
+> Si un caso permanece en `ENVIADO_PROVEEDOR` por más de **15 días**, el sistema automáticamente genera una alerta de `garantia_vencida` (prioridad **alta**).
 
 ---
 
-## 2. Diagrama de Funciones por Perfil de Usuario
+## 2. Diagrama de Funciones por Perfil de Usuario {#2-diagrama-de-funciones-por-perfil-de-usuario}
 
 <div align="center">
 
@@ -116,7 +114,7 @@ stateDiagram-v2
 
 ---
 
-## 3. Proceso Automático de Alerta por Existencias Críticas
+## 3. Proceso Automático de Alerta por Existencias Críticas {#3-proceso-automatico-de-alerta-por-existencias-criticas}
 
 <div align="center">
 
@@ -157,11 +155,11 @@ flowchart TD
 | 7 | Escalamiento | Sistema | Si > 2h sin reconocer → Supervisor |
 
 > [!TIP]
-> La alerta se escala automáticamente al **supervisor** si no es reconocida en **más de 2 horas**. No ignore las alertas críticas.
+> El motor de reglas (`evaluar_alertas`) genera la alerta crítica de stock bajo y el centro de alertas permite **reconocer, resolver e ignorar**. El **escalamiento automático por SLA** (críticas sin reconocer > 2 horas hacia el supervisor) está **pendiente para una versión futura**.
 
 ---
 
-## 4. Flujo de Creación de Acta de Entrega
+## 4. Flujo de Creación de Acta de Entrega {#4-flujo-de-creacion-de-acta-de-entrega}
 
 <div align="center">
 
@@ -186,19 +184,18 @@ flowchart TD
     G --> I
     H --> I
     I --> J[Agregar items/activos al acta]
-    J --> K[Capturar firma digital]
-    K --> L[Generar PDF del acta]
-    L --> M[Registrar en BD]
-    M --> N[Actualizar kardex]
-    N --> O[Fin]
+    J --> K[Generar PDF del acta]
+    K --> L[Registrar en BD]
+    L --> M[Actualizar kardex]
+    M --> N[Fin]
 ```
 
 > [!IMPORTANT]
-> La **firma digital** se captura en un lienzo táctil usando `react-signature-canvas` y se incrusta directamente en el PDF generado.
+> La generación de actas crea un **PDF** con los datos del acta, sus items y los datos del técnico y representante.
 
 ---
 
-## 5. Flujo de Importación Excel
+## 5. Flujo de Importación Excel {#5-flujo-de-importacion-excel}
 
 <div align="center">
 
@@ -237,7 +234,7 @@ flowchart TD
 
 ---
 
-## 6. Flujo de Autenticación
+## 6. Flujo de Autenticación {#6-flujo-de-autenticacion}
 
 <div align="center">
 
@@ -272,7 +269,7 @@ sequenceDiagram
 
 ---
 
-## 7. Flujo de Registro de Usuario (Admin)
+## 7. Flujo de Registro de Usuario (Admin) {#7-flujo-de-registro-de-usuario-admin}
 
 <div align="center">
 
@@ -307,7 +304,7 @@ flowchart TD
 
 <div align="center">
 
-![Separator](https://img.shields.io/badge/---Documento%20actualizado%20al%20Julio%202026%20--%20v2.0-lightgrey?style=for-the-badge)
+![Separator](https://img.shields.io/badge/---Documento%20actualizado%20al%20Julio%202026%20--%20v1.0.0-lightgrey?style=for-the-badge)
 
 </div>
 

@@ -140,7 +140,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ### Pasos de verificación
 
 - [x] La API responde con códigos **HTTP 200**
-- [x] Swagger carga todas las **60+ rutas**
+- [x] Swagger carga todas las **82 rutas**
 - [x] Health Check devuelve `{"status": "healthy"}`
 - [x] El admin puede iniciar sesión
 

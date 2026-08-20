@@ -1,8 +1,8 @@
 ---
-title: "PROPUESTA TÉCNICA: SIGAI — SES v2.0"
+title: "PROPUESTA TÉCNICA: SIGAI — SES v1.0.0"
 ---
 
-# PROPUESTA TÉCNICA: SIGAI — SES v2.0
+# PROPUESTA TÉCNICA: SIGAI — SES v1.0.0
 
 <p align="center">
  <strong>Seguridad Electrónica Securitas</strong><br>
@@ -11,12 +11,12 @@ title: "PROPUESTA TÉCNICA: SIGAI — SES v2.0"
 
 <p align="center">
  <img src="https://img.shields.io/badge/Estado-Aprobado-success?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Estado">
- <img src="https://img.shields.io/badge/Versión-2.0-blue?style=for-the-badge&logo=semver&logoColor=white" alt="Versión">
+ <img src="https://img.shields.io/badge/Versión-1.0.0-blue?style=for-the-badge&logo=semver&logoColor=white" alt="Versión">
  <img src="https://img.shields.io/badge/Proyecto-SIGAI--SES-ff6b35?style=for-the-badge&logo=azuredevops&logoColor=white" alt="Proyecto">
  <img src="https://img.shields.io/badge/Arquitecto-Gemini%20CLI-8A2BE2?style=for-the-badge&logo=openai&logoColor=white" alt="Arquitecto">
  <img src="https://img.shields.io/badge/Pasante-Wilson%20Ortiz-ff69b4?style=for-the-badge&logo=github&logoColor=white" alt="Pasante">
  <img src="https://img.shields.io/badge/Modalidad-Pasantía-00c853?style=for-the-badge&logo=googleclassroom&logoColor=white" alt="Modalidad">
- <img src="https://img.shields.io/badge/Fecha-Mayo%202026-ffc107?style=for-the-badge&logo=calendar&logoColor=black" alt="Fecha">
+ <img src="https://img.shields.io/badge/Fecha-9%20Marzo%202026-ffc107?style=for-the-badge&logo=calendar&logoColor=black" alt="Fecha">
 </p>
 
 ---
@@ -31,8 +31,8 @@ title: "PROPUESTA TÉCNICA: SIGAI — SES v2.0"
 |** Programa**|Tecnología en Análisis y Desarrollo de Software — SENA|
 |** Modalidad**|Pasantía|
 |** Destinatario**|Elkin David Velásquez Hernández — Gerente de Mantenimiento, SES|
-|** Versión**|2.0 (Revisión Senior)|
-|** Fecha**|Mayo 2026|
+|** Versión**|1.0.0|
+|** Fecha**|9 de Marzo 2026 (inicio del proyecto)|
 
 ---
 
@@ -43,7 +43,7 @@ title: "PROPUESTA TÉCNICA: SIGAI — SES v2.0"
 
 El sistema centralizará la operación de **Seguridad Electrónica Securitas**, transformando procesos manuales en Excel en **flujos de trabajo automatizados**.
 
-La versión **2.0** introduce el concepto de **Kardex Digital Universal**, permitiendo conocer no solo *cuánto stock hay*, sino la **historia completa de cada serial**: desde su compra, pasando por instalaciones, desmontes de clientes, laboratorios de reparación, hasta su disposición final o cierre de garantía.
+La versión **1.0.0** introduce el concepto de **Kardex Digital Universal**, permitiendo conocer no solo *cuánto stock hay*, sino la **historia completa de cada serial**: desde su compra, pasando por instalaciones, desmontes de clientes, laboratorios de reparación, hasta su disposición final o cierre de garantía.
 
 ---
 
@@ -83,7 +83,7 @@ flowchart LR
 |** Frontend**|React 18 + Vite + Tailwind|Arquitectura de componentes **desacoplados** para máxima velocidad de carga|
 |** Notificaciones**|Celery + Redis|Manejo de tareas en **segundo plano** para envío de correos y alertas sin bloquear el API|
 |** Seguridad**|OAuth2 + JWT + Bcrypt|Estándares de la industria para **protección de datos sensibles**|
-|** Reportes**|ReportLab / PyPDF2|Generación dinámica de **actas de entrega** con firmas digitales incrustadas|
+|** Reportes**|ReportLab / PyPDF2|Generación dinámica de **actas de entrega** en PDF|
 
 > [!TIP]
 > FastAPI + SQLAlchemy 2.0 fue seleccionado sobre Django por su **rendimiento asíncrono superior** y **menor overhead** en operaciones CRUD intensivas como las de inventario serializado.
@@ -134,12 +134,12 @@ DESMONTE Técnico evalúa FUNCIONAL_USADO|PARA_REPARAR|SCRAP (Baja)
 > [!WARNING]
 > Un equipo en estado `SCRAP` debe requerir **aprobación de supervisor** antes de su disposición final, evitando bajas no autorizadas.
 
-### 4.4 Módulo de Actas con Firma Digital
+### 4.4 Módulo de Actas de Entrega
 
 Generación de **documentos legales internos**.
 
-- ** Captura de firma:** Implementación de **lienzo táctil** en el frontend para firmas en dispositivos móviles.
-- ** Actas PDF:** Generación de **PDF inviolable** con sello de tiempo y datos del técnico/supervisor.
+- ** Actas PDF:** Generación de **PDF** con los datos del técnico y del representante.
+- ** Detalles de entrega:** Items y activos con cantidades, tipos de acta (`ENTREGA_EPP`, `ENTREGA_HERRAMIENTA`, `DESPACHO_PROYECTO`, `DEVOLUCION`, `INGRESO_DESMONTE`) y estados (`BORRADOR`, `FIRMADA`, `ANULADA`).
 
 ---
 
@@ -213,7 +213,7 @@ Generación de **documentos legales internos**.
 |**1**|Cimiento y Auth|API de Usuarios + Modelos de BD + Login JWT|Crítica|
 |**2**|Inventario Base|Gestión de Catálogo e Importación Masiva de Excel|Crítica|
 |**3**|Garantías y Seriales|Flujo completo de Garantías con notificaciones por correo|Alta|
-|**4**|Operación y Actas|Módulo de Salidas + Captura de Firma + Generación de PDF|Alta|
+|**4**|Operación y Actas|Módulo de Salidas + Generación de PDF|Alta|
 |**5**|Laboratorio y Dashboards|Módulo de Desmontes + Dashboard con KPIs|Media|
 |**6**|QA y Despliegue|Pruebas Unitarias + Dockerización + Manual de Usuario|Media|
 
@@ -221,7 +221,7 @@ Generación de **documentos legales internos**.
 
 ```mermaid
 gantt
- title Plan de Ejecución SIGAI-SES v2.0
+ title Plan de Ejecución SIGAI-SES v1.0.0
  dateFormat YYYY-MM-DD
  axisFormat Sprint %S
 
@@ -247,7 +247,7 @@ gantt
 ---
 
 > [!NOTE]
-> **Revisión técnica realizada por el Desarrollador Senior** — *SIGAI-SES v2.0*
+> **Revisión técnica realizada por el Desarrollador Senior** — *SIGAI-SES v1.0.0*
 > **Enfoque:** Escalabilidad, Trazabilidad y Seguridad.
 
 <p align="center">

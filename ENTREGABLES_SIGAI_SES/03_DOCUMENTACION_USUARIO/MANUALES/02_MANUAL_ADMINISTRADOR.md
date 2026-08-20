@@ -35,7 +35,7 @@ title: "Manual del Administrador — SIGAI-SES"
 
 ---
 
-## 1. Introduccion
+## 1. Introduccion {#1-introduccion}
 
 **SIGAI-SES** otorga al rol **ADMIN** control total sobre:
 
@@ -53,7 +53,7 @@ title: "Manual del Administrador — SIGAI-SES"
 
 ---
 
-## 2. Gestion de Usuarios y Permisos
+## 2. Gestion de Usuarios y Permisos {#2-gestion-de-usuarios-y-permisos}
 
 ### 2.1 Perfiles de Usuario
 
@@ -110,7 +110,7 @@ El **ADMIN** puede modificar el rol de cualquier usuario en cualquier momento. L
 
 ---
 
-## 3. Gestion de Regionales y Sedes
+## 3. Gestion de Regionales y Sedes {#3-gestion-de-regionales-y-sedes}
 
 ### 3.1 Que Son las Regionales?
 
@@ -138,21 +138,19 @@ Las regionales definen el **aislamiento de datos por ciudad**:
 
 ---
 
-## 4. Configuracion de Alertas Automaticas
+## 4. Configuracion de Alertas Automaticas {#4-configuracion-de-alertas-automaticas}
 
 ### 4.1 Tipos de Alertas
 
-El sistema evalua reglas de negocio cada **15 minutos**:
+El sistema evalua las reglas de negocio implementadas cada **30 minutos** (ademas de al arrancar), via `APScheduler` (`AsyncIOScheduler`):
 
 | Tipo | Prioridad | Condicion | Accion |
 |:----:|:---------:|-----------|--------|
 | Stock Bajo | **Critica** | `cantidad < stock_minimo` | Alerta inmediata en dashboard |
-| Agotado | **Critica** | `cantidad == 0` | Alerta inmediata, recompra urgente |
-| Proximo a vencer | **Alta** | `fecha_vencimiento <= 30 dias` | Planificar renovacion |
-| Vencido | **Critica** | `fecha_vencimiento < hoy` | Alerta de incumplimiento |
-| Sin movimiento | **Media** | `ultima transaccion > 90 dias` | Evaluar necesidad del item |
-| Sobrestock | **Baja** | `cantidad > stock_maximo` | Evaluar devolucion o traslado |
-| Garantia estancada | **Alta** | Caso sin avance > 15 dias | Escalar al supervisor |
+| Garantia estancada | **Alta** | Caso sin avance > 15 dias en `ENVIADO_PROVEEDOR` | Alerta de seguimiento |
+
+> [!NOTE]
+> Las reglas `sin_movimiento` y `sobrestock` estan **planificadas** para versiones futuras y **no** estan activas en el motor actual.
 
 ### 4.2 Como Configurar Umbrales
 
@@ -184,17 +182,12 @@ En el **Centro de Alertas** puede:
 
 ### 4.4 SLA y Escalamiento
 
-Si una alerta **CRITICA** no se reconoce en mas de **2 horas**:
-
-1. El sistema **escala automaticamente** al supervisor
-2. Se envia una alerta de **mayor prioridad**
-
-> [!NOTE]
-> **Pendiente de implementar en v1.1.0:** Notificaciones por email/WhatsApp.
+> [!WARNING]
+> **Pendiente de implementar:** El escalamiento automatico por SLA (reconocer alerta CRITICA en > 2 horas) **no esta implementado** en el motor actual. Su gestion queda como roadmap v1.1.0.
 
 ---
 
-## 5. Auditoria y Trazabilidad
+## 5. Auditoria y Trazabilidad {#5-auditoria-y-trazabilidad}
 
 ### 5.1 Bitacora de Auditoria
 
@@ -238,20 +231,15 @@ Todas las acciones `CREATE`, `UPDATE`, `DELETE` y `LOGIN` quedan registradas:
 
 ---
 
-## 6. Respaldos y Mantenimiento
+## 6. Respaldos y Mantenimiento {#6-respaldos-y-mantenimiento}
 
 ### 6.1 Copia de Seguridad de la Base de Datos
 
 **Frecuencia recomendada:** Diaria
 
 ```bash
-# Backup manual
-mysqldump -u [usuario] -p \
-  --single-transaction \
-  --routines \
-  --triggers \
-  --events \
-  sigai_ses_db > respaldo_sigai_$(date +%Y%m%d).sql
+# Backup manual (PostgreSQL)
+pg_dump -U [usuario] -h [host] sigai_ses_db > respaldo_sigai_$(date +%Y%m%d).sql
 ```
 
 **Script automatizado:** `Backend/scripts/backup_db.py`
@@ -262,23 +250,26 @@ mysqldump -u [usuario] -p \
 ### 6.2 Restauracion de Base de Datos
 
 ```bash
-# Restaurar desde backup
-mysql -u [usuario] -p sigai_ses_db < respaldo_sigai_20260701.sql
+# Restaurar desde backup (PostgreSQL)
+psql -U [usuario] -h [host] sigai_ses_db < respaldo_sigai_20260701.sql
 
 # Luego ejecutar migraciones pendientes
 alembic upgrade head
 ```
+
+> [!NOTE]
+> > Para migrar desde una base MySQL/legacy existente, consulte `09_GUIA_MIGRACION_DATOS.md` y el script `Backend/scripts/migrate_mysql_to_pg.py`.
 
 ### 6.3 Depuracion de Bitacoras
 
 Para mantener el sistema agil, archive logs de mas de 1 ano:
 
 ```sql
--- Archivar logs de auditoria con mas de 1 ano
+-- Archivar logs de auditoria con mas de 1 ano (PostgreSQL)
 INSERT INTO audit_logs_archivo SELECT * FROM audit_logs
-WHERE fecha_accion < DATE_SUB(NOW(), INTERVAL 1 YEAR);
+WHERE fecha_accion < NOW() - INTERVAL '1 year';
 
-DELETE FROM audit_logs WHERE fecha_accion < DATE_SUB(NOW(), INTERVAL 1 YEAR);
+DELETE FROM audit_logs WHERE fecha_accion < NOW() - INTERVAL '1 year';
 ```
 
 ### 6.4 Monitoreo del Servidor
@@ -292,7 +283,7 @@ DELETE FROM audit_logs WHERE fecha_accion < DATE_SUB(NOW(), INTERVAL 1 YEAR);
 
 ---
 
-## 7. Gestion de Actas de Entrega
+## 7. Gestion de Actas de Entrega {#7-gestion-de-actas-de-entrega}
 
 ### 7.1 Tipos de Acta
 
@@ -311,16 +302,15 @@ DELETE FROM audit_logs WHERE fecha_accion < DATE_SUB(NOW(), INTERVAL 1 YEAR);
 3. Seleccione el **tecnico responsable**
 4. Seleccione el **proyecto/cliente** destino
 5. Agregue los **items/activos** con cantidades
-6. Capture la **firma digital** del receptor
-7. Haga clic en **"Generar Acta"**
-8. El sistema creara un **PDF** del acta para descargar e imprimir
+6. Haga clic en **"Generar Acta"**
+7. El sistema creara un **PDF** del acta para descargar e imprimir
 
 ### 7.3 Estados del Acta
 
 | Estado | Descripcion |
 |:------:|-------------|
 | **BORRADOR** | En proceso de creacion, aun no finalizada |
-| **FIRMADA** | Completada y firmada, PDF generado |
+| **FIRMADA** | Completada, PDF generado |
 | **ANULADA** | Invalidada *(se mantiene en el historico)* |
 
 > [!NOTE]
@@ -328,13 +318,13 @@ DELETE FROM audit_logs WHERE fecha_accion < DATE_SUB(NOW(), INTERVAL 1 YEAR);
 
 ---
 
-## 8. Configuracion Avanzada
+## 8. Configuracion Avanzada {#8-configuracion-avanzada}
 
 ### 8.1 Variables de Entorno (.env)
 
 | Variable | Descripcion | Valor por defecto |
 |----------|-------------|:-----------------:|
-| `DATABASE_URL` | Conexion a MySQL | `mysql+aiomysql://...` |
+| `DATABASE_URL` | Conexion a PostgreSQL | `postgresql+asyncpg://...` |
 | `SECRET_KEY` | Clave para firmar JWT | *(generar con `openssl rand -hex 32`)* |
 | `CORS_ALLOWED_ORIGINS` | Origenes permitidos | `http://localhost:5173` |
 | `ADMIN_EMAIL` | Email del admin inicial | `admin@securitas.com` |
@@ -367,13 +357,13 @@ alembic history
 |--------|-----------|-----------|
 | `init_db.py` | `Backend/scripts/` | Inicializa BD y crea admin |
 | `seed_admin.py` | `Backend/scripts/` | Crea usuario admin |
-| `backup_db.py` | `Backend/scripts/` | Backup MySQL automatizado |
+| `backup_db.py` | `Backend/scripts/` | Backup PostgreSQL automatizado |
 | `trigger_alerts.py` | `Backend/scripts/` | Evalua alertas manualmente |
 | `scheduler_alerts.py` | `Backend/scripts/` | Programa evaluacion de alertas (cron) |
 
 ---
 
-## 9. Solucion de Problemas
+## 9. Solucion de Problemas {#9-solucion-de-problemas}
 
 | Problema | Causa Probable | Solucion |
 |:---------|:---------------|:---------|
@@ -381,7 +371,7 @@ alembic history
 | **Error 403 Forbidden** | El usuario no tiene permisos | Verifique el **rol** del usuario |
 | **Error al cargar Excel** | Formato de columnas incorrecto | Use la **plantilla oficial** (ver FAQ) |
 | **El informe no se descarga** | Falla de conexion con el servidor | Verifique que el servidor este activo y su conexion a internet |
-| **Base de datos lenta** | Indices faltantes o volumen alto | Verifique pool de conexiones, ejecute `ANALYZE TABLE` |
+| **Base de datos lenta** | Indices faltantes o volumen alto | Verifique pool de conexiones, ejecute `ANALYZE` / `VACUUM ANALYZE` |
 | **Servidor no responde** | Puerto ocupado o proceso caido | `netstat -ano | findstr :8000` y `taskkill /PID <PID> /F` |
 | **Error de migracion** | Conflictos en versiones | `alembic downgrade -1`, resuelva y re-aplique |
 | **Logo no aparece en PDF** | Ruta de imagen incorrecta | Verifique que `Securitas-logo-light.png` existe en `Backend/app/static/` |
@@ -391,7 +381,7 @@ alembic history
 
 ---
 
-## 10. Referencia Rapida
+## 10. Referencia Rapida {#10-referencia-rapida}
 
 ### Comandos Utiles
 
@@ -428,7 +418,7 @@ python Backend/scripts/trigger_alerts.py
 |:---------------------:|
 | **Secciones:** 10 |
 | **Perfiles de usuario:** 3 |
-| **Tipos de alerta:** 7 |
+| **Tipos de alerta activos:** 2 |
 | **Scripts administracion:** 5 |
 | **Problemas resueltos:** 8 |
 | **Comandos rapidos:** 5 |

@@ -228,8 +228,7 @@ Un caso estancado por mas de 15 dias genera una **alerta critica** que escala al
 2. Seleccione el **tipo de acta**
 3. Agregue los **equipos** a entregar
 4. Seleccione el **tecnico** responsable
-5. Capture la **firma digital**
-6. El sistema generara un **PDF** del acta
+5. El sistema generara un **PDF** del acta
 
 </details>
 
@@ -297,9 +296,8 @@ Indica que hay un **problema critico** que requiere atencion inmediata:
 
 | Causa comun | Descripcion |
 |-------------|-------------|
-| **Stock agotado** | Item con cantidad en cero |
+| **Stock agotado** | Item con cantidad por debajo de su stock minimo |
 | **Garantia estancada** | Caso sin avance > 15 dias |
-| **Movimiento no autorizado** | Cambio de ubicacion sin registro |
 
 </details>
 
