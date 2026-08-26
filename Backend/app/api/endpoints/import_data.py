@@ -1292,10 +1292,9 @@ async def descargar_plantilla(module: str):
     tmp.close()
 
     return FileResponse(
-        tmp.name,
+        path=tmp.name,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         filename=tpl["filename"],
-        headers={"Content-Disposition": f'attachment; filename="{tpl["filename"]}"'}
     )
 
 
