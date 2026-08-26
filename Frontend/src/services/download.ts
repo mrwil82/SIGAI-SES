@@ -1,7 +1,12 @@
 import api from "./api";
 
 function isCapacitor(): boolean {
-  return !!(window as unknown as { Capacitor?: unknown }).Capacitor;
+  try {
+    const c = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    return !!(c && typeof c.isNativePlatform === "function" && c.isNativePlatform());
+  } catch {
+    return false;
+  }
 }
 
 async function downloadOnWeb(blob: Blob, filename: string): Promise<void> {
