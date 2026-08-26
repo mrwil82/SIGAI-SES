@@ -1295,6 +1295,9 @@ async def descargar_plantilla(module: str):
         path=tmp.name,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         filename=tpl["filename"],
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate",
+                 "Pragma": "no-cache",
+                 "Expires": "0"}
     )
 
 
