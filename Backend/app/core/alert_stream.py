@@ -45,6 +45,8 @@ class AlertEventBus:
                     # Keep-alive para mantener la conexion SSE viva y detectar
                     # desconexiones de clientes.
                     yield ": keep-alive"
+        except asyncio.CancelledError:
+            pass
         finally:
             self._subscribers.discard(queue)
 

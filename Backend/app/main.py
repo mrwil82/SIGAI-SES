@@ -329,7 +329,7 @@ if os.path.exists(index_path):
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_frontend(full_path: str):
-        if full_path.lower().startswith(("api/", "static/", "docs", "openapi", "cache")):
+        if full_path.lower().startswith(("api/", "static/", "docs", "openapi")):
             from fastapi.responses import JSONResponse
 
             return JSONResponse({"detail": "Not Found"}, status_code=404)

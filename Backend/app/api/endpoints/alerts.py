@@ -16,7 +16,6 @@ from app.api.deps import get_current_user, get_current_user_from_query
 router = APIRouter()
 
 @router.get("/", response_model=PaginatedResponse[AlertRead])
-@router.get("/alerts", response_model=PaginatedResponse[AlertRead])
 async def listar_alertas(
     estado: Optional[AlertEstado] = None,
     prioridad: Optional[str] = None,
@@ -42,9 +41,14 @@ async def stream_alerts(current_user = Depends(get_current_user_from_query)):
     El cliente se suscribe con EventSource usando el token de acceso como
     query param: /api/v1/alerts/stream?token=...
     """
+    import asyncio as _asyncio
+
     async def event_generator():
-        async for message in alert_bus.subscribe():
-            yield f"event: alert\ndata: {message}\n\n"
+        try:
+            async for message in alert_bus.subscribe():
+                yield f"event: alert\ndata: {message}\n\n"
+        except _asyncio.CancelledError:
+            pass
 
     return StreamingResponse(
         event_generator(),
