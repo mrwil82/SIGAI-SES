@@ -15,6 +15,7 @@ from app.api.deps import get_current_user, get_current_user_from_query
 
 router = APIRouter()
 
+@router.get("", response_model=PaginatedResponse[AlertRead])
 @router.get("/", response_model=PaginatedResponse[AlertRead])
 async def listar_alertas(
     estado: Optional[AlertEstado] = None,
