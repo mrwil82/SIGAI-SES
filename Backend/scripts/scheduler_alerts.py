@@ -28,6 +28,7 @@ load_dotenv(
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.crud.crud_alerts import evaluar_alertas
+from app.core.config import settings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,9 +40,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
-)
+DATABASE_URL = settings.DATABASE_URL
 
 
 async def run_alerts():
@@ -49,7 +48,7 @@ async def run_alerts():
     logger.info(f"Inicio de evaluacion de alertas: {datetime.now().isoformat()}")
 
     engine = create_async_engine(
-        DATABASE_URL, echo=False, connect_args={"ssl": "require"}
+        DATABASE_URL, echo=False
     )
     async_session = async_sessionmaker(
         bind=engine, class_=AsyncSession, expire_on_commit=False

@@ -27,6 +27,7 @@ async function downloadOnCapacitor(
   const { Filesystem, Directory } = await import("@capacitor/filesystem");
   const { Share } = await import("@capacitor/share");
 
+  // Convertir blob a base64
   const reader = new FileReader();
   const base64 = await new Promise<string>((resolve, reject) => {
     reader.onload = () => {
@@ -37,26 +38,22 @@ async function downloadOnCapacitor(
     reader.readAsDataURL(blob);
   });
 
+  // Guardar en Documents (accesible desde el administrador de archivos)
   const savedFile = await Filesystem.writeFile({
     path: filename,
     data: base64,
-    directory: Directory.Cache,
+    directory: Directory.Documents,
   });
 
-  try {
+  // Intentar compartir/abrir con el gestor de archivos del sistema
+  const canShare = await Share.canShare();
+  if (canShare.value) {
     await Share.share({
-      title: filename,
-      text: `Descargar ${filename}`,
-      url: savedFile.uri,
-      dialogTitle: "Guardar archivo",
+      title: "Descargar archivo",
+      text: filename,
+      files: [savedFile.uri],
+      dialogTitle: "Guardar " + filename,
     });
-  } catch {
-    const anchor = document.createElement("a");
-    anchor.href = savedFile.uri;
-    anchor.download = filename;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
   }
 }
 
@@ -92,7 +89,7 @@ export async function downloadFromFetch(
   url: string,
   filename: string,
 ): Promise<void> {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });

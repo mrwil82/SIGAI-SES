@@ -13,16 +13,16 @@ $jdkCandidates = @(
     "C:\Program Files\Eclipse Adoptium\jdk-21*",
     "C:\Program Files\Eclipse Adoptium\jdk-17*",
     "C:\Program Files\Java\jdk-21*",
-    "C:\Program Files\Java\jdk-17*",
-    $env:JAVA_HOME
+    "C:\Program Files\Java\jdk-17*"
 )
 $jdkHome = $null
 foreach ($candidate in $jdkCandidates) {
-    $resolved = Resolve-Path $candidate -ErrorAction SilentlyContinue
-    if ($resolved) {
-        $javaExe = Join-Path $resolved "bin\java.exe"
+    $resolved = @(Resolve-Path $candidate -ErrorAction SilentlyContinue)
+    if ($resolved.Count -gt 0) {
+        $jdkPath = $resolved[0]
+        $javaExe = Join-Path $jdkPath "bin\java.exe"
         if (Test-Path $javaExe) {
-            $jdkHome = $resolved.Path
+            $jdkHome = $jdkPath.Path
             break
         }
     }

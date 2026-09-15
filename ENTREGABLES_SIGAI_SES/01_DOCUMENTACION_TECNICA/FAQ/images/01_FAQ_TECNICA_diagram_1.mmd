@@ -1,0 +1,7 @@
+﻿sequenceDiagram
+    Cliente->>+Servidor: POST /api/v1/auth/login (email+password)
+    Servidor-->>-Cliente: {access_token, refresh_token, user}
+    Note over Cliente: Almacena tokens en sessionStorage
+    Cliente->>+Servidor: GET /api/v1/auth/me (Bearer access_token)
+    Servidor-->>-Cliente: {user data}
+    Note over Cliente: Axios interceptor adjunta token automaticamente

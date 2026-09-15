@@ -1,0 +1,21 @@
+﻿flowchart TD
+    A[Usuario selecciona archivo Excel] --> B[Servidor recibe archivo]
+    B --> C[Deteccion automatica de tipo]
+    C --> D{Tipo detectado}
+    D -->|Inventario| E[Procesa items y activos]
+    D -->|Inventario Clientes| F[Procesa clientes y stock]
+    D -->|Garantia| G[Procesa casos de garantia]
+    E --> H[Normalizacion de datos]
+    F --> H
+    G --> H
+    H --> I[Validacion de columnas]
+    I --> J{Columnas validas}
+    J -->|No| K[Error: Formato no valido]
+    J -->|Si| L[Procesamiento transaccional]
+    L --> M{Existe registro}
+    M -->|Si| N[UPDATE]
+    M -->|No| O[INSERT]
+    N --> P[Commit transaccion]
+    O --> P
+    P --> Q[Generar resumen]
+    Q --> R[Fin]

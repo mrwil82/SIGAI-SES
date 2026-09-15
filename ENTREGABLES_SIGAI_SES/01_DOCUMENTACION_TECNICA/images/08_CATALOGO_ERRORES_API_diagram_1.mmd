@@ -1,0 +1,6 @@
+﻿graph LR
+    A[Esperar 1 minuto] --> B[Reintentar]
+    B --> C{?Sigue fallando?}
+    C -->|Si| D[Verificar bucles de peticiones]
+    C -->|No| E[Operacion exitosa]
+    D --> F[Configurar limite mas alto en produccion]

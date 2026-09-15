@@ -1,0 +1,15 @@
+﻿flowchart TD
+    A[🔧 Técnico registra<br/>salida de equipo] --> B[📉 Sistema descuenta<br/>stock y registra kardex]
+    B --> C{📊 ¿Stock restante<br/>≤ stock mínimo?}
+    C -->|Sí| D[⚠️ Motor de reglas<br/>crea alerta automática]
+    C -->|No| E[✅ Stock suficiente<br/>fin del proceso]
+    D --> F[📢 Alerta CRÍTICA<br/>en Centro de Alertas]
+    F --> G{👤 Acción del<br/>Administrador}
+    G --> H[👁️ Reconocer<br/>→ En Revisión]
+    G --> I[✅ Resolver<br/>→ Ingresar nuevo stock]
+    G --> J[🚫 Ignorar<br/>→ No recomendado]
+    H --> K[⏰ ¿> 2 horas<br/>sin acción?]
+    K -->|Sí| L[📈 Escalar a<br/>Supervisor]
+    K -->|No| H
+    I --> M[✅ Alerta RESUELTA]
+    J --> N[⚠️ Alerta IGNORADA]

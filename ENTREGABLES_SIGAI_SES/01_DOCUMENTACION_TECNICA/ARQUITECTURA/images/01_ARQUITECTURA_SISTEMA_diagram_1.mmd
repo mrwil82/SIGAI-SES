@@ -1,0 +1,14 @@
+﻿graph TB
+    subgraph "🌐 Cliente"
+        A[React SPA<br/>Vite + TS]
+    end
+    subgraph "☁️ Servidor"
+        B[Nginx<br/>Reverse Proxy]
+        C[FastAPI<br/>Uvicorn Workers]
+    end
+    subgraph "🗄️ Datos"
+        D[(Base de Datos<br/>PostgreSQL / MySQL)]
+    end
+    A -->|HTTPS| B
+    B -->|proxy_pass :8000| C
+    C -->|asyncpg / aiomysql pool| D

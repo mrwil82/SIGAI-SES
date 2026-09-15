@@ -1,75 +1,54 @@
+# =============================================================================
+# SIGAI-SES - Convertir Markdown → Word (APA Profesional)
+# =============================================================================
+# Genera documentos .docx con formato APA profesional usando python-docx
+# Incluye portada, tabla de contenido, formato Times New Roman, interlineado 2.0
+#
+# Requiere: python, python-docx
+# Uso: .\convertir_docs.ps1
+# =============================================================================
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$PythonScript = Join-Path $ScriptDir "generar_word_apa.py"
 
-$MiktexBin = "$env:LOCALAPPDATA\Programs\MiKTeX\miktex\bin\x64"
-if (Test-Path $MiktexBin) { $env:Path = "$MiktexBin;" + $env:Path }
+Write-Host "=============================================" -ForegroundColor Cyan
+Write-Host "  SIGAI-SES - Generador Word APA" -ForegroundColor Cyan
+Write-Host "  SES — Seguridad Electrónica" -ForegroundColor Cyan
+Write-Host "=============================================" -ForegroundColor Cyan
+Write-Host ""
 
-$TemplatePath = "$env:APPDATA\pandoc\templates\eisvogel.latex"
-if (-not (Test-Path $TemplatePath)) {
-    $TemplatePath = Join-Path $ScriptDir "..\Eisvogel-3.5.1\eisvogel.latex"
-}
-if (-not (Test-Path $TemplatePath)) { throw "Plantilla eisvogel no encontrada en: $TemplatePath" }
-
-$LogoPath = (Join-Path $ScriptDir "images/logo.pdf") -replace '\\', '/'
-$MetaFile = Join-Path $ScriptDir "images\metadata.yaml"
-$TempDir = Join-Path $ScriptDir "tmp_md"
-$Output = Join-Path $ScriptDir "PDF_Entregables"
-
-New-Item -ItemType Directory -Path $Output -Force | Out-Null
-
-Get-ChildItem -Path $ScriptDir -Recurse -Filter "*.md" | Where-Object {
-    $_.FullName -notlike "*\PDF_Entregables\*" -and
-    $_.FullName -notlike "*\images\*" -and
-    $_.FullName -notlike "*\tmp_md\*"
-} | ForEach-Object {
-    $file = $_.FullName
-    $name = $_.BaseName
-    $relPath = $file.Substring($ScriptDir.Length).TrimStart('\', '/')
-    Write-Host "---"
-    Write-Host "Procesando: $relPath"
-
-    New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
-
-    $tempFile = Join-Path $TempDir "$($_.Name)"
-    $content = [System.IO.File]::ReadAllText($file, [System.Text.Encoding]::UTF8)
-    [System.IO.File]::WriteAllText($tempFile, $content, (New-Object System.Text.UTF8Encoding($false)))
-
-    $titleOpts = @()
-    $firstLine = ($content -split "`n" | Select-Object -First 1).Trim()
-    if ($firstLine -ne '---') {
-        $m = [regex]::Match($content, '(?m)^#\s+(.+?)\s*$')
-        if ($m.Success) {
-            $t = $m.Groups[1].Value
-            $titleOpts += "-M", "title=$t"
-        } else {
-            $t = $name -replace '^[0-9]*_', '' -replace '_', ' '
-            $titleOpts += "-M", "title=$t"
-        }
-        Write-Host "  Titulo: $t"
-    }
-
-    $pandocArgs = @(
-        $tempFile,
-        "-o", "$Output\$name.pdf",
-        "--pdf-engine=xelatex",
-        "--template=$TemplatePath",
-        "-M", "titlepage=true",
-        "-M", "titlepage-logo=$LogoPath",
-        "-M", "logo-width=40mm",
-        "-M", "titlepage-color=0055A4",
-        "-M", "titlepage-text-color=FFFFFF",
-        "-M", "titlepage-rule-color=FF6B35",
-        "--metadata-file=$MetaFile",
-        "-V", "sansfont=Segoe UI",
-        "-V", "monofont=Consolas"
-    ) + $titleOpts
-
-    & pandoc $pandocArgs 2>&1 | Select-String -NotMatch "WARNING|rsvg|major issue|MiKTeX updates|log4cxx|No appender" | ForEach-Object { "$_" }
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  OK $name.pdf"
-    } else {
-        Write-Host "  ERROR: $name"
-    }
+# Verificar Python
+try {
+    $pythonVersion = & python --version 2>&1
+    Write-Host "Python: $pythonVersion" -ForegroundColor Green
+} catch {
+    Write-Host "ERROR: Python no encontrado" -ForegroundColor Red
+    Write-Host "Instala Python desde https://python.org" -ForegroundColor Yellow
+    exit 1
 }
 
-Remove-Item -Recurse -Force $TempDir -ErrorAction SilentlyContinue
-Write-Host "=== Fin. PDFs en: $Output ==="
+# Verificar python-docx
+try {
+    & python -c "import docx; print('python-docx: OK')" 2>&1 | Out-Null
+} catch {
+    Write-Host "Instalando python-docx..." -ForegroundColor Yellow
+    & pip install python-docx 2>&1 | Out-Null
+}
+
+# Ejecutar generador
+Write-Host ""
+& python $PythonScript
+
+Write-Host ""
+Write-Host "=============================================" -ForegroundColor Green
+Write-Host "  PROCESO COMPLETADO" -ForegroundColor Green
+Write-Host "=============================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Archivos Word en: Word_Entregables\" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  NOTAS:" -ForegroundColor Yellow
+Write-Host "  - Para actualizar tablas de contenido:" -ForegroundColor White
+Write-Host "    Abrir Word → Ctrl+A → F9" -ForegroundColor White
+Write-Host "  - Los diagramas Mermaid quedan como codigo" -ForegroundColor White
+Write-Host "    Fuente (usar mermaid.live para renderizar)" -ForegroundColor White
+Write-Host ""

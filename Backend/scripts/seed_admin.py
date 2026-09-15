@@ -19,10 +19,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy import select
 from app.models.user import Usuario, UserRole
 from app.core.security import get_password_hash
+from app.core.config import settings
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
-)
+DATABASE_URL = settings.DATABASE_URL
 
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@securitas.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin123!")
@@ -33,7 +32,7 @@ ADMIN_CODIGO = os.getenv("ADMIN_CODIGO", "ADM001")
 
 async def create_admin():
     engine = create_async_engine(
-        DATABASE_URL, echo=False, connect_args={"ssl": "require"}
+        DATABASE_URL, echo=False
     )
     async_session = async_sessionmaker(
         bind=engine, class_=AsyncSession, expire_on_commit=False

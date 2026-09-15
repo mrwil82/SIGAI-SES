@@ -1,0 +1,9 @@
+﻿flowchart LR
+    A[📄 Excel] --> B[🔍 Deteccion<br/>Automatica]
+    B --> C[🧹 Normalizacion<br/>de Datos]
+    C --> D[✅ Validacion<br/>de Campos]
+    D --> E{⚖️ Upsert}
+    E -->|Nuevo| F[➕ INSERT]
+    E -->|Existente| G[🔄 UPDATE]
+    F --> H[💾 Transaccion<br/>Commit]
+    G --> H

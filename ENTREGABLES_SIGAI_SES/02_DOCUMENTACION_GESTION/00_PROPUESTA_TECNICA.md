@@ -1,11 +1,11 @@
----
+﻿---
 title: "PROPUESTA TÉCNICA: SIGAI — SES v1.0.0"
 ---
 
 # PROPUESTA TÉCNICA: SIGAI — SES v1.0.0
 
 <p align="center">
- <strong>Seguridad Electrónica Securitas</strong><br>
+ <strong>SES — Seguridad Electrónica</strong><br>
  <em>Sistema Integral de Gestión de Activos e Inventario</em>
 </p>
 
@@ -13,8 +13,7 @@ title: "PROPUESTA TÉCNICA: SIGAI — SES v1.0.0"
  <img src="https://img.shields.io/badge/Estado-Aprobado-success?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Estado">
  <img src="https://img.shields.io/badge/Versión-1.0.0-blue?style=for-the-badge&logo=semver&logoColor=white" alt="Versión">
  <img src="https://img.shields.io/badge/Proyecto-SIGAI--SES-ff6b35?style=for-the-badge&logo=azuredevops&logoColor=white" alt="Proyecto">
- <img src="https://img.shields.io/badge/Arquitecto-Gemini%20CLI-8A2BE2?style=for-the-badge&logo=openai&logoColor=white" alt="Arquitecto">
- <img src="https://img.shields.io/badge/Pasante-Wilson%20Ortiz-ff69b4?style=for-the-badge&logo=github&logoColor=white" alt="Pasante">
+ <img src="https://img.shields.io/badge/Desarrollador-Wilson%20Ortiz-ff69b4?style=for-the-badge&logo=github&logoColor=white" alt="Desarrollador">
  <img src="https://img.shields.io/badge/Modalidad-Pasantía-00c853?style=for-the-badge&logo=googleclassroom&logoColor=white" alt="Modalidad">
  <img src="https://img.shields.io/badge/Fecha-9%20Marzo%202026-ffc107?style=for-the-badge&logo=calendar&logoColor=black" alt="Fecha">
 </p>
@@ -26,8 +25,7 @@ title: "PROPUESTA TÉCNICA: SIGAI — SES v1.0.0"
 |Campo|Detalle|
 |:---|---|
 |** Proyecto**|SIGAI - SES (Sistema Integral de Gestión de Activos e Inventario)|
-|** Arquitecto Senior**|Gemini CLI (Sugerencias)|
-|** Autor / Pasante**|Wilson Ortiz|
+|** Autor / Desarrollador**|Wilson Ortiz|
 |** Programa**|Tecnología en Análisis y Desarrollo de Software — SENA|
 |** Modalidad**|Pasantía|
 |** Destinatario**|Elkin David Velásquez Hernández — Gerente de Mantenimiento, SES|
@@ -41,7 +39,7 @@ title: "PROPUESTA TÉCNICA: SIGAI — SES v1.0.0"
 > [!IMPORTANT]
 > SIGAI-SES **no es solo un gestor de inventario**; es una plataforma de **trazabilidad de activos de extremo a extremo**.
 
-El sistema centralizará la operación de **Seguridad Electrónica Securitas**, transformando procesos manuales en Excel en **flujos de trabajo automatizados**.
+El sistema centralizará la operación de **SES — Seguridad Electrónica**, transformando procesos manuales en Excel en **flujos de trabajo automatizados**.
 
 La versión **1.0.0** introduce el concepto de **Kardex Digital Universal**, permitiendo conocer no solo *cuánto stock hay*, sino la **historia completa de cada serial**: desde su compra, pasando por instalaciones, desmontes de clientes, laboratorios de reparación, hasta su disposición final o cierre de garantía.
 
@@ -59,18 +57,9 @@ La versión **1.0.0** introduce el concepto de **Kardex Digital Universal**, per
 
 ### Ciclo de Vida del Activo Serializado
 
-```mermaid
-flowchart LR
- N[Nuevo] --> I[Instalado]
- I --> G[En Garantía]
- G --> R[Reparado]
- R --> I
- G --> D[Desmonte]
- D --> L[Laboratorio]
- L --> F[Funcional Usado]
- L --> P[Para Reparar]
- L --> S[Scrap / Baja]
-```
+
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_1.png)
+
 
 ---
 
@@ -96,17 +85,9 @@ flowchart LR
 
 A diferencia de un registro plano, las garantías seguirán un **flujo lógico estricto**:
 
-```mermaid
-stateDiagram-v2
- [*] --> REGISTRADO
- REGISTRADO --> ENVIADO_PROVEEDOR
- ENVIADO_PROVEEDOR --> RECIBIDO_PROVEEDOR
- RECIBIDO_PROVEEDOR --> RESUELTO
- RECIBIDO_PROVEEDOR --> REEMPLAZADO
- RESUELTO --> ENTREGADO_A_CLIENTE
- REEMPLAZADO --> ENTREGADO_A_CLIENTE
- REEMPLAZADO --> STOCK
-```
+
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_2.png)
+
 
 ** Mejora clave:** Vinculación directa con el **serial del equipo** en stock para evitar errores de digitación.
 
@@ -157,19 +138,9 @@ Generación de **documentos legales internos**.
 <details>
 <summary><b> Ver diagrama entidad-relación sugerido</b></summary>
 
-```
-┌──────────────┐ ┌──────────────┐ ┌────────────────┐
-│ items │◄──────│ activos │──────►│ movimientos │
-│ (catálogo) │1 N │ (seriales) │1 N │ (kardex) │
-└──────────────┘ └──────┬───────┘ └────────────────┘
- │ 1
- │
- │ N
- ┌─────┴──────┐
- │ garantias │
- │ (RMA/caso) │
- └────────────┘
-```
+
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_1.png)
+
 
 </details>
 
@@ -177,10 +148,9 @@ Generación de **documentos legales internos**.
 
 |Rol|Responsabilidades|
 |:----|:---|
-|** ADMIN**|Configuración global y auditoría de sistema|
-|** BODEGUERO**|Gestión de entradas / salidas y control de stock físico|
-|** SUPERVISOR**|Aprobación de actas y visualización de reportes ejecutivos|
-|** TÉCNICO**|Consulta de inventario asignado y reporte de novedades en campo|
+|**ADMIN**|Configuración global, gestión de usuarios, auditoría y configuración del sistema|
+|**TECNICO**|Consulta de inventario, registro de garantías, entregas, desmontes y reportes|
+|**TECNICO_LABORATORIO**|Gestión de laboratorio, triaje de equipos, registro de desmontes e inventario|
 
 ---
 
@@ -219,30 +189,9 @@ Generación de **documentos legales internos**.
 
 </details>
 
-```mermaid
-gantt
- title Plan de Ejecución SIGAI-SES v1.0.0
- dateFormat YYYY-MM-DD
- axisFormat Sprint %S
 
- section Sprint 1
- Cimiento y Auth :s1, 2026-05-04, 14d
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_3.png)
 
- section Sprint 2
- Inventario Base :s2, after s1, 14d
-
- section Sprint 3
- Garantías y Seriales :s3, after s2, 14d
-
- section Sprint 4
- Operación y Actas :s4, after s3, 14d
-
- section Sprint 5
- Laboratorio y Dashboards :s5, after s4, 14d
-
- section Sprint 6
- QA y Despliegue :s6, after s5, 14d
-```
 
 ---
 
@@ -253,5 +202,5 @@ gantt
 <p align="center">
  <sub>Documento generado como parte del programa de Pasantía SENA — Tecnología en Análisis y Desarrollo de Software</sub>
  <br>
- <sub>© 2026 — Seguridad Electrónica Securitas. Todos los derechos reservados.</sub>
+ <sub>© 2026 — SES — Seguridad Electrónica. Todos los derechos reservados.</sub>
 </p>

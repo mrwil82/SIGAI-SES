@@ -1,0 +1,27 @@
+﻿block-beta
+    columns 1
+
+    block:cliente:1
+        columns 5
+        space:5
+        CLIENTE["CLIENTE\\nReact + Vite + TS\\n14 rutas · Fusion UI · 3 Temas\\nPWA · APK Android (Capacitor)"]
+    end
+
+    space:1
+
+    block:servidor:1
+        columns 5
+        space:5
+        SERVIDOR["SERVIDOR DE APLICACIONES\\nFastAPI · Python 3.12\\nAuth · CRUD · Reports · Import\\n82 endpoints REST /api/v1/"]
+    end
+
+    space:1
+
+    block:base:1
+        columns 5
+        space:5
+        BD["BASE DE DATOS RELACIONAL\\n18 tablas · 15 migraciones Alembic\\nPostgreSQL / MySQL / MariaDB"]
+    end
+
+    CLIENTE -->|"Axios HTTP\\nJWT Bearer Token"| SERVIDOR
+    SERVIDOR -->|"SQLAlchemy Async\\nasyncpg / aiomysql"| BD

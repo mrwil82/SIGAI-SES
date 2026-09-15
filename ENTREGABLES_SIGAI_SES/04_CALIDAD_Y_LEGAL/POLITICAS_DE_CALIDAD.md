@@ -1,4 +1,4 @@
----
+﻿---
 title: "**POLÍTICAS DE CALIDAD — SIGAI-SES**"
 ---
 
@@ -44,13 +44,9 @@ Este documento describe el **enfoque de calidad** adoptado para el proyecto **SI
 |Mínimo **1 revisor** antes de merge|
 |Checks automáticos: lint, tests, análisis estático|
 
-```mermaid
-graph LR
- A[" feature/*"] --> B[" Pull Request"]
- B --> C[" Checks automáticos"]
- C --> D[" Code review"]
- D --> E[" Merge a develop"]
-```
+
+![Diagrama](images/POLITICAS_DE_CALIDAD_diagram_1.png)
+
 
 ### 2.2 Integración Continua (CI)
 
@@ -76,9 +72,9 @@ graph LR
 |**P2**|**24 horas**|Funcionalidad no crítica afectada|
 |**P3**|**1 semana**|Mejora o bug menor|
 
-```
- Tracking: Jira → Prioridades P0-P3
-```
+
+![Diagrama](images/POLITICAS_DE_CALIDAD_diagram_1.png)
+
 
 ---
 
@@ -95,16 +91,9 @@ graph LR
 <details>
 <summary><b> Ver Dashboard de métricas sugerido</b></summary>
 
-```mermaid
-graph TD
- subgraph " Dashboard de Calidad"
- A[" Cobertura ≥ 80%"] --> B[" OK"]
- C[" Latencia P95 ≤ 200ms"] --> D[" OK"]
- E[" Error rate < 0.5%"] --> F[" OK"]
- G[" Build ≤ 3 min"] --> H[" OK"]
- I[" Duplicación < 5%"] --> J[" OK"]
- end
-```
+
+![Diagrama](images/POLITICAS_DE_CALIDAD_diagram_2.png)
+
 
 </details>
 
@@ -167,13 +156,9 @@ graph TD
 |**Semestral**|Revisión de arquitectura|Validar diseño del sistema|
 |**Anual**|Actualización de dependencias mayores|Mantener stack actualizado|
 
-```mermaid
-graph LR
- A[" Mensual"] --> B[" Feedback"]
- C[" Trimestral"] --> D[" Seguridad"]
- E[" Semestral"] --> F[" Arquitectura"]
- G[" Anual"] --> H[" Dependencias"]
-```
+
+![Diagrama](images/POLITICAS_DE_CALIDAD_diagram_3.png)
+
 
 ---
 
@@ -237,10 +222,10 @@ Ejemplos:
 </p>
 
 > [!NOTE]
-> **Documento controlado por:** Unidad de Seguridad Electrónica (SES) — Securitas Colombia S.A.
+> **Documento controlado por:** Unidad de Seguridad Electrónica (SES) — SES — Seguridad Electrónica
 
 ---
 
 <p align="center">
- <sub>Políticas de Calidad — SIGAI-SES · Securitas Colombia S.A. · Unidad de Seguridad Electrónica (SES)</sub>
+ <sub>Políticas de Calidad — SIGAI-SES · SES — Seguridad Electrónica · Unidad de Seguridad Electrónica (SES)</sub>
 </p>

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 ---
 
@@ -43,7 +43,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 5 | `rol` | `ENUM('ADMIN','TECNICO','TECNICO_LABORATORIO')` | — | Perfil de acceso |
 | 6 | `id_regional` | `INTEGER` | **FK** → `regionales` | Regional a la que pertenece |
 | 7 | `cedula` | `VARCHAR(20)` | **UK** | Número de cédula de ciudadanía |
-| 8 | `codigo_empleado` | `VARCHAR(20)` | **UK** | Código interno de empleado Securitas |
+| 8 | `codigo_empleado` | `VARCHAR(20)` | **UK** | Código interno de empleado SES |
 | 9 | `regional` | `VARCHAR(100)` | — | Nombre de regional (campo auxiliar) |
 | 10 | `is_active` | `BOOLEAN` | — | Indica si la cuenta está activa |
 | 11 | `created_at` | `TIMESTAMP` | — | Fecha de creación del registro |
@@ -52,7 +52,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 
 #### `regionales`
 
-> Ciudades o regiones donde opera Securitas Colombia.
+> Ciudades o regiones donde opera SES — Seguridad Electrónica.
 
 | # | Campo | Tipo | | Descripción |
 |---|---|---|---|---|
@@ -91,7 +91,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 4 | `nombre_equipo` | `VARCHAR(255)` | — | Nombre comercial del producto |
 | 5 | `marca` | `VARCHAR(100)` | — | Marca del fabricante |
 | 6 | `referencia` | `VARCHAR(100)` | **UK** | Referencia o modelo del fabricante |
-| 7 | `codigo_item_interno` | `VARCHAR(50)` | **UK** | Código interno SAP/CECO de Securitas |
+| 7 | `codigo_item_interno` | `VARCHAR(50)` | **UK** | Código interno SAP/CECO de SES |
 | 8 | `unidad_medida` | `VARCHAR(20)` | — | Unidad de medida (UND, PAR, MTS, etc.) |
 | 9 | `stock_minimo` | `INTEGER` | — | Cantidad mínima para alerta de reabastecimiento |
 | 10 | `compra_maxima` | `INTEGER` | — | Cantidad máxima por orden de compra |
@@ -119,7 +119,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 11 | `id_proveedor_compra` | `INTEGER` | **FK** → `proveedores` | Proveedor que suministró el equipo |
 | 12 | `numero_factura_compra` | `VARCHAR(50)` | — | Factura de compra del equipo |
 | 13 | `fecha_compra` | `DATE` | — | Fecha de adquisición |
-| 14 | `activo_fijo_securitas` | `VARCHAR(50)` | — | Placa de activo fijo de Securitas |
+| 14 | `activo_fijo_ses` | `VARCHAR(50)` | — | Placa de activo fijo de SES |
 | 15 | `credenciales_tecnicas` | `VARCHAR(255)` | — | Credenciales de acceso (IP, usuario, password) |
 | 16 | `observaciones` | `TEXT` | — | Notas y observaciones generales |
 | 17 | `fecha_ingreso_laboratorio` | `TIMESTAMP` | — | Fecha de ingreso a laboratorio (desmontes) |
@@ -253,7 +253,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 
 #### `clientes`
 
-> Empresas clientes de Securitas que reciben servicios o equipos.
+> Empresas clientes de SES que reciben servicios o equipos.
 
 | # | Campo | Tipo | | Descripción |
 |---|---|---|---|---|
@@ -374,29 +374,27 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 
 ### Jerarquía de Inventario
 
-```
-Item (Catálogo) ──> Activo (Unidad Física)
-                  ──> StockBulk (Cantidad Agregada)
-```
+
+![Diagrama](images/04_DICCIONARIO_DE_DATOS_diagram_1.png)
+
 
 ### Ciclo de Auditoría
 
-```
-Usuario --> Acción (CRUD) --> AuditLog (Registro Inmutable)
-```
+
+![Diagrama](images/04_DICCIONARIO_DE_DATOS_diagram_2.png)
+
 
 ### Flujo de Garantías
 
-```
-Activo --> Garantía (Caso) --> Proveedor (RMA) --> Resolución
-```
+
+![Diagrama](images/04_DICCIONARIO_DE_DATOS_diagram_3.png)
+
 
 ### Entregas y Movimientos
 
-```
-ActaEntrega --> DetalleActa --> Items / Activos
-MovimientoInventario --> Kardex Digital
-```
+
+![Diagrama](images/04_DICCIONARIO_DE_DATOS_diagram_4.png)
+
 
 ---
 

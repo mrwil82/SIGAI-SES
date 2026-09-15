@@ -1,0 +1,26 @@
+{
+  "theme": "default",
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "basis",
+    "rankSpacing": 60,
+    "nodeSpacing": 30,
+    "padding": 15,
+    "useMaxWidth": true
+  },
+  "sequence": {
+    "mirrorActors": false,
+    "bottomMarginAdj": 2,
+    "useMaxWidth": true
+  },
+  "gantt": {
+    "useMaxWidth": true,
+    "barHeight": 25,
+    "barGap": 6,
+    "topPadding": 40,
+    "fontSize": 12
+  },
+  "er": {
+    "useMaxWidth": true
+  }
+}

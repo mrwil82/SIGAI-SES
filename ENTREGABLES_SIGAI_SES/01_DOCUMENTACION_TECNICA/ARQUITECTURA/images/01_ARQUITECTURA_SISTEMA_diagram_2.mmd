@@ -1,0 +1,9 @@
+﻿flowchart LR
+    A[📄 Excel<br/>Upload] --> B[🔍 Deteccion<br/>de Tipo]
+    B --> C[🧹 Normalizacion<br/>y Validacion]
+    C --> D{⚖️ Upsert}
+    D -->|Nuevo| E[➕ INSERT]
+    D -->|Existente| F[🔄 UPDATE]
+    E --> G[📀 Base de Datos]
+    F --> G
+    G --> H[📊 Dashboard<br/>en Tiempo Real]

@@ -1,0 +1,19 @@
+﻿graph TB
+    subgraph "🖥️ CAPA PRESENTACIÓN"
+        C1["⚛️ React 18 + TypeScript
+        Vite 7.3 · Tailwind CSS 3.4
+        Fusion UI Design System"]
+    end
+    subgraph "⚡ CAPA DE SERVICIOS"
+        S1["🚀 FastAPI 0.136
+        Python 3.12 · Uvicorn
+        10 modulos API"]
+    end
+    subgraph "🗄️ CAPA DE DATOS"
+        D1["🐬 MySQL 8.0 / PostgreSQL 16 / MariaDB 10.5
+        SQLAlchemy 2.0 Async
+        18 tablas · 15 migraciones"]
+    end
+
+    C1 -->|🔐 Axios JWT| S1
+    S1 -->|🔌 aiomysql pool| D1

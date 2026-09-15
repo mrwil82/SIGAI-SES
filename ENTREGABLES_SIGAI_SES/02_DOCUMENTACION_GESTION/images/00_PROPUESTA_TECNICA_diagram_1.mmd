@@ -1,0 +1,28 @@
+﻿erDiagram
+    items ||--o{ activos : "1 a N"
+    activos ||--o{ movimientos : "1 a N"
+    activos ||--o{ garantias : "1 a N"
+
+    items {
+        int id PK
+        string nombre
+        string categoria
+    }
+    activos {
+        int id PK
+        int item_id FK
+        string serial
+        string estado
+    }
+    movimientos {
+        int id PK
+        int activo_id FK
+        string tipo
+        int cantidad
+    }
+    garantias {
+        int id PK
+        int activo_id FK
+        string rma
+        string proveedor
+    }

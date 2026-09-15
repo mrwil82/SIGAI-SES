@@ -1,8 +1,8 @@
----
-title: "SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — Securitas"
+﻿---
+title: "SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — SES"
 ---
 
-# SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — Securitas
+# SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — SES
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-1.0.0-2ea44f?style=for-the-badge&logo=semver" alt="Version">
@@ -20,7 +20,7 @@ title: "SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — Secu
 ## Visión General del Sistema
 
 > [!IMPORTANT]
-> **SIGAI-SES** es una plataforma empresarial robusta diseñada para la gestión, control y trazabilidad de activos tecnológicos, inventarios y procesos de garantías para el área de **Seguridad Electrónica de Securitas Colombia**.
+> **SIGAI-SES** es una plataforma empresarial robusta diseñada para la gestión, control y trazabilidad de activos tecnológicos, inventarios y procesos de garantías para el área de **SES — Seguridad Electrónica Colombia**.
 
 El sistema centraliza la operación de bodegas, laboratorios y técnicos en campo, reemplazando los **procesos manuales basados en Excel** por flujos de trabajo automatizados.
 
@@ -136,45 +136,9 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 
 ## Arquitectura del Sistema (3 Capas)
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                    CLIENTE (React + Vite + TS)                 │
-│                                                                  │
-│    Login  │   Dashboard  │   Inventory  │   Guarantees  │
-│                Deliveries  │   Clients  │   Projects      │
-│                                                                  │
-│    14 rutas ·  Fusion UI Design System · 3 Temas CSS        │
-│    PWA (Service Worker) · APK Android (Capacitor)            │
-└──────────────────────────────────────────────────────────────────┘
-           │
-           │   Axios HTTP (JWT Bearer Token + Refresh)
-           │   Proxy: /api → servidor backend
 
-┌──────────────────────────────────────────────────────────────────┐
-│              SERVIDOR DE APLICACIONES (FastAPI)                │
-│                                                                  │
-│    Uvicorn Workers · FastAPI 0.136 · Python 3.12              │
-│                                                                  │
-│    Auth  │   CRUD  │   Reports  │   Import             │
-│    Analytics  │   Alerts  │   Monitoring                 │
-│                                                                  │
-│             82 endpoints REST bajo /api/v1/                   │
-│             Despliegue: servidor corporativo o cloud           │
-└──────────────────────────────────────────────────────────────────┘
-           │
-           │   SQLAlchemy Async (asyncpg / aiomysql)
-           │   Pool de conexiones a base de datos
+![Diagrama](images/00_README_TECNICO_diagram_1.png)
 
-┌──────────────────────────────────────────────────────────────────┐
-│                 BASE DE DATOS RELACIONAL                       │
-│                                                                  │
-│    usuarios  │   items  │   activos  │   garantias     │
-│    audit_logs  │   alerts  │   clientes  │  ...           │
-│                                                                  │
-│    18 tablas ·  15 migraciones Alembic · Avatares en Base64  │
-│    Motor: PostgreSQL / MySQL / MariaDB (segun entorno)        │
-└──────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -404,7 +368,7 @@ npm run build
 
 <p align="center">
   <b>SIGAI-SES</b> — <i>Sistema Integral de Gestión de Activos e Inventario</i><br><br>
-  <img src="https://img.shields.io/badge/Desarrollado%20para-Securitas%20Colombia%20S.A.-003B71?style=for-the-badge&logo=security" alt="Securitas"><br><br>
-   <b>Securitas Colombia S.A.</b> — <i>Unidad de Seguridad Electrónica (SES)</i><br>
+  <img src="https://img.shields.io/badge/Desarrollado%20para-SES%20%E2%80%94%20Seguridad%20Electr%C3%B3nica-003B71?style=for-the-badge&logo=security" alt="SES"><br><br>
+   <b>SES — Seguridad Electrónica</b> — <i>Unidad de Seguridad Electrónica (SES)</i><br>
    v1.0.0 ·  Julio 2026
 </p>
