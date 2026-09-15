@@ -470,6 +470,7 @@ class MarkdownToDocx:
             img_html = re.search(r'<img[^>]+src="([^"]+)"[^>]*>', line)
             if img_html:
                 src = img_html.group(1)
+                # Solo procesar imagenes locales, ignorar URLs externas (badges)
                 if not src.startswith('http'):
                     # Buscar imagen local
                     img_found = False
@@ -499,6 +500,9 @@ class MarkdownToDocx:
                                 pass
                     if img_found:
                         return 'image_html'
+                else:
+                    # URL externa (badges, etc.) - ignorar completamente
+                    return 'html_skip'
 
             # Remover tags HTML
             clean = re.sub(r'<[^>]+>', '', line).strip()
