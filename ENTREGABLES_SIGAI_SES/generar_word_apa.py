@@ -345,7 +345,14 @@ class MarkdownToDocx:
                 cell = table.rows[r_idx + 1].cells[c_idx]
                 cell.text = ""
                 p = cell.paragraphs[0]
-                run = p.add_run(str(cell_text).strip())
+                # Limpiar HTML y Markdown de las celdas (badges, etc.)
+                clean_text = str(cell_text).strip()
+                clean_text = re.sub(r'<img[^>]*>', '', clean_text)
+                clean_text = re.sub(r'<br\s*/?>', '\n', clean_text)
+                clean_text = re.sub(r'<[^>]+>', '', clean_text)
+                # Limpiar markdown images ![alt](url)
+                clean_text = re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'\1', clean_text)
+                run = p.add_run(clean_text)
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(10)
                 # Fondo alternado
