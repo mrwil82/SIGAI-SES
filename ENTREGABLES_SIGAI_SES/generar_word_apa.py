@@ -347,11 +347,23 @@ class MarkdownToDocx:
                 p = cell.paragraphs[0]
                 # Limpiar HTML y Markdown de las celdas (badges, etc.)
                 clean_text = str(cell_text).strip()
-                clean_text = re.sub(r'<img[^>]*>', '', clean_text)
-                clean_text = re.sub(r'<br\s*/?>', '\n', clean_text)
-                clean_text = re.sub(r'<[^>]+>', '', clean_text)
-                # Limpiar markdown images ![alt](url)
-                clean_text = re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'\1', clean_text)
+                # Extraer nombre de tecnologia de badges shields.io
+                badge_match = re.search(r'badge/-([A-Za-z0-9+._% -]+?)-[0-9A-Fa-f]{3,6}(?:\?|$)', clean_text)
+                if not badge_match:
+                    badge_match = re.search(r'badge/([A-Za-z0-9+._% -]+?)-[0-9A-Fa-f]{3,6}(?:\?|$)', clean_text)
+                if badge_match:
+                    name = badge_match.group(1)
+                    name = name.replace('-', ' ').replace('+', '+').replace('_', ' ')
+                    name = name.replace('%20', ' ').replace('%2F', '/')
+                    # Limpiar dobles espacios
+                    name = re.sub(r'\s+', ' ', name).strip()
+                    clean_text = name
+                else:
+                    clean_text = re.sub(r'<img[^>]*>', '', clean_text)
+                    clean_text = re.sub(r'<br\s*/?>', '\n', clean_text)
+                    clean_text = re.sub(r'<[^>]+>', '', clean_text)
+                    # Limpiar markdown images ![alt](url)
+                    clean_text = re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'\1', clean_text)
                 run = p.add_run(clean_text)
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(10)
