@@ -108,9 +108,13 @@ Gestión de equipos retirados de clientes corporativos.
 
 **Proceso de Triaje:**
 
-```
-DESMONTE Técnico evalúa FUNCIONAL_USADO|PARA_REPARAR|SCRAP (Baja)
-```
+| Etapa | Descripción | Resultado |
+|:------|:------------|:----------|
+| **DESMONTE** | Técnico retira el equipo del sitio del cliente | Equipo ingresa a laboratorio |
+| **EVALUACIÓN** | Técnico evalúa estado del equipo | Clasificación en categoría |
+| **FUNCIONAL_USADO** | Equipo funciona correctamente | Regresa a stock para reasignación |
+| **PARA_REPARAR** | Equipo requiere reparación | Enviado a proveedor o taller interno |
+| **SCRAP (Baja)** | Equipo en estado de descarte | Requiere aprobación de supervisor |
 
 > [!WARNING]
 > Un equipo en estado `SCRAP` debe requerir **aprobación de supervisor** antes de su disposición final, evitando bajas no autorizadas.

@@ -136,45 +136,18 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 
 ## Arquitectura del Sistema (3 Capas)
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                    CLIENTE (React + Vite + TS)                 │
-│                                                                  │
-│    Login  │   Dashboard  │   Inventory  │   Guarantees  │
-│                Deliveries  │   Clients  │   Projects      │
-│                                                                  │
-│    14 rutas ·  Fusion UI Design System · 3 Temas CSS        │
-│    PWA (Service Worker) · APK Android (Capacitor)            │
-└──────────────────────────────────────────────────────────────────┘
-           │
-           │   Axios HTTP (JWT Bearer Token + Refresh)
-           │   Proxy: /api → servidor backend
-
-┌──────────────────────────────────────────────────────────────────┐
-│              SERVIDOR DE APLICACIONES (FastAPI)                │
-│                                                                  │
-│    Uvicorn Workers · FastAPI 0.136 · Python 3.12              │
-│                                                                  │
-│    Auth  │   CRUD  │   Reports  │   Import             │
-│    Analytics  │   Alerts  │   Monitoring                 │
-│                                                                  │
-│             82 endpoints REST bajo /api/v1/                   │
-│             Despliegue: servidor corporativo o cloud           │
-└──────────────────────────────────────────────────────────────────┘
-           │
-           │   SQLAlchemy Async (asyncpg / aiomysql)
-           │   Pool de conexiones a base de datos
-
-┌──────────────────────────────────────────────────────────────────┐
-│                 BASE DE DATOS RELACIONAL                       │
-│                                                                  │
-│    usuarios  │   items  │   activos  │   garantias     │
-│    audit_logs  │   alerts  │   clientes  │  ...           │
-│                                                                  │
-│    18 tablas ·  15 migraciones Alembic · Avatares en Base64  │
-│    Motor: PostgreSQL / MySQL / MariaDB (segun entorno)        │
-└──────────────────────────────────────────────────────────────────┘
-```
+| Capa | Componente | Detalle |
+|------|-----------|---------|
+| **Cliente** | React + Vite + TypeScript | Login, Dashboard, Inventory, Guarantees, Deliveries, Clients, Projects |
+| | 14 rutas | Fusion UI Design System, 3 Temas CSS |
+| | PWA + APK Android | Service Worker, Capacitor |
+| **Comunicacion** | Axios HTTP | JWT Bearer Token + Refresh, Proxy: /api → servidor backend |
+| **Servidor** | FastAPI + Uvicorn | 4 Workers, Python 3.12 |
+| | 82 endpoints REST | `/api/v1/` — Auth, CRUD, Reports, Import, Analytics, Alerts, Monitoring |
+| | Despliegue | Servidor corporativo o cloud |
+| **Comunicacion** | SQLAlchemy Async | asyncpg / aiomysql, Pool de conexiones a BD |
+| **Base de Datos** | PostgreSQL / MySQL / MariaDB | Segun entorno |
+| | 18 tablas | 15 migraciones Alembic, Avatares en Base64 |
 
 ---
 

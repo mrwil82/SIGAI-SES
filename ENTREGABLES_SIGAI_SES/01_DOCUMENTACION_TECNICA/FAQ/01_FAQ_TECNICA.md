@@ -344,27 +344,24 @@ El archivo Excel no coincide con la plantilla esperada. Verifique los nombres de
 <details>
 <summary><b>Inventario</b></summary>
 
-```
-Serial, Referencia, Marca, Equipo, Ubicacion, Estado
-```
+| Serial | Referencia | Marca | Equipo | Ubicacion | Estado |
+|--------|-----------|-------|--------|-----------|--------|
 
 </details>
 
 <details>
 <summary><b>Clientes</b></summary>
 
-```
-Nombre, NIT, Contacto, Email, Telefono, Ciudad
-```
+| Nombre | NIT | Contacto | Email | Telefono | Ciudad |
+|--------|-----|----------|-------|----------|--------|
 
 </details>
 
 <details>
 <summary><b>Garantias</b></summary>
 
-```
-Serial, Caso, Proveedor, Fecha Envio, Estado, Falla Reportada
-```
+| Serial | Caso | Proveedor | Fecha Envio | Estado | Falla Reportada |
+|--------|------|-----------|-------------|--------|-----------------|
 
 </details>
 

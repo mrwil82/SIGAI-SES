@@ -19,22 +19,12 @@ title: "Guia de Despliegue para Pruebas del Cliente -- SIGAI-SES"
 
 ## Arquitectura del Despliegue
 
-```
-+------------------+       +----------------------------------+
-|    Cliente       |       |      SERVIDOR DE APLICACIONES    |
-|   (Navegador)    | ----> |  +----------------------------+  |
-|   + APK Android  |       |  | FastAPI + Uvicorn (4w)     |  |
-|   + EXE Windows  |       |  | Python 3.12                |  |
-+------------------+       |  | Despliegue: git push       |  |
-        |                  |  +----------+-----------------+  |
-        |                  |             |                     |
-        v                  |  +----------v-----------------+  |
-+------------------+       |  |  BASE DE DATOS              |  |
-|   Frontend       |       |  | PostgreSQL / MySQL          |  |
-|   (React Build)  |       |  | Según infraestructura       |  |
-+------------------+       |  +----------------------------+  |
-                           +----------------------------------+
-```
+| Componente | Conexion | Detalle |
+|-----------|----------|---------|
+| **Cliente (Navegador)** | ──────> | FastAPI + Uvicorn (4 workers), Python 3.12 |
+| + APK Android | | Despliegue: `git push` |
+| + EXE Windows | | |
+| **Frontend (React Build)** | ──────> | BASE DE DATOS: PostgreSQL / MySQL (segun infraestructura) |
 
 **Nota:** El stack de despliegue (servidor, base de datos, dominio) es definido por el área de TI de SES según sus políticas y estándares internos. El sistema es compatible con PostgreSQL, MySQL y MariaDB.
 

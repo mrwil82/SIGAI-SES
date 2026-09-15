@@ -22,39 +22,15 @@ title: "Guia de Despliegue On-Premise -- SIGAI-SES"
 
 ## Arquitectura del Despliegue On-Premise
 
-```
-+-----------------------------------------------------------+
-|                     Internet                               |
-|                          |                                 |
-|                    HTTPS :443                               |
-|                          v                                 |
-|            +---------------------------+                   |
-|            |  Servidor Corporativo     |                   |
-|            |  Ubuntu Server 22.04      |                   |
-|            +---------------------------+                   |
-|                          |                                 |
-|        +-----------------+-----------------+               |
-|        v                 v                  v              |
-|  +----------+    +--------------+   +----------+           |
-|  |  Nginx   |    |   FastAPI    |   |  MySQL   |           |
-|  | Reverse  |--->|   Uvicorn    |   |   8.0    |           |
-|  |  Proxy   |    |  :8000 (4w)  |   |  :3306   |           |
-|  +----------+    +--------------+   +----------+           |
-|       |                                                     |
-|       v                                                     |
-|  +----------+                                               |
-|  | Frontend |                                               |
-|  |  Build   |                                               |
-|  | Estatico |                                               |
-|  +----------+                                               |
-|                                                              |
-|  +----------------------------------------------------+     |
-|  | Scripts de Mantenimiento                           |     |
-|  |  * backup_db.py    -> Diario                        |     |
-|  |  * trigger_alerts  -> Cada 30 min                   |     |
-|  +----------------------------------------------------+     |
-+-----------------------------------------------------------+
-```
+| Componente | Puerto | Funcion |
+|-----------|--------|---------|
+| **Internet** | HTTPS :443 | Acceso externo |
+| **Servidor Corporativo** | Ubuntu Server 22.04 | Host principal |
+| **Nginx** | Reverse Proxy | Proxy inverso, SSL, archivos estaticos |
+| **FastAPI + Uvicorn** | :8000 (4 workers) | Backend API |
+| **MySQL 8.0** | :3306 | Base de datos |
+| **Frontend Build** | Estatico | React compilado, servido por Nginx |
+| **Scripts de Mantenimiento** | — | `backup_db.py` (diario), `trigger_alerts` (cada 30 min) |
 
 ---
 

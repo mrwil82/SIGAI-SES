@@ -207,19 +207,14 @@ sudo systemctl restart sigai-backend nginx
 
 ### 5.2 Procedimiento de Escalamiento
 
-```
-1.  Deteccion de incidencia (automatica o reporte de usuario)
-       |
-2.  Evaluacion de severidad (P0 - P3)
-       |
-3.  Notificacion al equipo de operaciones
-       |
-4.  Ejecucion de plan de recuperacion segun escenario
-       |
-5.  Verificacion de servicio restaurado
-       |
-6.  Documentacion de lecciones aprendidas
-```
+| # | Paso | Descripcion |
+|---|------|-------------|
+| 1 | **Deteccion de incidencia** | Automatica o reporte de usuario |
+| 2 | **Evaluacion de severidad** | Clasificacion P0 — P3 |
+| 3 | **Notificacion** | Equipo de operaciones |
+| 4 | **Ejecucion de plan** | Segun escenario de falla |
+| 5 | **Verificacion** | Servicio restaurado |
+| 6 | **Documentacion** | Lecciones aprendidas |
 
 ---
 

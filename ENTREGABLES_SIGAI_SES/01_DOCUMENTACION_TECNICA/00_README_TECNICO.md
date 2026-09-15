@@ -136,9 +136,20 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 
 ## Arquitectura del Sistema (3 Capas)
 
+| Capa | Componente | Detalle |
+|------|-----------|---------|
+| **Cliente** | React + Vite + TypeScript | Login, Dashboard, Inventory, Guarantees, Deliveries, Clients, Projects |
+| | 14 rutas | Fusion UI Design System, 3 Temas CSS |
+| | PWA + APK Android | Service Worker, Capacitor |
+| **Comunicacion** | Axios HTTP | JWT Bearer Token + Refresh, Proxy: /api → servidor backend |
+| **Servidor** | FastAPI + Uvicorn | 4 Workers, Python 3.12 |
+| | 82 endpoints REST | `/api/v1/` — Auth, CRUD, Reports, Import, Analytics, Alerts, Monitoring |
+| | Despliegue | Servidor corporativo o cloud |
+| **Comunicacion** | SQLAlchemy Async | asyncpg / aiomysql, Pool de conexiones a BD |
+| **Base de Datos** | PostgreSQL / MySQL / MariaDB | Segun entorno |
+| | 18 tablas | 15 migraciones Alembic, Avatares en Base64 |
 
 ![Diagrama](images/00_README_TECNICO_diagram_1.png)
-
 
 ---
 

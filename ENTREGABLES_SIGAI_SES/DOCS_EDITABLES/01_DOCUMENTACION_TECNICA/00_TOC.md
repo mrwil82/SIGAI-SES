@@ -1,169 +1,91 @@
 ﻿---
-title: "SIGAI-SES — Tabla de Contenidos Técnicos"
+title: "SIGAI-SES — Tabla de Contenidos"
 ---
 
-# SIGAI-SES — Tabla de Contenidos Técnicos
+# SIGAI-SES — Tabla de Contenidos
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Estado-Completo-2ea44f?style=for-the-badge&logo=markdown" alt="Estado">
-  <img src="https://img.shields.io/badge/Documentos-30%20archivos-0078D4?style=for-the-badge&logo=readthedocs" alt="Documentos">
-  <img src="https://img.shields.io/badge/Actualizado-Julio%202026-FF6F00?style=for-the-badge&logo=calendar" alt="Actualizado">
-  <img src="https://img.shields.io/badge/Idioma-Espa%C3%B1ol-FF0000?style=for-the-badge&logo=googletranslate" alt="Idioma">
-</p>
+**SES — Seguridad Electrónica** · Julio 2026
 
 ---
 
-## Acceso Rápido a la Documentación
+## 1. Documentación Técnica
 
-> [!TIP]
-> Usa los enlaces de navegación rápida para saltar directamente a la sección que necesites.
-
----
-
-### 1. Información General
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `README Principal` | Índice general del repositorio | [Leer](../README.md) |
-| `README Técnico` | Resumen tecnológico y stack completo | [Leer](00_README_TECNICO.md) |
-| `CHANGELOG` | Historial de versiones del sistema | [Leer](../CHANGELOG.md) |
-| `Acceso Cliente` | Credenciales de prueba para el cliente | [Leer](../ACCESO_CLIENTE.md) |
-| `Guía Entrega Profesional` | Guía para formatear documentación | [Leer](../GUIA_ENTREGA_PROFESIONAL.md) |
-
----
-
-### 2. Instalación
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Guía Instalación Backend` | FastAPI + PostgreSQL/MySQL | [Leer](02_GUIA_INSTALACION_BACKEND.md) |
-| `Guía Instalación Frontend` | React + Vite + TypeScript | [Leer](03_GUIA_INSTALACION_FRONTEND.md) |
+| # | Documento | Archivo Word | Descripción |
+|---|-----------|--------------|-------------|
+| 1 | README Técnico | `Word_Entregables/00_README_TECNICO.docx` | Resumen tecnológico y stack completo |
+| 2 | Guía Instalación Backend | `Word_Entregables/02_GUIA_INSTALACION_BACKEND.docx` | FastAPI + PostgreSQL |
+| 3 | Guía Instalación Frontend | `Word_Entregables/03_GUIA_INSTALACION_FRONTEND.docx` | React + Vite + TypeScript |
+| 4 | Diccionario de Datos | `Word_Entregables/04_DICCIONARIO_DE_DATOS.docx` | 18 tablas con campos, tipos y relaciones |
+| 5 | Guía Despliegue Producción | `Word_Entregables/05_GUIA_DESPLIEGUE_PRODUCCION.docx` | Render + Supabase |
+| 6 | Guía On Premise | `Word_Entregables/06_GUIA_ON_PREMISE.docx` | Nginx + Systemd + Let's Encrypt |
+| 7 | Procedimientos de Backup | `Word_Entregables/07_PROCEDIMIENTOS_BACKUP.docx` | Backup, restauración y DRP |
+| 8 | Catálogo de Errores API | `Word_Entregables/08_CATALOGO_ERRORES_API.docx` | Códigos HTTP y mensajes |
+| 9 | Guía de Migración de Datos | `Word_Entregables/09_GUIA_MIGRACION_DATOS.docx` | Migración desde Excel legacy |
+| 10 | Plan de Capacitación | `Word_Entregables/10_PLAN_CAPACITACION.docx` | Capacitación por perfil |
+| 11 | Gestión de Alertas | `Word_Entregables/11_GESTION_ALERTAS.docx` | Motor de alertas y reglas |
+| 12 | Arquitectura del Sistema | `Word_Entregables/01_ARQUITECTURA_SISTEMA.docx` | Capas, componentes, patrones |
+| 13 | Diagramas de Flujo | `Word_Entregables/02_DIAGRAMAS_FLUJO_Y_PROCESOS.docx` | 7 flujos de negocio |
+| 14 | FAQ Técnica | `Word_Entregables/01_FAQ_TECNICA.docx` | 30+ preguntas frecuentes |
+| 15 | Manual Técnico | `Word_Entregables/01_MANUAL_TECNICO.docx` | Guía completa de desarrollo |
+| 16 | API Specification | `01_DOCUMENTACION_TECNICA/API_SPEC/openapi.yaml` | OpenAPI 3.0 (82 endpoints) |
 
 ---
 
-### 3. Base de Datos
+## 2. Documentación de Gestión
 
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Diccionario de Datos` | **18 tablas** documentadas con campos, tipos y relaciones | [Leer](04_DICCIONARIO_DE_DATOS.md) |
-
----
-
-### 4. Despliegue
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Guía Despliegue Producción` | Servidor corporativo + BD | [Leer](05_GUIA_DESPLIEGUE_PRODUCCION.md) |
-| `Guía Despliegue On-Premise` | Nginx + Systemd + Let's Encrypt | [Leer](06_GUIA_ON_PREMISE.md) |
+| # | Documento | Archivo Word | Descripción |
+|---|-----------|--------------|-------------|
+| 1 | Propuesta Técnica | `Word_Entregables/00_PROPUESTA_TECNICA.docx` | Propuesta original v1.0.0 |
+| 2 | Especificación de Requisitos | `Word_Entregables/01_ESPECIFICACION_REQUISITOS.docx` | 24 RF, 5 RNF, roadmap |
+| 3 | Estado Final del Proyecto | `Word_Entregables/02_ESTADO_FINAL_PROYECTO.docx` | Auditoría y deuda técnica |
 
 ---
 
-### 5. Arquitectura
+## 3. Documentación de Usuario
 
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Arquitectura del Sistema` | Capas, componentes, ADRs, patrones | [Leer](ARQUITECTURA/01_ARQUITECTURA_SISTEMA.md) |
-| `Diagramas de Flujo` | **7 flujos** de negocio detallados | [Leer](ARQUITECTURA/02_DIAGRAMAS_FLUJO_Y_PROCESOS.md) |
-
----
-
-### 6. API
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Especificación OpenAPI` | **82 endpoints** REST documentados | [Leer](API_SPEC/openapi.yaml) |
-| `Catálogo de Errores` | Códigos HTTP y mensajes de error por endpoint | [Leer](08_CATALOGO_ERRORES_API.md) |
+| # | Documento | Archivo Word | Descripción |
+|---|-----------|--------------|-------------|
+| 1 | Manual Usuario Técnico | `Word_Entregables/01_MANUAL_USUARIO_TECNICO.docx` | Manual para técnicos de campo |
+| 2 | Manual Administrador | `Word_Entregables/02_MANUAL_ADMINISTRADOR.docx` | Manual para administradores |
+| 3 | Historias de Usuario | `Word_Entregables/01_HISTORIAS_USUARIO.docx` | 24 HU con criterios de aceptación |
+| 4 | FAQ Usuario | `Word_Entregables/01_FAQ_USUARIO.docx` | Preguntas frecuentes |
 
 ---
 
-### 7. Manuales Técnicos
+## 4. Calidad y Legal
 
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Manual Técnico` | Manual completo del sistema | [Leer](MANUALES/01_MANUAL_TECNICO.md) |
-
----
-
-### 8. FAQ
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `FAQ Técnica` | **30+ preguntas** frecuentes técnicas | [Leer](FAQ/01_FAQ_TECNICA.md) |
+| # | Documento | Archivo Word | Descripción |
+|---|-----------|--------------|-------------|
+| 1 | Plan de Pruebas | `Word_Entregables/01_PLAN_DE_PRUEBAS.docx` | Unitarias, integración, E2E, seguridad |
+| 2 | Informe de Seguridad | `Word_Entregables/02_INFORME_SEGURIDAD.docx` | OWASP Top 10 |
+| 3 | Aviso de Privacidad | `Word_Entregables/03_AVISO_DE_PRIVACIDAD.docx` | Ley 1581 de 2012 Colombia |
+| 4 | Políticas de Calidad | `Word_Entregables/POLITICAS_DE_CALIDAD.docx` | Objetivos y métricas |
 
 ---
 
-### 9. Operaciones
+## 5. Otros
 
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Procedimientos de Backup` | Backup, restauración y DRP | [Leer](07_PROCEDIMIENTOS_BACKUP.md) |
-| `Guía de Migración de Datos` | Migración desde Excel legacy | [Leer](09_GUIA_MIGRACION_DATOS.md) |
-| `Plan de Capacitación` | Capacitación por perfil de usuario | [Leer](10_PLAN_CAPACITACION.md) |
-| `Gestión de Alertas` | Diseño detallado del motor de alertas y reglas | [Leer](11_GESTION_ALERTAS.md) |
-
-> [!NOTE]
-> Los datos legacy para migración se encuentran en la carpeta [`datos_migracion/`](datos_migracion/) con **3 archivos Excel**.
+| # | Documento | Archivo Word | Descripción |
+|---|-----------|--------------|-------------|
+| 1 | Acceso Cliente | `Word_Entregables/ACCESO_CLIENTE.docx` | Credenciales de prueba |
+| 2 | README | `Word_Entregables/README.docx` | Índice general |
 
 ---
 
-### 10. Gestión
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Propuesta Técnica` | Propuesta original v1.0.0 (documento fundacional) | [Leer](../02_DOCUMENTACION_GESTION/00_PROPUESTA_TECNICA.md) |
-| `Especificación de Requisitos` | **24 RF**, 5 RNF, roadmap | [Leer](../02_DOCUMENTACION_GESTION/01_ESPECIFICACION_REQUISITOS.md) |
-| `Estado Final del Proyecto` | Auditoría y deuda técnica | [Leer](../02_DOCUMENTACION_GESTION/02_ESTADO_FINAL_PROYECTO.md) |
-
----
-
-### 11. Usuario
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Historias de Usuario` | **24 HU** con criterios de aceptación | [Leer](../03_DOCUMENTACION_USUARIO/01_HISTORIAS_USUARIO.md) |
-| `FAQ de Usuario` | Preguntas frecuentes para usuarios finales | [Leer](../03_DOCUMENTACION_USUARIO/FAQ/01_FAQ_USUARIO.md) |
-| `Manual Usuario Técnico` | Manual paso a paso para técnicos | [Leer](../03_DOCUMENTACION_USUARIO/MANUALES/01_MANUAL_USUARIO_TECNICO.md) |
-| `Manual Administrador` | Manual para administradores del sistema | [Leer](../03_DOCUMENTACION_USUARIO/MANUALES/02_MANUAL_ADMINISTRADOR.md) |
-
----
-
-### 12. Calidad y Legal
-
-| Documento | Descripción | Enlace |
-|---|---|---|
-| `Plan de Pruebas` | Unitarias, integración, E2E, rendimiento, seguridad | [Leer](../04_CALIDAD_Y_LEGAL/01_PLAN_DE_PRUEBAS.md) |
-| `Informe de Seguridad` | OWASP Top 10, vulnerabilidades, recomendaciones | [Leer](../04_CALIDAD_Y_LEGAL/02_INFORME_SEGURIDAD.md) |
-| `Aviso de Privacidad` | Ley 1581 de 2012 Colombia | [Leer](../04_CALIDAD_Y_LEGAL/03_AVISO_DE_PRIVACIDAD.md) |
-| `Políticas de Calidad` | Objetivos, métricas, procesos | [Leer](../04_CALIDAD_Y_LEGAL/POLITICAS_DE_CALIDAD.md) |
-
----
-
-## Resumen del Repositorio
-
-<details>
-<summary><b>Click para ver estadísticas del proyecto</b></summary>
-
-<br>
+## Estadísticas del Proyecto
 
 | Métrica | Valor |
 |---|---|
-| **Total de documentos** | **30 archivos** |
-| **Módulos del sistema** | 14 rutas, 10 modulos API |
-| **Endpoints API** | 82 REST |
-| **Tablas BD** | 18 (15 migraciones Alembic) |
-| **Historias de Usuario** | 24 |
-| **Requisitos Funcionales** | 24 |
-| **Preguntas FAQ** | 30+ |
-| **Flujos de negocio** | 7 |
-| **Temas UI** | 3 (Verde, Azul Cobalto, Blanco Hueso) |
-| **Builds** | Web PWA + APK Android + EXE Windows |
-
-</details>
+| Total de documentos Word | 29 archivos |
+| Tablas de base de datos | 18 |
+| Endpoints API | 82 REST |
+| Historias de Usuario | 24 |
+| Requisitos Funcionales | 24 |
+| Preguntas FAQ | 30+ |
+| Flujos de negocio | 7 |
 
 ---
 
-<p align="center">
-  <b>SIGAI-SES</b> — <i>Sistema Integral de Gestión de Activos e Inventario</i><br>
-   <b>SES — Seguridad Electrónica</b> — Unidad de Seguridad Electrónica (SES)<br>
-   v1.0.0 — Julio 2026
-</p>
+> **Formato APA:** Todos los documentos incluyen portada corporativa, tabla de contenido, Times New Roman 12pt, interlineado 2.0, margenes 2.54 cm, numeración de páginas e imágenes Mermaid renderizadas.
+>
+> **Para actualizar tablas de contenido en Word:** `Ctrl+A` → `F9`

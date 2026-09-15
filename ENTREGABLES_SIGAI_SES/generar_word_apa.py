@@ -466,6 +466,40 @@ class MarkdownToDocx:
 
         # HTML basico (badges, etc.) - extraer texto
         if '<' in line:
+            # Detectar etiquetas <img> y embedirlas
+            img_html = re.search(r'<img[^>]+src="([^"]+)"[^>]*>', line)
+            if img_html:
+                src = img_html.group(1)
+                if not src.startswith('http'):
+                    # Buscar imagen local
+                    img_found = False
+                    search_paths = [
+                        self.md_dir / src,
+                        self.md_dir / "images" / Path(src).name,
+                        SCRIPT_DIR / src,
+                        SCRIPT_DIR / "images" / Path(src).name,
+                    ]
+                    img_name = Path(src).name
+                    for img_dir in self.md_dir.rglob("images"):
+                        search_paths.append(img_dir / img_name)
+
+                    for img_path in search_paths:
+                        if img_path.exists() and img_path.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.bmp']:
+                            try:
+                                p = self.doc.add_paragraph()
+                                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                                p.paragraph_format.first_line_indent = Cm(0)
+                                p.paragraph_format.space_before = Pt(6)
+                                p.paragraph_format.space_after = Pt(6)
+                                run = p.add_run()
+                                run.add_picture(str(img_path), width=Inches(5.5))
+                                img_found = True
+                                break
+                            except:
+                                pass
+                    if img_found:
+                        return 'image_html'
+
             # Remover tags HTML
             clean = re.sub(r'<[^>]+>', '', line).strip()
             if clean and clean != line.strip():
