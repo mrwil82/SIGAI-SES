@@ -68,7 +68,7 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 | Atributo | Detalle |
 |:---|---|
 | **Framework** | ![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react) + ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript) |
-| **Bundler** | ![Vite](https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite) |
+| **Bundler** | ![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?logo=vite) |
 | **Estilos** | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss) — **Fusion UI** (Emerald Core × Neomorphic Hub) |
 | **HTTP** | ![Axios](https://img.shields.io/badge/Axios-1.6-5A29E4?logo=axios) con interceptores JWT |
 | **Ruteo** | React Router DOM — **16 rutas** (1 pública, 15 protegidas) |
@@ -99,7 +99,7 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 
 | Atributo | Detalle |
 |:---|---|
-| **Framework** | ![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi) (Python 3.12) |
+| **Framework** | ![FastAPI](https://img.shields.io/badge/FastAPI-0.136.1-009688?logo=fastapi) (Python 3.12) |
 | **Servidor** | ![Uvicorn](https://img.shields.io/badge/Uvicorn-ASGI-4051b5?logo=uvicorn) |
 | **ORM** | SQLAlchemy 2.0 Async + asyncpg / aiomysql |
 | **Documentación** | OpenAPI 3.0.3 (`/docs`, `/redoc`) |
@@ -113,10 +113,10 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 | `/api/v1/auth` | `5` | Login, refresh, logout, register, me |
 | `/api/v1/users` | `10` | CRUD + audit + settings + avatar |
 | `/api/v1/inventory` | `17` | CRUD items, activos, ubicaciones, desmonte-bulk, epp |
-| `/api/v1/business` | `27` | CRUD clientes, proyectos, proveedores, garantías, actas |
+| `/api/v1/business` | `29` | CRUD clientes, proyectos, proveedores, garantías, actas |
 | `/api/v1/analytics` | `3` | Summary dashboard, search global, predicciones |
 | `/api/v1/reports` | `1` | Export Excel/PDF (5 módulos) |
-| `/api/v1/alerts` | `7` | CRUD alertas + summary + evaluar |
+| `/api/v1/alerts` | `8` | CRUD alertas + summary + stream + evaluar |
 | `/api/v1/regionales` | `4` | CRUD de regionales |
 | `/api/v1/import` | `3` | Importación Excel (auto-detección) + plantillas |
 | `/api/v1/monitoring` | `3` | Health check, health/db, metrics |
@@ -128,7 +128,7 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 | Atributo | Detalle |
 |:---|---|
 | **Motor** | PostgreSQL 16+ / MySQL 8.0+ / MariaDB 10.5+ |
-| **Pool** | asyncpg / aiomysql — `pool_size=30`, `max_overflow=50` |
+| **Pool** | asyncpg / aiomysql — `pool_size=5`, `max_overflow=5` |
 | **ORM** | SQLAlchemy 2.0 Async (Base declarativa) |
 | **Migraciones** | Alembic — **14 versiones** aplicadas |
 
@@ -181,7 +181,7 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 | **Dependency Injection** | `app/api/deps.py` | Inyección de dependencias (BD, usuario) |
 | **Factory** | `app/models/*.py` | Creación de modelos SQLAlchemy |
 | **Singleton** | `app/db/session.py` | Instancia única del engine BD |
-| **Observer** | `app/alerts/rules.py` | Motor de reglas → alertas |
+| **Observer** | `app/crud/crud_alerts.py` | Motor de reglas → alertas |
 | **Strategy** | `app/services/import_service.py` | Estrategia según tipo de archivo |
 
 

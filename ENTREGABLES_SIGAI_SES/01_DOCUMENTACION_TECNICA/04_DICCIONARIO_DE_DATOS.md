@@ -119,7 +119,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 11 | `id_proveedor_compra` | `INTEGER` | **FK** → `proveedores` | Proveedor que suministró el equipo |
 | 12 | `numero_factura_compra` | `VARCHAR(50)` | — | Factura de compra del equipo |
 | 13 | `fecha_compra` | `DATE` | — | Fecha de adquisición |
-| 14 | `activo_fijo_ses` | `VARCHAR(50)` | — | Placa de activo fijo de SES |
+| 14 | `activo_fijo_securitas` | `VARCHAR(50)` | — | Placa de activo fijo de SES |
 | 15 | `credenciales_tecnicas` | `VARCHAR(255)` | — | Credenciales de acceso (IP, usuario, password) |
 | 16 | `observaciones` | `TEXT` | — | Notas y observaciones generales |
 | 17 | `fecha_ingreso_laboratorio` | `TIMESTAMP` | — | Fecha de ingreso a laboratorio (desmontes) |
@@ -227,12 +227,13 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 3 | `id_usuario_tecnico` | `INTEGER` | **FK** → `usuarios` | Técnico que recibe/entrega |
 | 4 | `id_usuario_representante` | `INTEGER` | **FK** → `usuarios` | Representante que firma |
 | 5 | `id_proyecto` | `INTEGER` | **FK** → `proyectos` | Proyecto asociado |
-| 6 | `tipo_acta` | `ENUM(5 valores)` | — | Tipo de acta |
-| 7 | `estado_acta` | `ENUM('BORRADOR','FIRMADA','ANULADA')` | — | Estado del acta |
-| 8 | `fecha_entrega` | `TIMESTAMP` | — | Fecha de creación/firma |
-| 9 | `url_pdf` | `VARCHAR(255)` | — | Ruta al archivo PDF generado |
-| 10 | `firma_tecnico_blob` | `TEXT` | — | Datos de la firma digital (base64) |
-| 11 | `observaciones` | `TEXT` | — | Observaciones generales |
+| 6 | `id_regional` | `INTEGER` | **FK** → `regionales` | Regional del acta |
+| 7 | `tipo_acta` | `ENUM(5 valores)` | — | Tipo de acta |
+| 8 | `estado_acta` | `ENUM('BORRADOR','FIRMADA','ANULADA')` | — | Estado del acta |
+| 9 | `fecha_entrega` | `TIMESTAMP` | — | Fecha de creación/firma |
+| 10 | `url_pdf` | `VARCHAR(255)` | — | Ruta al archivo PDF generado |
+| 11 | `firma_tecnico_blob` | `TEXT` | — | Datos de la firma digital (base64) |
+| 12 | `observaciones` | `TEXT` | — | Observaciones generales |
 
 #### `detalles_acta_entrega`
 
@@ -268,8 +269,9 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 9 | `departamento` | `VARCHAR(100)` | — | Departamento |
 | 10 | `tipo_cliente` | `ENUM('CORPORATIVO','INTERNO','GENERAL')` | — | Tipo de cliente |
 | 11 | `ceco_asociado` | `VARCHAR(20)` | — | Centro de costos asociado |
-| 12 | `created_at` | `TIMESTAMP` | — | Fecha de creación |
-| 13 | `deleted_at` | `TIMESTAMP` | — | **Soft delete** |
+| 12 | `id_regional` | `INTEGER` | **FK** → `regionales` | Regional asociada |
+| 13 | `created_at` | `TIMESTAMP` | — | Fecha de creación |
+| 14 | `deleted_at` | `TIMESTAMP` | — | **Soft delete** |
 
 #### `proveedores`
 
@@ -298,7 +300,8 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 |---|---|---|---|---|
 | 1 | `id_proyecto` | `INTEGER` | **PK** | Identificador único |
 | 2 | `id_cliente` | `INTEGER` | **FK** → `clientes` | Cliente del proyecto |
-| 3 | `nombre_proyecto` | `VARCHAR(200)` | — | Nombre del proyecto |
+| 3 | `id_regional` | `INTEGER` | **FK** → `regionales` | Regional del proyecto |
+| 4 | `nombre_proyecto` | `VARCHAR(200)` | — | Nombre del proyecto |
 | 4 | `centro_costos` | `VARCHAR(50)` | — | Centro de costos |
 | 5 | `ubicacion` | `VARCHAR(200)` | — | Ubicación del proyecto |
 | 6 | `estado` | `ENUM('ACTIVO','FINALIZADO','PAUSADO')` | — | Estado del proyecto |
@@ -352,6 +355,7 @@ title: "Diccionario de Datos y Diagrama de Relaciones — SIGAI-SES"
 | 13 | `valor_umbral` | `DECIMAL(10,2)` | — | Valor umbral configurado |
 | 14 | `unidad` | `VARCHAR(20)` | — | Unidad de medida |
 | 15 | `asignado_a` | `INTEGER` | **FK** → `usuarios` | Usuario responsable de atender la alerta |
+| 16 | `solucion` | `TEXT` | — | Solución aplicada a la alerta |
 
 #### `alert_rules`
 

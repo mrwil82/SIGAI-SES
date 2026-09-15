@@ -86,8 +86,8 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |Validación de Entrada|Pydantic schemas con tipos estrictos||
 |Sanitización|SQLAlchemy ORM — query parameters||
 |Serialización|FastAPI serializa automáticamente, previniendo XSS||
-|Headers de Seguridad|Pendiente: CSP, X-Frame-Options, X-Content-Type-Options (**v1.1.0**)||
-|Rate Limiting|Login (SlowAPI, 10 req/min). Pendiente: general (**v1.1.0**)||
+|Headers de Seguridad|CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy — Implementados en middleware||
+|Rate Limiting|Login (SlowAPI, 10 req/min). General: pendiente (**v1.1.0**)||
 |Bloqueo por intentos|Pendiente: bloqueo tras N intentos fallidos (**v1.1.0**)||
 
 > [!WARNING]
@@ -150,7 +150,7 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |**A02**|Cryptographic Failures|**Mitigado parcialmente**|bcrypt + HTTPS. Pendiente: encriptar credenciales técnicas|
 |**A03**|Injection|**Mitigado**|SQLAlchemy ORM (parameter binding) + Pydantic + FastAPI sanitiza|
 |**A04**|Insecure Design|**Mitigado**|Arquitectura por capas, validación en schemas, transacciones atómicas|
-|**A05**|Security Misconfiguration|**Mitigado parcialmente**|CORS desde env, DEBUG=False. Pendiente: security headers HTTP|
+|**A05**|Security Misconfiguration|**Mitigado**|CORS desde env, DEBUG=False, security headers HTTP (CSP, X-Frame-Options, etc.)|
 |**A06**|Vulnerable Components|**Mitigado**|Dependencias con versiones fijas. Sin componentes vulnerables conocidos|
 |**A07**|Identification Failures|**Mitigado**|JWT (8h), refresh tokens (7d), sesiones revocables, bcrypt|
 |**A08**|Software Integrity Failures|**Mitigado**|CI/CD con GitHub Actions, code review via PRs, versiones fijas|
@@ -158,7 +158,7 @@ El sistema implementa **Control de Acceso Basado en Roles** con **3 niveles**:
 |**A10**|SSRF|**No aplica**|El sistema no realiza peticiones a URLs externas no controladas|
 
 > [!NOTE]
-> **Resumen OWASP:** 7 mitigados · 2 parciales · 1 no aplica
+> **Resumen OWASP:** 8 mitigados · 1 parcial · 1 no aplica
 
 ---
 

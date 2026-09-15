@@ -1,4 +1,4 @@
----
+﻿---
 title: "Catalogo de Errores de API -- SIGAI-SES"
 ---
 
@@ -64,12 +64,12 @@ title: "Catalogo de Errores de API -- SIGAI-SES"
 
 | Endpoint | HTTP | Mensaje de Error | Causa |
 |----------|------|---------------------|----------|
-| `POST /login` | 401 | `"Incorrect email or password"` | Email o contrasena incorrectos |
+| `POST /login` | 401 | `"Email o contraseña incorrectos"` | Email o contrasena incorrectos |
 | `POST /login` | 429 | `"Rate limit exceeded: 10 per 1 minute"` | Demasiados intentos de login |
-| `POST /refresh` | 401 | `"Invalid refresh token"` | Refresh token invalido o expirado |
-| `POST /refresh` | 401 | `"Refresh token has been revoked"` | Sesion revocada manualmente |
-| `POST /register` | 400 | `"Email already registered"` | Email ya existe en el sistema |
-| `POST /register` | 403 | `"Not enough permissions"` | El usuario no es ADMIN |
+| `POST /refresh` | 401 | `"Refresh token inválido"` | Refresh token invalido o expirado |
+| `POST /refresh` | 401 | `"Sesión expirada o revocada"` | Sesion revocada manualmente |
+| `POST /register` | 400 | `"El email ya está registrado."` | Email ya existe en el sistema |
+| `POST /register` | 403 | `"No tiene permisos para crear usuarios"` | El usuario no es ADMIN |
 | `GET /me` | 401 | `"Not authenticated"` | Token faltante o invalido |
 | `GET /me` | 401 | `"Token has expired"` | Access token expirado |
 
@@ -146,8 +146,8 @@ title: "Catalogo de Errores de API -- SIGAI-SES"
 
 | Endpoint | HTTP | Mensaje de Error | Causa |
 |----------|------|---------------------|----------|
-| `GET /health/db` | 503 | `"Database connection failed: timeout"` | No se pudo conectar a MySQL |
-| `GET /health/db` | 503 | `"Pool is exhausted"` | Pool de conexiones agotado |
+| `GET /health/db` | 200 | `{"status": "unhealthy", "database": "disconnected"}` | No se pudo conectar a la BD |
+| `GET /health` | 200 | `{"status": "healthy"}` | Sistema operativo |
 
 ---
 
@@ -190,14 +190,9 @@ title: "Catalogo de Errores de API -- SIGAI-SES"
 
 ### Error 429 -- Rate limit excedido
 
-```mermaid
-graph LR
-    A[Esperar 1 minuto] --> B[Reintentar]
-    B --> C{?Sigue fallando?}
-    C -->|Si| D[Verificar bucles de peticiones]
-    C -->|No| E[Operacion exitosa]
-    D --> F[Configurar limite mas alto en produccion]
-```
+
+![Diagrama](images/08_CATALOGO_ERRORES_API_diagram_1.png)
+
 
 ### Error 502 -- Bad Gateway (BD no disponible)
 

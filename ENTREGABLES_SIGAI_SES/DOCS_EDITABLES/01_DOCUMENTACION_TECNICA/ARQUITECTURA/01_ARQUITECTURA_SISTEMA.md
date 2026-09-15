@@ -1,4 +1,4 @@
----
+﻿---
 title: "Arquitectura del Sistema — SIGAI-SES"
 ---
 
@@ -35,22 +35,9 @@ title: "Arquitectura del Sistema — SIGAI-SES"
 
 ### Flujo de Comunicación
 
-```mermaid
-graph TB
-    subgraph "🌐 Cliente"
-        A[React SPA<br/>Vite + TS]
-    end
-    subgraph "☁️ Servidor"
-        B[Nginx<br/>Reverse Proxy]
-        C[FastAPI<br/>Uvicorn Workers]
-    end
-    subgraph "🗄️ Datos"
-        D[(Base de Datos<br/>PostgreSQL / MySQL)]
-    end
-    A -->|HTTPS| B
-    B -->|proxy_pass :8000| C
-    C -->|asyncpg / aiomysql pool| D
-```
+
+![Diagrama](images/01_ARQUITECTURA_SISTEMA_diagram_1.png)
+
 
 ---
 
@@ -66,17 +53,9 @@ graph TB
 
 ### Pipeline de Datos
 
-```mermaid
-flowchart LR
-    A[📄 Excel<br/>Upload] --> B[🔍 Deteccion<br/>de Tipo]
-    B --> C[🧹 Normalizacion<br/>y Validacion]
-    C --> D{⚖️ Upsert}
-    D -->|Nuevo| E[➕ INSERT]
-    D -->|Existente| F[🔄 UPDATE]
-    E --> G[📀 Base de Datos]
-    F --> G
-    G --> H[📊 Dashboard<br/>en Tiempo Real]
-```
+
+![Diagrama](images/01_ARQUITECTURA_SISTEMA_diagram_2.png)
+
 
 ---
 
@@ -89,7 +68,7 @@ flowchart LR
 | Atributo | Detalle |
 |:---|---|
 | **Framework** | ![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react) + ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript) |
-| **Bundler** | ![Vite](https://img.shields.io/badge/Vite-5.2-646CFF?logo=vite) |
+| **Bundler** | ![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?logo=vite) |
 | **Estilos** | ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss) — **Fusion UI** (Emerald Core × Neomorphic Hub) |
 | **HTTP** | ![Axios](https://img.shields.io/badge/Axios-1.6-5A29E4?logo=axios) con interceptores JWT |
 | **Ruteo** | React Router DOM — **16 rutas** (1 pública, 15 protegidas) |
@@ -120,7 +99,7 @@ flowchart LR
 
 | Atributo | Detalle |
 |:---|---|
-| **Framework** | ![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi) (Python 3.12) |
+| **Framework** | ![FastAPI](https://img.shields.io/badge/FastAPI-0.136.1-009688?logo=fastapi) (Python 3.12) |
 | **Servidor** | ![Uvicorn](https://img.shields.io/badge/Uvicorn-ASGI-4051b5?logo=uvicorn) |
 | **ORM** | SQLAlchemy 2.0 Async + asyncpg / aiomysql |
 | **Documentación** | OpenAPI 3.0.3 (`/docs`, `/redoc`) |
@@ -134,10 +113,10 @@ flowchart LR
 | `/api/v1/auth` | `5` | Login, refresh, logout, register, me |
 | `/api/v1/users` | `10` | CRUD + audit + settings + avatar |
 | `/api/v1/inventory` | `17` | CRUD items, activos, ubicaciones, desmonte-bulk, epp |
-| `/api/v1/business` | `27` | CRUD clientes, proyectos, proveedores, garantías, actas |
+| `/api/v1/business` | `29` | CRUD clientes, proyectos, proveedores, garantías, actas |
 | `/api/v1/analytics` | `3` | Summary dashboard, search global, predicciones |
 | `/api/v1/reports` | `1` | Export Excel/PDF (5 módulos) |
-| `/api/v1/alerts` | `7` | CRUD alertas + summary + evaluar |
+| `/api/v1/alerts` | `8` | CRUD alertas + summary + stream + evaluar |
 | `/api/v1/regionales` | `4` | CRUD de regionales |
 | `/api/v1/import` | `3` | Importación Excel (auto-detección) + plantillas |
 | `/api/v1/monitoring` | `3` | Health check, health/db, metrics |
@@ -149,7 +128,7 @@ flowchart LR
 | Atributo | Detalle |
 |:---|---|
 | **Motor** | PostgreSQL 16+ / MySQL 8.0+ / MariaDB 10.5+ |
-| **Pool** | asyncpg / aiomysql — `pool_size=30`, `max_overflow=50` |
+| **Pool** | asyncpg / aiomysql — `pool_size=5`, `max_overflow=5` |
 | **ORM** | SQLAlchemy 2.0 Async (Base declarativa) |
 | **Migraciones** | Alembic — **14 versiones** aplicadas |
 
@@ -173,35 +152,9 @@ flowchart LR
 
 ## 4. Flujo de Comunicación Detallado
 
-```mermaid
-sequenceDiagram
-    participant U as 🖥️ Usuario
-    participant N as 🌐 Nginx
-    participant F as ⚡ FastAPI
-    participant M as 🗄️ Base de Datos
 
-    U->>N: HTTPS Request
-    N->>F: proxy_pass :8000
-    activate F
+![Diagrama](images/01_ARQUITECTURA_SISTEMA_diagram_3.png)
 
-    Note over F: 🔐 Valida JWT (python-jose)
-    Note over F: 👤 Autoriza rol (RBAC)
-    Note over F: ✅ Valida datos (Pydantic)
-    Note over F: ⚙️ Ejecuta CRUD
-    Note over F: 📝 Registra auditoría
-
-    F->>M: Consulta SQLAlchemy Async
-    activate M
-    M-->>F: Resultado
-    deactivate M
-
-    F-->>N: JSON Response
-    deactivate F
-    N-->>U: HTTPS Response
-
-    Note over U: 🔄 React actualiza estado
-    Note over U: 🎨 Re-renderiza vista
-```
 
 ---
 
@@ -228,18 +181,12 @@ sequenceDiagram
 | **Dependency Injection** | `app/api/deps.py` | Inyección de dependencias (BD, usuario) |
 | **Factory** | `app/models/*.py` | Creación de modelos SQLAlchemy |
 | **Singleton** | `app/db/session.py` | Instancia única del engine BD |
-| **Observer** | `app/alerts/rules.py` | Motor de reglas → alertas |
+| **Observer** | `app/crud/crud_alerts.py` | Motor de reglas → alertas |
 | **Strategy** | `app/services/import_service.py` | Estrategia según tipo de archivo |
 
-```mermaid
-graph LR
-    subgraph "🎯 Patrones de Diseño"
-        A[📦 Repository] --> B[🗄️ Abstracción BD]
-        C[💉 DI] --> D[🔐 Inyección Seguridad]
-        E[👁️ Observer] --> F[⚠️ Motor Alertas]
-        G[🧠 Strategy] --> H[📥 Importación]
-    end
-```
+
+![Diagrama](images/01_ARQUITECTURA_SISTEMA_diagram_4.png)
+
 
 ---
 

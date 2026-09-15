@@ -67,12 +67,12 @@ La versión **1.0.0** introduce el concepto de **Kardex Digital Universal**, per
 
 |Capa|Tecnología|Justificación Senior|
 |:----|:---|---|
-|** Base de datos**|MySQL 8.0|Soporte para **JSON nativo** (ideal para logs de auditoría) y robustez relacional|
+|** Base de datos**|PostgreSQL 16+ / MySQL 8.0|Soporte para **JSON nativo** (ideal para logs de auditoría) y robustez relacional. PostgreSQL como motor principal en producción (Supabase)|
 |** Backend**|FastAPI + SQLAlchemy 2.0|Alto rendimiento **asíncrono** y tipado fuerte para minimizar errores en tiempo de ejecución|
 |** Frontend**|React 18 + Vite + Tailwind|Arquitectura de componentes **desacoplados** para máxima velocidad de carga|
-|** Notificaciones**|Celery + Redis|Manejo de tareas en **segundo plano** para envío de correos y alertas sin bloquear el API|
+|** Notificaciones**|APScheduler|Tareas **programadas** para evaluación de alertas y monitoreo de stock sin bloquear el API|
 |** Seguridad**|OAuth2 + JWT + Bcrypt|Estándares de la industria para **protección de datos sensibles**|
-|** Reportes**|ReportLab / PyPDF2|Generación dinámica de **actas de entrega** en PDF|
+|** Reportes**|ReportLab|Generación dinámica de **actas de entrega** en PDF con diseño corporativo|
 
 > [!TIP]
 > FastAPI + SQLAlchemy 2.0 fue seleccionado sobre Django por su **rendimiento asíncrono superior** y **menor overhead** en operaciones CRUD intensivas como las de inventario serializado.
@@ -94,7 +94,7 @@ A diferencia de un registro plano, las garantías seguirán un **flujo lógico e
 ### 4.2 Módulo de Stock y Kardex — Trazabilidad Total
 
 > [!IMPORTANT]
-> Toda transacción (Entrada, Salida, Traslado) generará un **registro inmutable** en la tabla `auditoria_stock`.
+> Toda transacción (Entrada, Salida, Traslado) generará un **registro inmutable** en la tabla `audit_logs`.
 
 |Tipo|Descripción|
 |:----|:---|

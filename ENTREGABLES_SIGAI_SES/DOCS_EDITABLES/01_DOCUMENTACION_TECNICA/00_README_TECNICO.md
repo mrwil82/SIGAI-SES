@@ -8,7 +8,7 @@ title: "SIGAI-SES: Sistema Integral de Gestión de Activos e Inventario — SES"
   <img src="https://img.shields.io/badge/Version-1.0.0-2ea44f?style=for-the-badge&logo=semver" alt="Version">
   <img src="https://img.shields.io/badge/Estado-Producci%C3%B3n-success?style=for-the-badge&logo=github" alt="Estado">
   <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/FastAPI-0.136-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/FastAPI-0.136.1-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/SQL-3FCF8E?style=for-the-badge&logo=database&logoColor=black" alt="SQL">
@@ -53,7 +53,7 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | <img src="https://img.shields.io/badge/-PostgreSQL-4169E1?logo=postgresql&logoColor=white" height="20"> | `16+` | Motor de BD principal |
 | <img src="https://img.shields.io/badge/-MySQL%2FMariaDB-4479A1?logo=mysql&logoColor=white" height="20"> | `8.0+` | BD alternativa local (compatible) |
 | <img src="https://img.shields.io/badge/-JOSE-000?logo=jwt&logoColor=white" height="20"> | `3.5.0` | Tokens JWT (HS256) |
-| <img src="https://img.shields.io/badge/-Passlib-000?logo=passlib&logoColor=white" height="20"> | `4.0.1` | Hashing de contraseñas con **bcrypt** |
+| <img src="https://img.shields.io/badge/-Passlib-000?logo=passlib&logoColor=white" height="20"> | `1.7.4` | Hashing de contraseñas con **bcrypt** |
 | <img src="https://img.shields.io/badge/-Pandas-150458?logo=pandas&logoColor=white" height="20"> | `3.0.3` | Procesamiento de Excel |
 | <img src="https://img.shields.io/badge/-OpenPyXL-000?logo=microsoftexcel&logoColor=white" height="20"> | `3.1.5` | Lectura de archivos Excel |
 | <img src="https://img.shields.io/badge/-XlsxWriter-000?logo=microsoftexcel&logoColor=white" height="20"> | `3.2.9` | Exportación Excel con streaming (`constant_memory`) |
@@ -139,15 +139,17 @@ El sistema centraliza la operación de bodegas, laboratorios y técnicos en camp
 | Capa | Componente | Detalle |
 |------|-----------|---------|
 | **Cliente** | React + Vite + TypeScript | Login, Dashboard, Inventory, Guarantees, Deliveries, Clients, Projects |
-| | 14 rutas | Fusion UI Design System, 3 Temas CSS |
+| | 15 rutas | Fusion UI Design System, 3 Temas CSS |
 | | PWA + APK Android | Service Worker, Capacitor |
 | **Comunicacion** | Axios HTTP | JWT Bearer Token + Refresh, Proxy: /api → servidor backend |
-| **Servidor** | FastAPI + Uvicorn | 4 Workers, Python 3.12 |
-| | 82 endpoints REST | `/api/v1/` — Auth, CRUD, Reports, Import, Analytics, Alerts, Monitoring |
+| **Servidor** | FastAPI + Uvicorn | Python 3.12 |
+| | 83 endpoints REST | `/api/v1/` — Auth, CRUD, Reports, Import, Analytics, Alerts, Monitoring |
 | | Despliegue | Servidor corporativo o cloud |
 | **Comunicacion** | SQLAlchemy Async | asyncpg / aiomysql, Pool de conexiones a BD |
 | **Base de Datos** | PostgreSQL / MySQL / MariaDB | Segun entorno |
-| | 18 tablas | 15 migraciones Alembic, Avatares en Base64 |
+| | 18 tablas | 14 migraciones Alembic, Avatares en Base64 |
+
+![Diagrama](images/00_README_TECNICO_diagram_1.png)
 
 ---
 
@@ -363,9 +365,9 @@ npm run build
 | **Versión Actual** | | `v1.0.0` — Producción |
 | **Fecha** | | Julio 2026 |
 | **Cobertura de Tests** | | 32 tests (backend) — CI pasa |
-| **Endpoints API** | | 82 REST (`/api/v1/`) |
+| **Endpoints API** | | 83 REST (`/api/v1/`) |
 | **Tablas en BD** | | 18 |
-| **Migraciones Alembic** | | 15 versiones |
+| **Migraciones Alembic** | | 14 versiones |
 | **Roles de Usuario** | | 3 (ADMIN, TECNICO, TECNICO_LABORATORIO) |
 | **Temas UI** | | 3 (Verde, Azul Cobalto, Blanco Hueso) |
 | **Despliegue** | | Servidor corporativo o cloud (GitHub Actions CI) |

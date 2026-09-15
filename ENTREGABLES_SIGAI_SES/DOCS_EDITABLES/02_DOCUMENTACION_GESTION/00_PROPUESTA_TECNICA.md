@@ -57,18 +57,9 @@ La versión **1.0.0** introduce el concepto de **Kardex Digital Universal**, per
 
 ### Ciclo de Vida del Activo Serializado
 
-```mermaid
-flowchart LR
- N[Nuevo] --> I[Instalado]
- I --> G[En Garantía]
- G --> R[Reparado]
- R --> I
- G --> D[Desmonte]
- D --> L[Laboratorio]
- L --> F[Funcional Usado]
- L --> P[Para Reparar]
- L --> S[Scrap / Baja]
-```
+
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_1.png)
+
 
 ---
 
@@ -76,12 +67,12 @@ flowchart LR
 
 |Capa|Tecnología|Justificación Senior|
 |:----|:---|---|
-|** Base de datos**|MySQL 8.0|Soporte para **JSON nativo** (ideal para logs de auditoría) y robustez relacional|
+|** Base de datos**|PostgreSQL 16+ / MySQL 8.0|Soporte para **JSON nativo** (ideal para logs de auditoría) y robustez relacional. PostgreSQL como motor principal en producción (Supabase)|
 |** Backend**|FastAPI + SQLAlchemy 2.0|Alto rendimiento **asíncrono** y tipado fuerte para minimizar errores en tiempo de ejecución|
 |** Frontend**|React 18 + Vite + Tailwind|Arquitectura de componentes **desacoplados** para máxima velocidad de carga|
-|** Notificaciones**|Celery + Redis|Manejo de tareas en **segundo plano** para envío de correos y alertas sin bloquear el API|
+|** Notificaciones**|APScheduler|Tareas **programadas** para evaluación de alertas y monitoreo de stock sin bloquear el API|
 |** Seguridad**|OAuth2 + JWT + Bcrypt|Estándares de la industria para **protección de datos sensibles**|
-|** Reportes**|ReportLab / PyPDF2|Generación dinámica de **actas de entrega** en PDF|
+|** Reportes**|ReportLab|Generación dinámica de **actas de entrega** en PDF con diseño corporativo|
 
 > [!TIP]
 > FastAPI + SQLAlchemy 2.0 fue seleccionado sobre Django por su **rendimiento asíncrono superior** y **menor overhead** en operaciones CRUD intensivas como las de inventario serializado.
@@ -94,24 +85,16 @@ flowchart LR
 
 A diferencia de un registro plano, las garantías seguirán un **flujo lógico estricto**:
 
-```mermaid
-stateDiagram-v2
- [*] --> REGISTRADO
- REGISTRADO --> ENVIADO_PROVEEDOR
- ENVIADO_PROVEEDOR --> RECIBIDO_PROVEEDOR
- RECIBIDO_PROVEEDOR --> RESUELTO
- RECIBIDO_PROVEEDOR --> REEMPLAZADO
- RESUELTO --> ENTREGADO_A_CLIENTE
- REEMPLAZADO --> ENTREGADO_A_CLIENTE
- REEMPLAZADO --> STOCK
-```
+
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_2.png)
+
 
 ** Mejora clave:** Vinculación directa con el **serial del equipo** en stock para evitar errores de digitación.
 
 ### 4.2 Módulo de Stock y Kardex — Trazabilidad Total
 
 > [!IMPORTANT]
-> Toda transacción (Entrada, Salida, Traslado) generará un **registro inmutable** en la tabla `auditoria_stock`.
+> Toda transacción (Entrada, Salida, Traslado) generará un **registro inmutable** en la tabla `audit_logs`.
 
 |Tipo|Descripción|
 |:----|:---|
@@ -159,19 +142,9 @@ Generación de **documentos legales internos**.
 <details>
 <summary><b> Ver diagrama entidad-relación sugerido</b></summary>
 
-```
-┌──────────────┐ ┌──────────────┐ ┌────────────────┐
-│ items │◄──────│ activos │──────►│ movimientos │
-│ (catálogo) │1 N │ (seriales) │1 N │ (kardex) │
-└──────────────┘ └──────┬───────┘ └────────────────┘
- │ 1
- │
- │ N
- ┌─────┴──────┐
- │ garantias │
- │ (RMA/caso) │
- └────────────┘
-```
+
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_1.png)
+
 
 </details>
 
@@ -220,30 +193,9 @@ Generación de **documentos legales internos**.
 
 </details>
 
-```mermaid
-gantt
- title Plan de Ejecución SIGAI-SES v1.0.0
- dateFormat YYYY-MM-DD
- axisFormat Sprint %S
 
- section Sprint 1
- Cimiento y Auth :s1, 2026-05-04, 14d
+![Diagrama](images/00_PROPUESTA_TECNICA_diagram_3.png)
 
- section Sprint 2
- Inventario Base :s2, after s1, 14d
-
- section Sprint 3
- Garantías y Seriales :s3, after s2, 14d
-
- section Sprint 4
- Operación y Actas :s4, after s3, 14d
-
- section Sprint 5
- Laboratorio y Dashboards :s5, after s4, 14d
-
- section Sprint 6
- QA y Despliegue :s6, after s5, 14d
-```
 
 ---
 

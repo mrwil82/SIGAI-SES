@@ -99,7 +99,7 @@ Frontend/src/
 ├── components/     # Componentes reutilizables (Card, Button, Table, Badge)
 ├── context/        # AuthContext (estado de autenticación)
 ├── hooks/          # Custom hooks (useInventory)
-├── pages/          #  11 páginas de la aplicación
+├── pages/          # 16 páginas de la aplicación
 ├── services/       # API services (auth, inventory, business, alerts)
 ├── App.tsx         # Rutas principales
 └── main.tsx        # Punto de entrada

@@ -7,7 +7,7 @@ title: "**Plan de Pruebas — SIGAI-SES** `v1.0.0`"
 <p align="center">
  <img src="https://img.shields.io/badge/Estado-Activo-brightgreen?style=for-the-badge" alt="Estado">
  <img src="https://img.shields.io/badge/Cobertura-%E2%89%A580%25-blue?style=for-the-badge" alt="Cobertura">
- <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+ <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
  <img src="https://img.shields.io/badge/pytest-9.0%2B-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="pytest">
  <img src="https://img.shields.io/badge/Locust-Rendimiento-green?style=for-the-badge&logo=locust&logoColor=white" alt="Locust">
  <img src="https://img.shields.io/badge/OWASP-Seguridad-red?style=for-the-badge" alt="OWASP">
