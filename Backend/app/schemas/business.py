@@ -11,6 +11,13 @@ def nombre_obligatorio(v: str) -> str:
     return v.strip()
 
 
+def empty_str_to_none(v: Optional[str]) -> Optional[str]:
+    """Convierte string vacío a None para campos únicos opcionales"""
+    if v is not None and v.strip() == "":
+        return None
+    return v
+
+
 def email_valido_o_none(v: Optional[str]) -> Optional[str]:
     if v is not None and v.strip() == "":
         return None
@@ -32,6 +39,13 @@ class ClienteBase(BaseModel):
 
     _validate_nombre = field_validator("nombre", mode="before")(nombre_obligatorio)
     _validate_email = field_validator("email_contacto", mode="before")(email_valido_o_none)
+    _validate_nit = field_validator("nit", mode="before")(empty_str_to_none)
+    _validate_ceco = field_validator("ceco_asociado", mode="before")(empty_str_to_none)
+    _validate_contacto = field_validator("contacto", mode="before")(empty_str_to_none)
+    _validate_telefono = field_validator("telefono", mode="before")(empty_str_to_none)
+    _validate_direccion = field_validator("direccion", mode="before")(empty_str_to_none)
+    _validate_ciudad = field_validator("ciudad", mode="before")(empty_str_to_none)
+    _validate_departamento = field_validator("departamento", mode="before")(empty_str_to_none)
 
 
 class ClienteCreate(ClienteBase):
@@ -81,6 +95,9 @@ class ProyectoBase(BaseModel):
     descripcion: Optional[str] = None
 
     _validate_nombre = field_validator("nombre_proyecto", mode="before")(proyecto_nombre_obligatorio)
+    _validate_centro_costos = field_validator("centro_costos", mode="before")(empty_str_to_none)
+    _validate_ubicacion = field_validator("ubicacion", mode="before")(empty_str_to_none)
+    _validate_descripcion = field_validator("descripcion", mode="before")(empty_str_to_none)
 
 
 class ProyectoCreate(ProyectoBase):
@@ -99,6 +116,9 @@ class ProyectoUpdate(BaseModel):
     descripcion: Optional[str] = None
 
     _validate_nombre = field_validator("nombre_proyecto", mode="before")(proyecto_nombre_obligatorio)
+    _validate_centro_costos = field_validator("centro_costos", mode="before")(empty_str_to_none)
+    _validate_ubicacion = field_validator("ubicacion", mode="before")(empty_str_to_none)
+    _validate_descripcion = field_validator("descripcion", mode="before")(empty_str_to_none)
 
 
 class Proyecto(ProyectoBase):
@@ -127,6 +147,11 @@ class ProveedorBase(BaseModel):
 
     _validate_nombre = field_validator("nombre", mode="before")(proveedor_nombre_obligatorio)
     _validate_email = field_validator("email", mode="before")(email_valido_o_none)
+    _validate_nit = field_validator("nit", mode="before")(empty_str_to_none)
+    _validate_contacto = field_validator("contacto", mode="before")(empty_str_to_none)
+    _validate_telefono = field_validator("telefono", mode="before")(empty_str_to_none)
+    _validate_direccion = field_validator("direccion", mode="before")(empty_str_to_none)
+    _validate_ciudad = field_validator("ciudad", mode="before")(empty_str_to_none)
 
 
 class ProveedorCreate(ProveedorBase):
@@ -146,6 +171,11 @@ class ProveedorUpdate(BaseModel):
 
     _validate_nombre = field_validator("nombre", mode="before")(proveedor_nombre_obligatorio)
     _validate_email = field_validator("email", mode="before")(email_valido_o_none)
+    _validate_nit = field_validator("nit", mode="before")(empty_str_to_none)
+    _validate_contacto = field_validator("contacto", mode="before")(empty_str_to_none)
+    _validate_telefono = field_validator("telefono", mode="before")(empty_str_to_none)
+    _validate_direccion = field_validator("direccion", mode="before")(empty_str_to_none)
+    _validate_ciudad = field_validator("ciudad", mode="before")(empty_str_to_none)
 
 
 class Proveedor(ProveedorBase):
@@ -179,6 +209,12 @@ class GarantiaBase(BaseModel):
     estado_proceso: str = "REGISTRADO"
 
     _validate_falla = field_validator("falla_reportada", mode="before")(garantia_falla_obligatoria)
+    _validate_numero_caso = field_validator("numero_caso_interno", mode="before")(empty_str_to_none)
+    _validate_rma = field_validator("rma_proveedor", mode="before")(empty_str_to_none)
+    _validate_factura = field_validator("numero_factura_compra", mode="before")(empty_str_to_none)
+    _validate_credenciales = field_validator("credenciales_equipo", mode="before")(empty_str_to_none)
+    _validate_area = field_validator("area_origen", mode="before")(empty_str_to_none)
+    _validate_comentarios = field_validator("comentarios_proceso", mode="before")(empty_str_to_none)
 
 
 class GarantiaCreate(GarantiaBase):
@@ -192,8 +228,18 @@ class GarantiaUpdate(BaseModel):
     fecha_recibido_reparado: Optional[datetime] = None
     tipo_resolucion: Optional[str] = None
     falla_reportada: Optional[str] = Field(default=None, description="Descripción de la falla")
+    numero_caso_interno: Optional[str] = None
+    numero_factura_compra: Optional[str] = None
+    credenciales_equipo: Optional[str] = None
+    area_origen: Optional[str] = None
 
     _validate_falla = field_validator("falla_reportada", mode="before")(garantia_falla_obligatoria)
+    _validate_numero_caso = field_validator("numero_caso_interno", mode="before")(empty_str_to_none)
+    _validate_rma = field_validator("rma_proveedor", mode="before")(empty_str_to_none)
+    _validate_factura = field_validator("numero_factura_compra", mode="before")(empty_str_to_none)
+    _validate_credenciales = field_validator("credenciales_equipo", mode="before")(empty_str_to_none)
+    _validate_area = field_validator("area_origen", mode="before")(empty_str_to_none)
+    _validate_comentarios = field_validator("comentarios_proceso", mode="before")(empty_str_to_none)
 
 
 from app.schemas.inventory import Activo, Regional

@@ -3,6 +3,14 @@ from typing import Optional, List
 from datetime import datetime, date
 from decimal import Decimal
 
+
+def empty_str_to_none(v: Optional[str]) -> Optional[str]:
+    """Convierte string vacío a None para campos únicos opcionales"""
+    if v is not None and v.strip() == "":
+        return None
+    return v
+
+
 # Regionales
 
 
@@ -50,6 +58,7 @@ class ItemBase(BaseModel):
     marca: Optional[str] = None
     referencia: Optional[str] = None
     codigo_item_interno: Optional[str] = None
+    ubicacion: Optional[str] = None
     unidad_medida: str = "UND"
     stock_minimo: int = 5
     compra_maxima: int = 20
@@ -57,11 +66,14 @@ class ItemBase(BaseModel):
     moneda: str = "COP"
 
     _validate_nombre = field_validator("nombre_equipo", mode="before")(item_nombre_obligatorio)
+    _validate_marca = field_validator("marca", mode="before")(empty_str_to_none)
+    _validate_referencia = field_validator("referencia", mode="before")(empty_str_to_none)
+    _validate_codigo = field_validator("codigo_item_interno", mode="before")(empty_str_to_none)
+    _validate_ubicacion = field_validator("ubicacion", mode="before")(empty_str_to_none)
 
 
 class ItemCreate(ItemBase):
     cantidad_inicial: Optional[Decimal] = Decimal("0.00")
-    ubicacion: Optional[str] = None
 
 
 class ItemUpdate(BaseModel):
@@ -77,8 +89,13 @@ class ItemUpdate(BaseModel):
     moneda: Optional[str] = None
     unidad_medida: Optional[str] = None
     cantidad_inicial: Optional[Decimal] = None
+    ubicacion: Optional[str] = None
 
     _validate_nombre = field_validator("nombre_equipo", mode="before")(item_nombre_obligatorio)
+    _validate_marca = field_validator("marca", mode="before")(empty_str_to_none)
+    _validate_referencia = field_validator("referencia", mode="before")(empty_str_to_none)
+    _validate_codigo = field_validator("codigo_item_interno", mode="before")(empty_str_to_none)
+    _validate_ubicacion = field_validator("ubicacion", mode="before")(empty_str_to_none)
 
 
 class Item(ItemBase):
@@ -90,12 +107,6 @@ class Item(ItemBase):
 
 
 # Activos
-
-
-def activo_serial_obligatorio(v: str) -> str:
-    if not v or not v.strip():
-        raise ValueError("El número de serie es obligatorio")
-    return v.strip()
 
 
 def activo_serial_obligatorio(v: str) -> str:
@@ -122,6 +133,13 @@ class ActivoBase(BaseModel):
     observaciones: Optional[str] = None
 
     _validate_serial = field_validator("serial", mode="before")(activo_serial_obligatorio)
+    _validate_area = field_validator("area_asignada", mode="before")(empty_str_to_none)
+    _validate_responsable = field_validator("responsable_sitio", mode="before")(empty_str_to_none)
+    _validate_ubicacion = field_validator("ubicacion_fisica", mode="before")(empty_str_to_none)
+    _validate_factura = field_validator("numero_factura_compra", mode="before")(empty_str_to_none)
+    _validate_activo_fijo = field_validator("activo_fijo_securitas", mode="before")(empty_str_to_none)
+    _validate_credenciales = field_validator("credenciales_tecnicas", mode="before")(empty_str_to_none)
+    _validate_observaciones = field_validator("observaciones", mode="before")(empty_str_to_none)
 
 
 class ActivoCreate(ActivoBase):
@@ -146,6 +164,13 @@ class ActivoUpdate(BaseModel):
     serial: Optional[str] = Field(default=None, description="Número de serie")
 
     _validate_serial = field_validator("serial", mode="before")(activo_serial_obligatorio)
+    _validate_area = field_validator("area_asignada", mode="before")(empty_str_to_none)
+    _validate_responsable = field_validator("responsable_sitio", mode="before")(empty_str_to_none)
+    _validate_ubicacion = field_validator("ubicacion_fisica", mode="before")(empty_str_to_none)
+    _validate_factura = field_validator("numero_factura_compra", mode="before")(empty_str_to_none)
+    _validate_activo_fijo = field_validator("activo_fijo_securitas", mode="before")(empty_str_to_none)
+    _validate_credenciales = field_validator("credenciales_tecnicas", mode="before")(empty_str_to_none)
+    _validate_observaciones = field_validator("observaciones", mode="before")(empty_str_to_none)
 
 
 class Activo(ActivoBase):

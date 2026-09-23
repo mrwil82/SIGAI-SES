@@ -5,6 +5,13 @@ from app.models.user import UserRole
 from app.schemas.inventory import Regional
 
 
+def empty_str_to_none(v: Optional[str]) -> Optional[str]:
+    """Convierte string vacío a None para campos únicos opcionales"""
+    if v is not None and v.strip() == "":
+        return None
+    return v
+
+
 def usuario_nombre_obligatorio(v: str) -> str:
     if not v or not v.strip():
         raise ValueError("El nombre es obligatorio")
@@ -29,6 +36,9 @@ class UsuarioBase(BaseModel):
 
     _validate_nombre = field_validator("nombre", mode="before")(usuario_nombre_obligatorio)
     _validate_email = field_validator("email", mode="before")(usuario_email_valido)
+    _validate_cedula = field_validator("cedula", mode="before")(empty_str_to_none)
+    _validate_codigo = field_validator("codigo_empleado", mode="before")(empty_str_to_none)
+    _validate_regional = field_validator("regional", mode="before")(empty_str_to_none)
 
 
 class UsuarioCreate(UsuarioBase):
@@ -55,6 +65,9 @@ class UsuarioUpdate(BaseModel):
 
     _validate_nombre = field_validator("nombre", mode="before")(usuario_nombre_obligatorio)
     _validate_email = field_validator("email", mode="before")(usuario_email_valido)
+    _validate_cedula = field_validator("cedula", mode="before")(empty_str_to_none)
+    _validate_codigo = field_validator("codigo_empleado", mode="before")(empty_str_to_none)
+    _validate_regional = field_validator("regional", mode="before")(empty_str_to_none)
 
 
 class Usuario(UsuarioBase):
