@@ -1,0 +1,719 @@
+import React, { useEffect, useState } from "react";
+import { ExportMenu } from "../components/ExportMenu";
+import {
+  Briefcase,
+  Search,
+  Plus,
+  Building2,
+  MapPin,
+  Edit2,
+  Trash2,
+  ChevronRight,
+  Download,
+  Upload,
+} from "lucide-react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  Button,
+  Badge,
+  DashboardLayout,
+  TableContainer,
+  THead,
+  TBody,
+  TH,
+  TR,
+  TD,
+  NeoInput,
+  Modal,
+  FormGroup,
+  NeoSelect,
+  Alert,
+  NeoTextarea,
+} from "../components/Fusion";
+import { SearchableSelect } from "../components/SearchableSelect";
+import { ConfirmModal } from "../components/Fusion";
+import { useToast } from "../lib/toast";
+import {
+  useProyectos,
+  useCreateProyecto,
+  useUpdateProyecto,
+  useDeleteProyecto,
+  type ProyectoPayload,
+} from "../hooks/useProjects";
+import { useClientes } from "../hooks/useClients";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
+import { downloadTemplate, importInventory } from "../services/inventory";
+import ImportModeSelector, {
+  type ImportStockMode,
+} from "../components/ImportModeSelector";
+import { logger } from "../lib/logger";
+import { extractErrorMessage } from "../lib/apiError";
+
+interface ProyectoRow {
+  id_proyecto: number;
+  id_cliente?: number;
+  id_regional?: number | null;
+  nombre_proyecto: string;
+  centro_costos?: string;
+  estado?: string;
+  ubicacion?: string;
+  fecha_inicio?: string | null;
+  fecha_fin_estimada?: string | null;
+  fecha_cierre_real?: string | null;
+  descripcion?: string;
+  cliente?: { nombre?: string };
+  regional_rel?: { nombre?: string } | null;
+}
+
+interface ClienteRow {
+  id_cliente: number;
+  nombre: string;
+}
+
+interface RegionalRow {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
+}
+
+interface ProyectoFormValues {
+  nombre_proyecto: string;
+  id_cliente: string;
+  id_regional: string;
+  centro_costos: string;
+  estado: string;
+  ubicacion: string;
+  fecha_inicio: string;
+  fecha_fin_estimada: string;
+  fecha_cierre_real: string;
+  descripcion: string;
+}
+
+const Projects: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [modoStock, setModoStock] = useState<ImportStockMode>("sumar");
+  const [editingProyecto, setEditingProyecto] = useState<ProyectoRow | null>(
+    null,
+  );
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
+
+  const { data: proyData, isLoading } = useProyectos(currentPage, pageSize);
+  const proyectos = (proyData?.items || []) as ProyectoRow[];
+  const totalProyectos = proyData?.total || 0;
+  const { data: cliData } = useClientes();
+  const clientes = (cliData?.items || []) as ClienteRow[];
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as RegionalRow[];
+  const createProyectoMut = useCreateProyecto();
+  const updateProyectoMut = useUpdateProyecto();
+  const deleteProyectoMut = useDeleteProyecto();
+  const createRegionalMut = useCreateRegional();
+
+  useEffect(() => {
+    if (alert) {
+      const t = setTimeout(() => setAlert(null), 4500);
+      return () => clearTimeout(t);
+    }
+  }, [alert]);
+
+  const toast = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState<string>("");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ProyectoFormValues>();
+
+  const handleEdit = (proj: ProyectoRow) => {
+    setEditingProyecto(proj);
+    setValue("nombre_proyecto", proj.nombre_proyecto);
+    setValue("id_cliente", String(proj.id_cliente ?? ""));
+    setValue("centro_costos", proj.centro_costos ?? "");
+    setValue("estado", proj.estado ?? "ACTIVO");
+    setValue("ubicacion", proj.ubicacion ?? "");
+    setValue(
+      "fecha_inicio",
+      proj.fecha_inicio ? proj.fecha_inicio.split("T")[0] : "",
+    );
+    setValue(
+      "fecha_fin_estimada",
+      proj.fecha_fin_estimada ? proj.fecha_fin_estimada.split("T")[0] : "",
+    );
+    setValue(
+      "fecha_cierre_real",
+      proj.fecha_cierre_real ? proj.fecha_cierre_real.split("T")[0] : "",
+    );
+    setValue("descripcion", proj.descripcion || "");
+    setValue("id_regional", proj.id_regional ? String(proj.id_regional) : "");
+    setIsModalOpen(true);
+  };
+
+  const openConfirm = (id: number, message?: string) => {
+    setConfirmId(id);
+    setConfirmMessage(message || "¿Está seguro de eliminar este proyecto?");
+    setConfirmOpen(true);
+  };
+
+  const performDelete = async () => {
+    if (confirmId == null) return;
+    try {
+      await deleteProyectoMut.mutateAsync(confirmId);
+      toast.success("Proyecto eliminado correctamente.");
+      setAlert(null);
+    } catch (error) {
+      toast.error("Error al eliminar el proyecto.");
+    } finally {
+      setConfirmOpen(false);
+      setConfirmId(null);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingProyecto(null);
+    reset();
+  };
+
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      setAlert({ type: "error", message: "El nombre de la regional es obligatorio." });
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegionalMut.mutateAsync({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      setValue("id_regional", String(regional.id_regional));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      setAlert({ type: "success", message: "Regional creada correctamente." });
+    } catch (error) {
+      logger.error("Error creando regional:", error);
+      setAlert({ type: "error", message: "Error al crear la regional." });
+    } finally {
+      setCreatingRegional(false);
+    }
+  };
+
+  const onSubmit = async (data: ProyectoFormValues) => {
+    try {
+      const payload: ProyectoPayload = {
+        ...data,
+        id_cliente: data.id_cliente ? parseInt(data.id_cliente) : null,
+        id_regional: data.id_regional ? parseInt(data.id_regional) : null,
+        fecha_inicio: data.fecha_inicio || null,
+        fecha_fin_estimada: data.fecha_fin_estimada || null,
+        fecha_cierre_real: data.fecha_cierre_real || null,
+        descripcion: data.descripcion || null,
+      };
+
+      if (editingProyecto) {
+        await updateProyectoMut.mutateAsync({
+          id: editingProyecto.id_proyecto,
+          data: payload,
+        });
+        setAlert({
+          type: "success",
+          message: "Proyecto actualizado correctamente.",
+        });
+      } else {
+        await createProyectoMut.mutateAsync(payload);
+        setAlert({
+          type: "success",
+          message: "Proyecto creado correctamente.",
+        });
+      }
+      closeModal();
+    } catch {
+      setAlert({ type: "error", message: "Error al procesar el proyecto." });
+    }
+  };
+
+  const filteredProyectos = proyectos.filter(
+    (p) =>
+      p.nombre_proyecto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.centro_costos?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  return (
+    <DashboardLayout>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Gestión de Proyectos
+          </h1>
+          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">
+            Locaciones de instalación y centros de costo
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2">
+          <ExportMenu module="projects" />
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => downloadTemplate("proyectos")}
+          >
+            <Download size={14} />
+            Plantilla
+          </Button>
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <Upload size={16} />
+            Carga Excel
+          </Button>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus size={16} />
+            Nuevo Proyecto
+          </Button>
+        </div>
+      </div>
+
+      {alert && (
+        <div className="mb-6">
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+          />
+        </div>
+      )}
+
+      <Card className="mb-8">
+        <div className="relative max-w-md">
+          <Search
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted"
+            size={16}
+          />
+          <NeoInput
+            placeholder="Buscar por nombre o CECO..."
+            className="pl-10 h-12"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </Card>
+
+      <Card className="overflow-hidden p-0 border-bg4">
+        <TableContainer>
+          <THead>
+            <TH>Nombre del Proyecto</TH>
+            <TH className="hidden md:table-cell">Cliente Asociado</TH>
+            <TH className="hidden lg:table-cell">Regional</TH>
+            <TH className="hidden sm:table-cell">CECO / Centro Costos</TH>
+            <TH className="hidden xl:table-cell">Ubicación</TH>
+            <TH>Estado</TH>
+            <TH></TH>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <TR>
+                <TD colSpan={7} className="text-center py-20">
+                  <div className="w-10 h-10 border-2 border-chart-blue/30 border-t-chart-blue rounded-full animate-spin mx-auto mb-3" />
+                  <span className="text-chart-blue uppercase tracking-widest font-bold text-[10px]">
+                    Cargando Proyectos...
+                  </span>
+                </TD>
+              </TR>
+            ) : filteredProyectos.length > 0 ? (
+              filteredProyectos.map((proj) => (
+                <TR
+                  key={proj.id_proyecto}
+                  onClick={() => handleEdit(proj)}
+                  className="cursor-pointer"
+                >
+                  <TD>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-blue border border-bg4 shadow-neo shrink-0">
+                        <Briefcase size={18} />
+                      </div>
+                      <div className="font-bold text-xs md:text-sm text-content-primary truncate max-w-[150px] sm:max-w-[250px] lg:max-w-none">
+                        {proj.nombre_proyecto}
+                      </div>
+                    </div>
+                  </TD>
+                  <TD className="hidden md:table-cell">
+                    <div className="flex items-center gap-2">
+                      <Building2 size={12} className="text-content-muted" />
+                      <span className="text-[11px] text-content-secondary">
+                        {proj.cliente?.nombre || "Interno"}
+                      </span>
+                    </div>
+                  </TD>
+                  <TD className="hidden lg:table-cell">
+                    <div className="flex items-center gap-2">
+                      <Building2 size={12} className="text-content-muted" />
+                      <span className="text-[11px] text-content-secondary">
+                        {proj.regional_rel?.nombre || "---"}
+                      </span>
+                    </div>
+                  </TD>
+                  <TD className="hidden sm:table-cell">
+                    <Badge
+                      label={proj.centro_costos || "S.C."}
+                      color="var(--chart-blue)"
+                      bg="rgba(0,163,255,0.05)"
+                    />
+                  </TD>
+                  <TD className="hidden xl:table-cell">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={12} className="text-content-muted" />
+                      <span className="text-[11px] text-content-secondary truncate max-w-[150px]">
+                        {proj.ubicacion || "No definida"}
+                      </span>
+                    </div>
+                  </TD>
+                  <TD>
+                    <Badge
+                      label={proj.estado ?? "S.N."}
+                      color={
+                        proj.estado === "ACTIVO"
+                          ? "var(--emerald)"
+                          : "var(--gold)"
+                      }
+                      bg={
+                        proj.estado === "ACTIVO"
+                          ? "var(--emerald-muted)"
+                          : "rgba(255,184,0,0.1)"
+                      }
+                    />
+                  </TD>
+                  <TD>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEdit(proj); }}
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openConfirm(proj.id_proyecto); }}
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                      <button
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/projects/${proj.id_proyecto}`); }}
+                      >
+                        <ChevronRight size={13} />
+                      </button>
+                    </div>
+                  </TD>
+                </TR>
+              ))
+            ) : (
+              <TR>
+                <TD
+                  colSpan={6}
+                  className="text-center py-20 text-content-muted italic text-xs md:text-sm"
+                >
+                  Sin proyectos registrados.
+                </TD>
+              </TR>
+            )}
+          </TBody>
+        </TableContainer>
+      </Card>
+
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
+        <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
+          Mostrando {filteredProyectos.length} de {totalProyectos} registros
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={totalProyectos <= currentPage * pageSize}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
+
+      {/* Modal de Registro */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingProyecto ? "Editar Proyecto" : "Crear Nuevo Proyecto"}
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeModal}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit(onSubmit)}>
+              {editingProyecto ? "Guardar Cambios" : "Crear Proyecto"}
+            </Button>
+          </>
+        }
+      >
+        <form className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup
+            label="Nombre del Proyecto"
+            error={errors.nombre_proyecto?.message as string}
+          >
+            <NeoInput
+              {...register("nombre_proyecto", {
+                required: "El nombre es obligatorio",
+              })}
+              placeholder="Ej: Instalación Cámaras Sede Sur"
+            />
+          </FormGroup>
+
+          <FormGroup label="Cliente Responsable">
+            <SearchableSelect
+              options={clientes.map((c) => ({                value: String(c.id_cliente),
+                label: c.nombre,
+              }))}
+              value={watch("id_cliente") || ""}
+              onChange={(val) => setValue("id_cliente", val)}
+              placeholder="Escriba para buscar cliente..."
+            />
+          </FormGroup>
+
+          <FormGroup label="Regional">
+            <div className="flex gap-2 items-start">
+              <div className="flex-1 min-w-0">
+                <SearchableSelect
+                  options={regionalesList.map((r) => ({
+                    value: String(r.id_regional),
+                    label: r.nombre,
+                  }))}
+                  value={watch("id_regional") || ""}
+                  onChange={(val) => setValue("id_regional", val)}
+                  placeholder="Escriba para buscar regional..."
+                />
+              </div>
+              <Button
+                variant="neo"
+                type="button"
+                className="h-10 px-2.5 shrink-0 text-[10px]"
+                onClick={() => setRegionalModalOpen(true)}
+                title="Crear nueva regional"
+              >
+                <Plus size={14} />
+              </Button>
+            </div>
+          </FormGroup>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Centro de Costos">
+              <NeoInput
+                {...register("centro_costos")}
+                placeholder="Ej: 102030"
+              />
+            </FormGroup>
+            <FormGroup label="Estado">
+              <NeoSelect {...register("estado")}>
+                <option value="ACTIVO">Activo</option>
+                <option value="PAUSADO">Pausado</option>
+                <option value="FINALIZADO">Finalizado</option>
+              </NeoSelect>
+            </FormGroup>
+          </div>
+
+          <FormGroup label="Ubicación Física / Dirección">
+            <NeoInput
+              {...register("ubicacion")}
+              placeholder="Ej: Calle 100 #15-20, Bogotá"
+            />
+          </FormGroup>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormGroup label="Fecha Inicio">
+              <NeoInput type="date" {...register("fecha_inicio")} />
+            </FormGroup>
+            <FormGroup label="Fin Estimado">
+              <NeoInput type="date" {...register("fecha_fin_estimada")} />
+            </FormGroup>
+            <FormGroup label="Cierre Real">
+              <NeoInput type="date" {...register("fecha_cierre_real")} />
+            </FormGroup>
+          </div>
+
+          <FormGroup label="Descripción Detallada">
+            <NeoTextarea
+              {...register("descripcion")}
+              placeholder="Notas sobre el alcance del proyecto..."
+            />
+          </FormGroup>
+        </form>
+      </Modal>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar eliminación"
+        message={confirmMessage}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={performDelete}
+      />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRegionalModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL PORTUARIA"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Cartagena"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Carga Masiva de Proyectos (Excel)"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsImportModalOpen(false)}>
+              Cerrar
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <div className="p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 text-center">
+            <input
+              type="file"
+              id="proyectos-excel-upload"
+              className="hidden"
+              accept=".xlsx,.xls,.csv"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImporting(true);
+                  try {
+                    const res = await importInventory(
+                      file,
+                      undefined,
+                      undefined,
+                      modoStock,
+                    );
+                    setAlert({ type: "success", message: res.mensaje });
+                    setCurrentPage(1);
+                    setIsImportModalOpen(false);
+                  } catch (err) {
+                    const message = extractErrorMessage(err, "Error al importar archivo");
+                    setAlert({ type: "error", message });
+                  } finally {
+                    setImporting(false);
+                  }
+                }
+              }}
+            />
+            <label
+              htmlFor="proyectos-excel-upload"
+              className="cursor-pointer flex flex-col items-center gap-3"
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${importing ? "bg-gold animate-pulse" : "bg-emerald-primary/10 text-emerald-primary"}`}
+              >
+                <Download size={24} className="rotate-180" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-sm">
+                  {importing
+                    ? "Procesando registros..."
+                    : "Click para subir archivo"}
+                </p>
+                <p className="text-[10px] text-content-muted">
+                  Soporta el formato Plantilla_Proyectos (.xlsx)
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <ImportModeSelector value={modoStock} onChange={setModoStock} />
+
+          <div className="flex gap-2">
+            <Button
+              variant="neo"
+              className="flex-1 text-[10px] py-2"
+              onClick={() => downloadTemplate("proyectos")}
+            >
+              <Download size={14} className="mr-1" />
+              Plantilla Proyectos
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-primary">
+              Instrucciones
+            </h4>
+            <ul className="text-[10px] text-content-secondary space-y-2 list-disc pl-4">
+              <li>
+                El sistema detecta automáticamente el formato de proyectos.
+              </li>
+              <li>
+                El proyecto debe estar asociado a un cliente existente.
+              </li>
+              <li>Se recomienda limpiar filas vacías antes de cargar.</li>
+            </ul>
+          </div>
+        </div>
+      </Modal>
+    </DashboardLayout>
+  );
+};
+
+export default Projects;

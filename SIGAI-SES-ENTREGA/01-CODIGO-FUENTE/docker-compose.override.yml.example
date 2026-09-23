@@ -1,0 +1,81 @@
+# =============================================================================
+# docker-compose.override.yml - Overrides para DESARROLLO LOCAL
+# =============================================================================
+# INSTRUCCIONES:
+# 1. Copie este archivo como docker-compose.override.yml (sin .example)
+# 2. Este archivo se fusiona AUTOMÁTICAMENTE con docker-compose.yml
+# 3. NO suba este archivo a Git (agregado a .gitignore)
+# 4. Úselo para: puertos locales, montar código fuente, debug, etc.
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # BACKEND - Modo desarrollo con hot reload
+  # ─────────────────────────────────────────────────────────────────────────
+  backend:
+    # Montar código fuente para hot reload (cambios instantáneos)
+    volumes:
+      - ./Backend:/app
+      - ./Backend/app:/app/app
+      # Excluir node_modules, __pycache__, .venv, logs del montaje
+      - /app/__pycache__
+      - /app/.venv
+      - /app/logs
+    # Sobrescribir comando para usar --reload
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --workers 1
+    # Variables extra para desarrollo
+    environment:
+      - PYTHONPATH=/app
+      - UVICORN_WORKERS=1
+    # Exponer puerto adicional para debugger (opcional)
+    # ports:
+    #   - "5678:5678"  # Para debugpy/VS Code remote debug
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # FRONTEND - Modo desarrollo con Vite HMR
+  # ─────────────────────────────────────────────────────────────────────────
+  frontend:
+    # Usar Dockerfile.dev si existe, o sobrescribir comando
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    # Montar código para HMR (Hot Module Replacement)
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+      - /app/dist
+    # Puerto Vite dev server
+    ports:
+      - "5173:5173"
+    # Comando de desarrollo (override del CMD del Dockerfile)
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true  # Para HMR en Docker/WSL
+      - WATCHPACK_POLLING=true
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # NGINX - En desarrollo puede omitirse (acceso directo a puertos)
+  # ─────────────────────────────────────────────────────────────────────────
+  # nginx:
+  #   profiles: ["with-proxy"]  # Solo se levanta con: docker compose --profile with-proxy up
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # BASE DE DATOS - Puertos y configuración local
+  # ─────────────────────────────────────────────────────────────────────────
+  db:
+    # Puerto en host (cambie si 3306 ocupado)
+    ports:
+      - "3306:3306"
+    # Para desarrollo: persistir datos en carpeta local (opcional)
+    # volumes:
+    #   - ./data/mysql:/var/lib/mysql
+
+# ─────────────────────────────────────────────────────────────────────────
+# REDES - Para desarrollo puede querer acceso directo
+# ─────────────────────────────────────────────────────────────────────────
+# networks:
+#   sigai-network:
+#     external: false

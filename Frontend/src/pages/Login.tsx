@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { login as loginService } from "../services/auth";
 import { Button } from "../components/Fusion";
 import { Lock, User, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { extractErrorMessage } from "../lib/apiError";
 
 interface LoginFormValues {
   username: string;
@@ -47,19 +48,7 @@ const Login: React.FC = () => {
       console.error("Login error string:", e.message);
       console.error("Login error response:", e.response);
       console.error("Login error response data:", e.response?.data);
-      const detail = e.response?.data?.detail;
-      const status = e.response?.status;
-      const errMsg = e.message || "desconocido";
-      setError(
-        Array.isArray(detail)
-          ? detail
-              .map((d: { msg?: string }) => d.msg)
-              .filter(Boolean)
-              .join("; ")
-          : typeof detail === "string"
-            ? detail
-            : `Error (${status}): ${errMsg}`,
-      );
+      setError(extractErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

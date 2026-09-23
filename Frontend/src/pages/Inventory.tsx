@@ -46,6 +46,7 @@ import { useInventory } from "../hooks/useInventory";
 import { useClientes } from "../hooks/useClients";
 import { useProyectos } from "../hooks/useProjects";
 import { useProveedores } from "../hooks/useProveedores";
+import { extractErrorMessage } from "../lib/apiError";
 
 interface InventoryItemRow {
   id_item: number;
@@ -243,18 +244,7 @@ const Inventory: React.FC = () => {
       toast.success("Activo creado exitosamente.");
       closeActivoModal();
     } catch (error) {
-      const detail = (
-        error as { response?: { data?: { detail?: unknown } } }
-      ).response?.data?.detail;
-      const msg = Array.isArray(detail)
-        ? detail
-            .map((e: { msg?: string }) => e.msg)
-            .filter(Boolean)
-            .join("; ")
-        : typeof detail === "string"
-          ? detail
-          : "Error al crear el activo.";
-      toast.error(msg);
+      toast.error(extractErrorMessage(error, "Error al crear el activo."));
     } finally {
       setCreatingActivo(false);
     }
@@ -354,19 +344,9 @@ const Inventory: React.FC = () => {
       setCurrentPage(1);
       fetchData();
     } catch (error) {
-      toast.error("Error al guardar los datos.");
-      const detail = (
-        error as { response?: { data?: { detail?: unknown } } }
-      ).response?.data?.detail;
-      const msg = Array.isArray(detail)
-        ? detail
-            .map((e: { msg?: string }) => e.msg)
-            .filter(Boolean)
-            .join("; ")
-        : typeof detail === "string"
-          ? detail
-          : "Error al guardar los datos.";
-      setAlert({ type: "error", message: msg });
+      const message = extractErrorMessage(error, "Error al guardar los datos.");
+      toast.error(message);
+      setAlert({ type: "error", message });
     }
   };
 
@@ -838,16 +818,8 @@ const Inventory: React.FC = () => {
                     fetchData();
                     setIsImportModalOpen(false);
                   } catch (err) {
-                    const detail = (
-                      err as { response?: { data?: { detail?: unknown } } }
-                    ).response?.data?.detail;
-                    setAlert({
-                      type: "error",
-                      message:
-                        typeof detail === "string"
-                          ? detail
-                          : "Error al importar archivo",
-                    });
+                    const message = extractErrorMessage(err, "Error al importar archivo");
+                    setAlert({ type: "error", message });
                   } finally {
                     setImporting(false);
                   }

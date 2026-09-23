@@ -12,6 +12,7 @@ import { uploadAvatar, changeMyPassword } from "../services/users";
 import { useToast } from "../lib/toast";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme, ThemeName } from "../hooks/useTheme";
+import { extractErrorMessage } from "../lib/apiError";
 
 const THEMES: {
   id: ThemeName;
@@ -79,12 +80,8 @@ const Settings: React.FC = () => {
       setNewPass("");
       setConfirmPass("");
     } catch (err) {
-      const detail = (
-        err as { response?: { data?: { detail?: unknown } } }
-      ).response?.data?.detail;
-      toast.error(
-        typeof detail === "string" ? detail : "Error cambiando contraseña",
-      );
+      const message = extractErrorMessage(err);
+      toast.error(message || "Error cambiando contraseña");
     } finally {
       setChangingPass(false);
     }

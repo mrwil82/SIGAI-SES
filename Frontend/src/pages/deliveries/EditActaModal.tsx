@@ -11,6 +11,7 @@ import { useToast } from "../../lib/toast";
 import { logger } from "../../lib/logger";
 import api from "../../services/api";
 import { ACTA_TYPES, ACTA_ESTADOS, Acta } from "./types";
+import { extractErrorMessage } from "../../lib/apiError";
 
 interface EditActaModalProps {
   isOpen: boolean;
@@ -59,15 +60,9 @@ const EditActaModal: React.FC<EditActaModalProps> = ({
       onClose();
     } catch (err) {
       logger.error("Error actualizando acta:", err);
-      const detail = (err as { response?: { data?: { detail?: string | { msg?: string }[] } } }).response?.data?.detail;
-      const msg = Array.isArray(detail)
-        ? detail
-            .map((e) => e.msg)
-            .filter(Boolean)
-            .join("; ")
-        : detail || "Error al actualizar acta";
-      setError(msg);
-      toast.error(msg);
+      const message = extractErrorMessage(err, "Error al actualizar acta");
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SIGAI-SES</string>
+    <string name="title_activity_main">SIGAI-SES</string>
+    <string name="package_name">com.sigai.ses</string>
+    <string name="custom_url_scheme">com.sigai.ses</string>
+</resources>

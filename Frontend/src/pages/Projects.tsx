@@ -49,6 +49,7 @@ import ImportModeSelector, {
   type ImportStockMode,
 } from "../components/ImportModeSelector";
 import { logger } from "../lib/logger";
+import { extractErrorMessage } from "../lib/apiError";
 
 interface ProyectoRow {
   id_proyecto: number;
@@ -652,16 +653,8 @@ const Projects: React.FC = () => {
                     setCurrentPage(1);
                     setIsImportModalOpen(false);
                   } catch (err) {
-                    const detail = (
-                      err as { response?: { data?: { detail?: unknown } } }
-                    ).response?.data?.detail;
-                    setAlert({
-                      type: "error",
-                      message:
-                        typeof detail === "string"
-                          ? detail
-                          : "Error al importar archivo",
-                    });
+                    const message = extractErrorMessage(err, "Error al importar archivo");
+                    setAlert({ type: "error", message });
                   } finally {
                     setImporting(false);
                   }

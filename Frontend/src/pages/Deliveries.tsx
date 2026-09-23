@@ -38,6 +38,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useActas, useSaveActa } from "../hooks/useActas";
 import { useProyectos } from "../hooks/useProjects";
 import { useClientes } from "../hooks/useClients";
+import { extractErrorMessage } from "../lib/apiError";
 import { useUsers } from "../hooks/useUsers";
 import { useInventoryItems } from "../hooks/useActivos";
 import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
@@ -94,18 +95,6 @@ const initFormData = (user?: User): ActaFormData => ({
   id_cliente: "",
   tipo_acta: "ENTREGA_HERRAMIENTA",
 });
-
-const normalizeError = (err: unknown, fallback: string): string => {
-  const e = err as { response?: { data?: { detail?: unknown } } };
-  const detail = e?.response?.data?.detail;
-  if (Array.isArray(detail))
-    return detail
-      .map((d: { msg?: string }) => d.msg)
-      .filter(Boolean)
-      .join("; ");
-  if (typeof detail === "string") return detail;
-  return fallback;
-};
 
 const Deliveries: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -341,7 +330,7 @@ const Deliveries: React.FC = () => {
       setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
       logger.error("Error guardando acta:", err);
-      setError(normalizeError(err, "Error al guardar el acta"));
+      setError(extractErrorMessage(err, "Error al guardar el acta"));
     } finally {
       setSaving(false);
     }
@@ -370,7 +359,7 @@ const Deliveries: React.FC = () => {
       setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
       logger.error("Error generando PDF:", err);
-      setError(normalizeError(err, "Error generando PDF"));
+      setError(extractErrorMessage(err, "Error generando PDF"));
     } finally {
       setLoading(false);
     }
@@ -396,8 +385,8 @@ const Deliveries: React.FC = () => {
       setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
       logger.error("Error generando PDF del acta:", err);
-      setError(normalizeError(err, "Error generando PDF del acta"));
-      toast.error(normalizeError(err, "Error generando PDF"));
+      setError(extractErrorMessage(err, "Error generando PDF del acta"));
+      toast.error(extractErrorMessage(err, "Error generando PDF"));
     } finally {
       setLoading(false);
     }
@@ -416,8 +405,8 @@ const Deliveries: React.FC = () => {
       setViewModalOpen(true);
     } catch (err) {
       logger.error("Error cargando acta:", err);
-      setError(normalizeError(err, "Error cargando acta"));
-      toast.error(normalizeError(err, "Error cargando acta"));
+      setError(extractErrorMessage(err, "Error cargando acta"));
+      toast.error(extractErrorMessage(err, "Error cargando acta"));
     } finally {
       setLoading(false);
     }
@@ -438,8 +427,8 @@ const Deliveries: React.FC = () => {
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       logger.error("Error eliminando acta:", err);
-      setError(normalizeError(err, "Error eliminando acta"));
-      toast.error(normalizeError(err, "Error eliminando acta"));
+      setError(extractErrorMessage(err, "Error eliminando acta"));
+      toast.error(extractErrorMessage(err, "Error eliminando acta"));
     } finally {
       setLoading(false);
       setConfirmOpen(false);

@@ -42,6 +42,7 @@ import {
 } from "../hooks/useUsers";
 import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
 import { useToast } from "../lib/toast";
+import { extractErrorMessage } from "../lib/apiError";
 
 interface UserRow {
   id_usuario: number;
@@ -74,10 +75,6 @@ interface UserFormValues {
   is_active: string | boolean;
   password?: string;
   confirmPassword?: string;
-}
-
-interface ApiError {
-  response?: { data?: { detail?: string } };
 }
 
 const UsersPage: React.FC = () => {
@@ -154,8 +151,8 @@ const UsersPage: React.FC = () => {
       toastSuccess("Usuario desactivado correctamente.");
       setCurrentPage(1);
     } catch (error) {
-      const detail = (error as ApiError).response?.data?.detail;
-      toastError("Error al desactivar el usuario", { description: detail });
+      const message = extractErrorMessage(error);
+      toastError("Error al desactivar el usuario", { description: message });
     } finally {
       setConfirmOpen(false);
       setConfirmId(null);
@@ -238,9 +235,8 @@ const UsersPage: React.FC = () => {
       setCurrentPage(1);
     } catch (error) {
       console.error("Error:", error);
-      const detail =
-        (error as ApiError).response?.data?.detail || "Intente de nuevo.";
-      toastError("Error al procesar el usuario", { description: detail });
+      const message = extractErrorMessage(error);
+      toastError("Error al procesar el usuario", { description: message });
     }
   };
 

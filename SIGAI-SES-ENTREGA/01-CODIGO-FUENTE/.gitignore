@@ -1,0 +1,170 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+!Frontend/src/lib/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+Backend/.env
+Frontend/.env
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache/
+.hypothesis/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# --- Frontend (Node/React/Vite) ---
+node_modules/
+Frontend/node_modules/
+Frontend/dist/
+Frontend/dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.local
+Frontend/.env.local
+Frontend/.env.development.local
+Frontend/.env.test.local
+Frontend/.env.production.local
+
+# --- IDEs / Editors ---
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.vscode-test/
+*.code-workspace
+
+# --- OS Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# --- Database ---
+Backend/Base_de_datos/*.sql
+!Backend/Base_de_datos/sigai_ses_db.sql
+
+# --- Misc ---
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+Backend/migrations/__pycache__/
+Backend/app/__pycache__/
+
+# --- Logs & Backups ---
+logs/
+backups/
+*.bak
+*.backup
+*.sql.gz
+*.sql.bz2
+*.sql.zip
+
+# --- Backend Specific ---
+Backend/logs/
+Backend/app/static/avatars/*
+!Backend/app/static/avatars/.gitkeep
+Backend/app/static/SES-logo-light.png
+Backend/__pycache__/
+Backend/app/**/__pycache__/
+Backend/.pytest_cache/
+Backend/*.egg-info/
+
+# --- Docker ---
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# --- SSL/Certificates ---
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+
+# --- Built frontend assets in backend static ---
+Backend/app/static/web/
+
+# --- PDFs & generated docs ---
+*.pdf
+ENTREGABLES_SIGAI_SES/PDF-profesionales/
+ENTREGABLES_SIGAI_SES/Word_Entregables/
+ENTREGABLES_SIGAI_SES/tmp_md/
+Eisvogel-3.5.1/
+
+# --- Scripts & tools ---
+generar_pdfs.ps1
+installer.iss
+*.spec
+dist_installer/
+
+# --- Debug / dev scripts ---
+Backend/scripts/debug_*.py
+Backend/scripts/check_data.py
+Backend/scripts/import_all_excel.py
+Backend/run.py
+
+# --- Environment configs ---
+.env.production
+.env.staging
+.env.local
+.env.*.local
+
+# Build backups
+*.build_backup

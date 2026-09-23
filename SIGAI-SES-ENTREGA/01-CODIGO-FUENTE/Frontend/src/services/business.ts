@@ -1,0 +1,120 @@
+import api from "./api";
+
+// --- CLIENTES ---
+export const getClientes = async (page = 1, pageSize = 500) => {
+  const response = await api.get("/business/clientes", {
+    params: { page, page_size: pageSize },
+  });
+  return response.data;
+};
+
+export const getClienteById = async (id: number) => {
+  const response = await api.get(`/business/clientes/${id}`);
+  return response.data;
+};
+
+export const createCliente = async (clienteData: object) => {
+  const response = await api.post("/business/clientes", clienteData);
+  return response.data;
+};
+
+export const updateCliente = async (id: number, clienteData: object) => {
+  const response = await api.put(`/business/clientes/${id}`, clienteData);
+  return response.data;
+};
+
+export const deleteCliente = async (id: number) => {
+  const response = await api.delete(`/business/clientes/${id}`);
+  return response.data;
+};
+
+// --- PROYECTOS ---
+export const getProyectos = async (page = 1, pageSize = 500) => {
+  const response = await api.get("/business/proyectos", {
+    params: { page, page_size: pageSize },
+  });
+  return response.data;
+};
+
+export const getProyectoById = async (id: number) => {
+  const response = await api.get(`/business/proyectos/${id}`);
+  return response.data;
+};
+
+export const createProyecto = async (proyectoData: object) => {
+  const response = await api.post("/business/proyectos", proyectoData);
+  return response.data;
+};
+
+export const updateProyecto = async (id: number, proyectoData: object) => {
+  const response = await api.put(`/business/proyectos/${id}`, proyectoData);
+  return response.data;
+};
+
+export const deleteProyecto = async (id: number) => {
+  const response = await api.delete(`/business/proyectos/${id}`);
+  return response.data;
+};
+
+// --- ACTAS ---
+export const saveActa = async (actaData: object) => {
+  const response = await api.post("/business/actas", actaData);
+  return response.data;
+};
+
+export const getActas = async (page = 1, pageSize = 50) => {
+  const response = await api.get("/business/actas", {
+    params: { page, page_size: pageSize },
+  });
+  return response.data;
+};
+
+// --- PROVEEDORES ---
+export const getProveedores = async () => {
+  const response = await api.get("/business/proveedores");
+  return response.data;
+};
+
+export const createProveedor = async (proveedorData: object) => {
+  const response = await api.post("/business/proveedores", proveedorData);
+  return response.data;
+};
+
+// --- MOVIMIENTOS ---
+export const getMovimientos = async () => {
+  const response = await api.get("/business/movimientos");
+  return response.data;
+};
+
+export const createMovimiento = async (movData: object) => {
+  const response = await api.post("/business/movimientos", movData);
+  return response.data;
+};
+
+// --- GARANTÍAS ---
+export const getGarantias = async (page = 1, pageSize = 50) => {
+  const response = await api.get("/business/garantias", {
+    params: { page, page_size: pageSize },
+  });
+  return response.data;
+};
+
+export const getGarantiaById = async (id: number) => {
+  const response = await api.get(`/business/garantias/${id}`);
+  return response.data;
+};
+
+export const createGarantia = async (garData: object) => {
+  const response = await api.post("/business/garantias", garData);
+  return response.data;
+};
+
+export const updateGarantia = async (id: number, garData: object) => {
+  const response = await api.put(`/business/garantias/${id}`, garData);
+  return response.data;
+};
+
+export const deleteGarantia = async (id: number) => {
+  const response = await api.delete(`/business/garantias/${id}`);
+  return response.data;
+};

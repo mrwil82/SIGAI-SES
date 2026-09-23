@@ -1,0 +1,709 @@
+import React, { useEffect, useState } from "react";
+import { ExportMenu } from "../components/ExportMenu";
+import {
+  Users,
+  Search,
+  Plus,
+  Building2,
+  Mail,
+  ExternalLink,
+  Edit2,
+  Trash2,
+  Download,
+  Upload,
+} from "lucide-react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { SearchableSelect } from "../components/SearchableSelect";
+import {
+  Card,
+  Button,
+  Badge,
+  DashboardLayout,
+  TableContainer,
+  THead,
+  TBody,
+  TH,
+  TR,
+  TD,
+  NeoInput,
+  Modal,
+  FormGroup,
+  NeoSelect,
+  Alert,
+  ConfirmModal,
+} from "../components/Fusion";
+import { useToast } from "../lib/toast";
+import {
+  useClientes,
+  useCreateCliente,
+  useUpdateCliente,
+  useDeleteCliente,
+} from "../hooks/useClients";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
+import { downloadTemplate, importInventory } from "../services/inventory";
+import ImportModeSelector, {
+  type ImportStockMode,
+} from "../components/ImportModeSelector";
+import { logger } from "../lib/logger";
+import { extractErrorMessage } from "../lib/apiError";
+
+interface Cliente {
+  id_cliente: number;
+  nombre: string;
+  nit?: string | null;
+  tipo_cliente?: string;
+  contacto?: string | null;
+  email_contacto?: string | null;
+  telefono?: string | null;
+  direccion?: string | null;
+  ciudad?: string | null;
+  departamento?: string | null;
+  ceco_asociado?: string | null;
+  id_regional?: number | null;
+  regional_rel?: { nombre: string } | null;
+}
+
+interface ClienteFormValues {
+  nombre: string;
+  nit?: string;
+  tipo_cliente?: string;
+  contacto?: string;
+  ceco_asociado?: string;
+  email_contacto?: string;
+  telefono?: string;
+  direccion?: string;
+  ciudad?: string;
+  departamento?: string;
+  id_regional?: string;
+}
+
+interface Regional {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
+}
+
+const Clients: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [modoStock, setModoStock] = useState<ImportStockMode>("sumar");
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
+
+  const { data: clientesData, isLoading } = useClientes(currentPage, pageSize);
+  const clientes = (clientesData?.items || []) as Cliente[];
+  const totalClientes = clientesData?.total || 0;
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as Regional[];
+  const createClienteMut = useCreateCliente();
+  const updateClienteMut = useUpdateCliente();
+  const deleteClienteMut = useDeleteCliente();
+  const createRegionalMut = useCreateRegional();
+
+  useEffect(() => {
+    if (alert) {
+      const t = setTimeout(() => setAlert(null), 4500);
+      return () => clearTimeout(t);
+    }
+  }, [alert]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ClienteFormValues>();
+
+  const handleEdit = (cliente: Cliente) => {
+    setEditingCliente(cliente);
+    setValue("nombre", cliente.nombre);
+    setValue("nit", cliente.nit ?? "");
+    setValue("tipo_cliente", cliente.tipo_cliente ?? "CORPORATIVO");
+    setValue("contacto", cliente.contacto ?? "");
+    setValue("ceco_asociado", cliente.ceco_asociado ?? "");
+    setValue("email_contacto", cliente.email_contacto ?? "");
+    setValue("telefono", cliente.telefono ?? "");
+    setValue("direccion", cliente.direccion ?? "");
+    setValue("ciudad", cliente.ciudad ?? "");
+    setValue("departamento", cliente.departamento ?? "");
+    setValue("id_regional", cliente.id_regional ? String(cliente.id_regional) : "");
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    openConfirmDelete(id);
+  };
+
+  const toast = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+
+  const openConfirmDelete = (id: number) => {
+    setConfirmId(id);
+    setConfirmOpen(true);
+  };
+  const closeConfirm = () => {
+    setConfirmId(null);
+    setConfirmOpen(false);
+  };
+  const performDelete = async (id: number | null) => {
+    if (!id) return closeConfirm();
+    try {
+      await deleteClienteMut.mutateAsync(id);
+      toast.success("Cliente eliminado correctamente.");
+    } catch (error) {
+      toast.error("Error al eliminar el cliente.");
+    } finally {
+      closeConfirm();
+    }
+  };
+
+  const onSubmit = async (data: ClienteFormValues) => {
+    const payload = {
+      ...data,
+      id_regional: data.id_regional ? parseInt(data.id_regional, 10) : null,
+    };
+    try {
+      if (editingCliente) {
+        await updateClienteMut.mutateAsync({
+          id: editingCliente.id_cliente,
+          data: payload,
+        });
+        setAlert({
+          type: "success",
+          message: "Cliente actualizado exitosamente.",
+        });
+      } else {
+        await createClienteMut.mutateAsync(payload);
+        setAlert({
+          type: "success",
+          message: "Cliente registrado exitosamente.",
+        });
+      }
+      closeModal();
+    } catch (error) {
+      const message = extractErrorMessage(error, "Error al procesar la solicitud.");
+      setAlert({ type: "error", message });
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingCliente(null);
+    reset();
+  };
+
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      setAlert({ type: "error", message: "El nombre de la regional es obligatorio." });
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegionalMut.mutateAsync({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      setValue("id_regional", String(regional.id_regional));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      setAlert({ type: "success", message: "Regional creada correctamente." });
+    } catch (error) {
+      logger.error("Error creando regional:", error);
+      setAlert({ type: "error", message: "Error al crear la regional." });
+    } finally {
+      setCreatingRegional(false);
+    }
+  };
+
+  const filteredClientes = clientes.filter(
+    (cliente) =>
+      cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cliente.nit?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  return (
+    <DashboardLayout>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Directorio de Clientes
+          </h1>
+          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">
+            Gestión de cuentas corporativas e internas
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2">
+          <ExportMenu module="clientes" />
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => downloadTemplate("clientes")}
+          >
+            <Download size={14} />
+            Plantilla
+          </Button>
+          <Button
+            variant="neo"
+            className="flex items-center gap-2"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <Upload size={16} />
+            Carga Excel
+          </Button>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus size={16} />
+            Nuevo Cliente
+          </Button>
+        </div>
+      </div>
+
+      {alert && (
+        <div className="mb-6">
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+          />
+        </div>
+      )}
+
+      <Card className="mb-8">
+        <div className="relative max-w-md">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted"
+            size={16}
+          />
+          <NeoInput
+            placeholder="Buscar por nombre, NIT o CECO..."
+            className="pl-10 h-12"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </Card>
+
+      <Card className="overflow-hidden p-0 border-bg4">
+        <TableContainer>
+          <THead>
+            <TH>Cliente / Empresa</TH>
+            <TH className="hidden sm:table-cell">NIT / ID</TH>
+            <TH>Tipo</TH>
+            <TH className="hidden md:table-cell">Regional</TH>
+            <TH className="hidden lg:table-cell">Contacto Principal</TH>
+            <TH className="hidden xl:table-cell">CECO</TH>
+            <TH></TH>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <TR>
+                <TD colSpan={7} className="text-center py-20">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-2 border-chart-purple/30 border-t-chart-purple rounded-full animate-spin" />
+                    <span className="text-chart-purple uppercase tracking-[0.2em] font-bold text-[10px]">
+                      Cargando Cuentas...
+                    </span>
+                  </div>
+                </TD>
+              </TR>
+            ) : filteredClientes.length > 0 ? (
+              filteredClientes.map((cliente) => (
+                <TR
+                  key={cliente.id_cliente}
+                  onClick={() => handleEdit(cliente)}
+                  className="cursor-pointer"
+                >
+                  <TD>
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-bg3 flex items-center justify-center text-chart-purple border border-bg4 shadow-neo shrink-0">
+                        <Building2 size={16} className="md:size-[18px]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-xs md:text-sm text-content-primary truncate max-w-[150px] md:max-w-none">
+                          {cliente.nombre}
+                        </div>
+                        <div className="sm:hidden text-[9px] text-content-muted font-mono mt-0.5">
+                          {cliente.nit || "S.N."}
+                        </div>
+                      </div>
+                    </div>
+                  </TD>
+                  <TD className="hidden sm:table-cell">
+                    <div className="font-mono text-content-secondary text-[10px] md:text-[11px] bg-bg3/50 px-2 py-1 rounded inline-block border border-bg4">
+                      {cliente.nit || "S.N."}
+                    </div>
+                  </TD>
+                  <TD>
+                    <Badge
+                      label={cliente.tipo_cliente ?? "S.N."}
+                      color={
+                        cliente.tipo_cliente === "CORPORATIVO"
+                          ? "var(--chart-blue)"
+                          : "var(--chart-teal)"
+                      }
+                      bg="rgba(0, 163, 255, 0.05)"
+                    />
+                  </TD>
+                  <TD className="hidden md:table-cell">
+                    <span className="text-xs text-content-secondary">
+                      {cliente.regional_rel?.nombre || "---"}
+                    </span>
+                  </TD>
+                  <TD className="hidden md:table-cell">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-content-primary font-bold">
+                        <Users size={12} className="text-chart-purple" />
+                        <span className="text-[11px]">
+                          {cliente.contacto || "No asignado"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-content-muted">
+                        <Mail size={10} />
+                        <span className="text-[10px] truncate max-w-[120px]">
+                          {cliente.email_contacto || "---"}
+                        </span>
+                      </div>
+                    </div>
+                  </TD>
+                  <TD className="hidden xl:table-cell">
+                    <span className="font-mono text-content-primary font-bold text-xs">
+                      {cliente.ceco_asociado || "---"}
+                    </span>
+                  </TD>
+                  <TD>
+                    <div className="flex justify-end gap-1.5 md:gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEdit(cliente); }}
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(cliente.id_cliente); }}
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                      <button
+                        className="p-2 md:p-2.5 rounded-lg bg-bg3 text-content-muted hover:text-content-primary transition-all shadow-neo border border-bg4"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/clients/${cliente.id_cliente}`); }}
+                      >
+                        <ExternalLink size={13} />
+                      </button>
+                    </div>
+                  </TD>
+                </TR>
+              ))
+            ) : (
+              <TR>
+                <TD
+                  colSpan={6}
+                  className="text-center py-20 text-content-muted italic text-xs md:text-sm"
+                >
+                  Sin coincidencias.
+                </TD>
+              </TR>
+            )}
+          </TBody>
+        </TableContainer>
+      </Card>
+
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
+        <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
+          Mostrando {filteredClientes.length} de {totalClientes} registros
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={totalClientes <= currentPage * pageSize}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
+
+      {/* Modal de Registro / Edición */}
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={
+          editingCliente
+            ? "Editar Cuenta de Cliente"
+            : "Registrar Nuevo Cliente"
+        }
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeModal}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit(onSubmit)}>
+              {editingCliente ? "Actualizar Cuenta" : "Registrar Cuenta"}
+            </Button>
+          </>
+        }
+      >
+        <form className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup
+            label="Nombre de la Empresa / Cliente"
+            error={errors.nombre?.message as string}
+          >
+            <NeoInput
+              {...register("nombre", { required: "El nombre es obligatorio" })}
+              placeholder="Ej: Procafecol S.A."
+            />
+          </FormGroup>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="NIT / Identificación">
+              <NeoInput {...register("nit")} placeholder="Ej: 900123456-1" />
+            </FormGroup>
+            <FormGroup label="Tipo de Cliente">
+              <NeoSelect {...register("tipo_cliente")}>
+                <option value="CORPORATIVO">Corporativo</option>
+                <option value="INTERNO">Interno (Securitas)</option>
+                <option value="GENERAL">General</option>
+              </NeoSelect>
+            </FormGroup>
+          </div>
+
+          <FormGroup label="Regional">
+            <div className="flex gap-2 items-start">
+              <div className="flex-1 min-w-0">
+                <SearchableSelect
+                  options={regionalesList.map((r) => ({
+                    value: String(r.id_regional),
+                    label: r.nombre,
+                  }))}
+                  value={watch("id_regional") || ""}
+                  onChange={(val) => setValue("id_regional", val)}
+                  placeholder="Buscar regional..."
+                />
+              </div>
+              <Button
+                variant="neo"
+                type="button"
+                className="h-10 px-2.5 shrink-0 text-[10px]"
+                onClick={() => setRegionalModalOpen(true)}
+                title="Crear nueva regional"
+              >
+                <Plus size={14} />
+              </Button>
+            </div>
+          </FormGroup>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Nombre de Contacto">
+              <NeoInput
+                {...register("contacto")}
+                placeholder="Ej: Juan Pérez"
+              />
+            </FormGroup>
+            <FormGroup label="CECO Asociado">
+              <NeoInput
+                {...register("ceco_asociado")}
+                placeholder="Ej: 102030"
+              />
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Email de Contacto">
+              <NeoInput
+                type="email"
+                {...register("email_contacto")}
+                placeholder="contacto@empresa.com"
+              />
+            </FormGroup>
+            <FormGroup label="Teléfono">
+              <NeoInput {...register("telefono")} placeholder="+57 300..." />
+            </FormGroup>
+          </div>
+
+          <FormGroup label="Dirección">
+            <NeoInput
+              {...register("direccion")}
+              placeholder="Ej: Calle 100 # 15-20"
+            />
+          </FormGroup>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormGroup label="Ciudad">
+              <NeoInput {...register("ciudad")} placeholder="Ej: Bogotá" />
+            </FormGroup>
+            <FormGroup label="Departamento">
+              <NeoInput
+                {...register("departamento")}
+                placeholder="Ej: Cundinamarca"
+              />
+            </FormGroup>
+          </div>
+        </form>
+      </Modal>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Eliminar cliente"
+        message="¿Está seguro de eliminar este cliente? Esta acción no se puede deshacer."
+        onCancel={closeConfirm}
+        onConfirm={() => performDelete(confirmId)}
+      />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRegionalModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL RESIDENCIAL"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Medellín"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Carga Masiva de Clientes (Excel)"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsImportModalOpen(false)}>
+              Cerrar
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <div className="p-4 border-2 border-dashed border-bg3 rounded-xl bg-bg3/50 text-center">
+            <input
+              type="file"
+              id="clientes-excel-upload"
+              className="hidden"
+              accept=".xlsx,.xls,.csv"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImporting(true);
+                  try {
+                    const res = await importInventory(
+                      file,
+                      undefined,
+                      undefined,
+                      modoStock,
+                    );
+                    setAlert({ type: "success", message: res.mensaje });
+                    setCurrentPage(1);
+                    setIsImportModalOpen(false);
+                  } catch (err) {
+                    const message = extractErrorMessage(err, "Error al importar archivo");
+                    setAlert({ type: "error", message });
+                  } finally {
+                    setImporting(false);
+                  }
+                }
+              }}
+            />
+            <label
+              htmlFor="clientes-excel-upload"
+              className="cursor-pointer flex flex-col items-center gap-3"
+            >
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${importing ? "bg-gold animate-pulse" : "bg-emerald-primary/10 text-emerald-primary"}`}
+              >
+                <Download size={24} className="rotate-180" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-sm">
+                  {importing
+                    ? "Procesando registros..."
+                    : "Click para subir archivo"}
+                </p>
+                <p className="text-[10px] text-content-muted">
+                  Soporta el formato Plantilla_Clientes (.xlsx)
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <ImportModeSelector value={modoStock} onChange={setModoStock} />
+
+          <div className="flex gap-2">
+            <Button
+              variant="neo"
+              className="flex-1 text-[10px] py-2"
+              onClick={() => downloadTemplate("clientes")}
+            >
+              <Download size={14} className="mr-1" />
+              Plantilla Clientes
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-primary">
+              Instrucciones
+            </h4>
+            <ul className="text-[10px] text-content-secondary space-y-2 list-disc pl-4">
+              <li>
+                El sistema detecta automáticamente el formato de clientes.
+              </li>
+              <li>Los clientes existentes se actualizan por NIT.</li>
+              <li>Se recomienda limpiar filas vacías antes de cargar.</li>
+            </ul>
+          </div>
+        </div>
+      </Modal>
+    </DashboardLayout>
+  );
+};
+
+export default Clients;

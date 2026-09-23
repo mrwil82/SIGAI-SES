@@ -46,6 +46,7 @@ import ImportModeSelector, {
   type ImportStockMode,
 } from "../components/ImportModeSelector";
 import { logger } from "../lib/logger";
+import { extractErrorMessage } from "../lib/apiError";
 
 interface Cliente {
   id_cliente: number;
@@ -81,10 +82,6 @@ interface Regional {
   id_regional: number;
   nombre: string;
   ciudad?: string;
-}
-
-interface ApiError {
-  response?: { data?: { detail?: string | { msg?: string }[] } };
 }
 
 const Clients: React.FC = () => {
@@ -200,14 +197,8 @@ const Clients: React.FC = () => {
       }
       closeModal();
     } catch (error) {
-      const detail = (error as ApiError).response?.data?.detail;
-      const msg = Array.isArray(detail)
-        ? detail
-            .map((e) => e.msg)
-            .filter(Boolean)
-            .join("; ")
-        : detail || "Error al procesar la solicitud.";
-      setAlert({ type: "error", message: msg });
+      const message = extractErrorMessage(error, "Error al procesar la solicitud.");
+      setAlert({ type: "error", message });
     }
   };
 
@@ -654,16 +645,8 @@ const Clients: React.FC = () => {
                     setCurrentPage(1);
                     setIsImportModalOpen(false);
                   } catch (err) {
-                    const detail = (
-                      err as { response?: { data?: { detail?: unknown } } }
-                    ).response?.data?.detail;
-                    setAlert({
-                      type: "error",
-                      message:
-                        typeof detail === "string"
-                          ? detail
-                          : "Error al importar archivo",
-                    });
+                    const message = extractErrorMessage(err, "Error al importar archivo");
+                    setAlert({ type: "error", message });
                   } finally {
                     setImporting(false);
                   }

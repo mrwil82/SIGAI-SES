@@ -1,0 +1,642 @@
+import React, { useEffect, useState } from "react";
+import { ExportMenu } from "../components/ExportMenu";
+import {
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
+  UserCheck,
+  UserX,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useForm } from "react-hook-form";
+import {
+  Card,
+  Button,
+  Badge,
+  DashboardLayout,
+  TableContainer,
+  THead,
+  TBody,
+  TH,
+  TR,
+  TD,
+  NeoInput,
+  Modal,
+  FormGroup,
+  NeoSelect,
+  AvatarImg,
+} from "../components/Fusion";
+import { SearchableSelect } from "../components/SearchableSelect";
+import { ConfirmModal } from "../components/Fusion";
+import {
+  checkUniqueField,
+} from "../services/users";
+import {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  type UserPayload,
+} from "../hooks/useUsers";
+import { useRegionales, useCreateRegional } from "../hooks/useRegionales";
+import { useToast } from "../lib/toast";
+import { extractErrorMessage } from "../lib/apiError";
+
+interface UserRow {
+  id_usuario: number;
+  nombre: string;
+  email: string;
+  rol: string;
+  is_active: boolean;
+  cedula?: string | null;
+  codigo_empleado?: string | null;
+  regional?: string | null;
+  regional_rel?: { nombre: string } | null;
+  id_regional?: number | null;
+  avatar_url?: string | null;
+}
+
+interface Regional {
+  id_regional: number;
+  nombre: string;
+  ciudad?: string;
+}
+
+interface UserFormValues {
+  nombre: string;
+  email: string;
+  cedula?: string;
+  codigo_empleado?: string;
+  id_regional?: string;
+  regional?: string;
+  rol: string;
+  is_active: string | boolean;
+  password?: string;
+  confirmPassword?: string;
+}
+
+const UsersPage: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState<string>("");
+  const [regionalModalOpen, setRegionalModalOpen] = useState(false);
+  const [newRegionalNombre, setNewRegionalNombre] = useState("");
+  const [newRegionalCiudad, setNewRegionalCiudad] = useState("");
+  const [creatingRegional, setCreatingRegional] = useState(false);
+
+  const effectivePageSize = debouncedSearch ? 500 : pageSize;
+  const { data: usersData, isLoading } = useUsers(currentPage, effectivePageSize);
+  const users = (usersData?.items || []) as UserRow[];
+  const totalUsers = usersData?.total || 0;
+  const { data: regionales } = useRegionales();
+  const regionalesList = (regionales || []) as Regional[];
+  const createUserMut = useCreateUser();
+  const updateUserMut = useUpdateUser();
+  const deleteUserMut = useDeleteUser();
+  const createRegionalMut = useCreateRegional();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm<UserFormValues>();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleEdit = (user: UserRow) => {
+    setEditingUser(user);
+    setValue("nombre", user.nombre);
+    setValue("email", user.email);
+    setValue("rol", user.rol);
+    setValue("cedula", user.cedula || "");
+    setValue("codigo_empleado", user.codigo_empleado || "");
+    setValue("id_regional", user.id_regional ? String(user.id_regional) : "");
+    setValue("regional", user.regional || "");
+    setValue("is_active", user.is_active);
+    setIsModalOpen(true);
+  };
+
+  const openConfirm = (id: number, message?: string) => {
+    setConfirmId(id);
+    setConfirmMessage(message || "¿Está seguro de desactivar a este usuario?");
+    setConfirmOpen(true);
+  };
+
+  const performDelete = async () => {
+    if (confirmId == null) return;
+    try {
+      await deleteUserMut.mutateAsync(confirmId);
+      toastSuccess("Usuario desactivado correctamente.");
+      setCurrentPage(1);
+    } catch (error) {
+      const message = extractErrorMessage(error);
+      toastError("Error al desactivar el usuario", { description: message });
+    } finally {
+      setConfirmOpen(false);
+      setConfirmId(null);
+    }
+  };
+
+  const checkField = async (field: keyof UserFormValues, value: string) => {
+    const excludeId = editingUser?.id_usuario;
+    const result = await checkUniqueField(field, value, excludeId);
+    if (!result.available) {
+      setError(field, {
+        type: "manual",
+        message: result.error || `Este ${field} ya está en uso.`,
+      });
+    } else {
+      clearErrors(field);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+    reset();
+  };
+
+  const handleCreateRegional = async () => {
+    if (!newRegionalNombre.trim()) {
+      toastError("El nombre de la regional es obligatorio.");
+      return;
+    }
+    setCreatingRegional(true);
+    try {
+      const regional = await createRegionalMut.mutateAsync({
+        nombre: newRegionalNombre.trim(),
+        ciudad: newRegionalCiudad.trim() || undefined,
+      });
+      setValue("id_regional", String(regional.id_regional));
+      setRegionalModalOpen(false);
+      setNewRegionalNombre("");
+      setNewRegionalCiudad("");
+      toastSuccess("Regional creada correctamente.");
+    } catch (error) {
+      console.error("Error creando regional:", error);
+      toastError("Error al crear la regional.");
+    } finally {
+      setCreatingRegional(false);
+    }
+  };
+
+  const onSubmit = async (data: UserFormValues) => {
+    if (data.password && data.password !== data.confirmPassword) {
+      toastError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    const payload: UserPayload = {
+      nombre: data.nombre,
+      email: data.email,
+      rol: data.rol,
+      cedula: data.cedula || undefined,
+      codigo_empleado: data.codigo_empleado || undefined,
+      regional: data.regional || undefined,
+      is_active: data.is_active === "true" || data.is_active === true,
+      id_regional: data.id_regional ? parseInt(data.id_regional, 10) : null,
+    };
+    if (data.password) payload.password = data.password;
+
+    try {
+      if (editingUser) {
+        await updateUserMut.mutateAsync({
+          id: editingUser.id_usuario,
+          data: payload,
+        });
+        toastSuccess("Usuario actualizado exitosamente.");
+      } else {
+        await createUserMut.mutateAsync(payload);
+        toastSuccess("Usuario creado exitosamente.");
+      }
+      closeModal();
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error:", error);
+      const message = extractErrorMessage(error);
+      toastError("Error al procesar el usuario", { description: message });
+    }
+  };
+
+  const filteredUsers = users.filter(
+    (u) =>
+      u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.cedula?.includes(searchTerm),
+  );
+
+  const ROLE_LABELS: Record<string, string> = {
+    ADMIN: "Administrador",
+    TECNICO: "Técnico",
+    TECNICO_LABORATORIO: "Técnico de Laboratorio",
+    SUPERVISOR: "Supervisor",
+    BODEGUERO: "Bodeguero",
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-content-primary">
+            Gestión de Usuarios
+          </h1>
+          <p className="text-content-muted text-xs uppercase tracking-widest mt-1">
+            Control de acceso y roles del sistema (RBAC)
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <ExportMenu module="users" />
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus size={16} />
+            Nuevo Usuario
+          </Button>
+        </div>
+      </div>
+
+      <Card className="mb-8">
+        <div className="relative max-w-md">
+          <Search
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-content-muted"
+            size={16}
+          />
+          <NeoInput
+            placeholder="Buscar por nombre, correo o cédula..."
+            className="pl-10 h-12"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </Card>
+
+      <Card className="overflow-hidden p-0 border-bg4">
+        <TableContainer>
+          <THead>
+            <TH>Usuario / Nombre</TH>
+            <TH className="hidden sm:table-cell">Identificación</TH>
+            <TH className="hidden md:table-cell">Cód. Empleado</TH>
+            <TH className="hidden lg:table-cell">Regional</TH>
+            <TH>Rol</TH>
+            <TH className="hidden sm:table-cell">Estado</TH>
+            <TH></TH>
+          </THead>
+          <TBody>
+            {isLoading ? (
+              <TR>
+                <TD
+                  colSpan={7}
+                  className="text-center py-20 text-content-primary font-bold"
+                >
+                  Sincronizando Usuarios...
+                </TD>
+              </TR>
+            ) : filteredUsers.length > 0 ? (
+              filteredUsers.map((u) => (
+                <TR
+                  key={u.id_usuario}
+                  onClick={() => handleEdit(u)}
+                  className="cursor-pointer"
+                >
+                  <TD>
+                    <div className="flex items-center gap-4">
+                      <AvatarImg
+                        url={u.avatar_url}
+                        name={u.nombre}
+                        className="shadow-neo"
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-bold text-xs md:text-sm text-content-primary">
+                          {u.nombre}
+                        </span>
+                        <span className="text-[10px] text-content-muted">
+                          {u.email}
+                        </span>
+                      </div>
+                    </div>
+                  </TD>
+                  <TD className="hidden sm:table-cell">
+                    <span className="text-xs text-content-secondary">
+                      {u.cedula || "---"}
+                    </span>
+                  </TD>
+                  <TD className="hidden md:table-cell">
+                    <span className="text-xs text-content-secondary">
+                      {u.codigo_empleado || "---"}
+                    </span>
+                  </TD>
+                  <TD className="hidden lg:table-cell">
+                    <span className="text-xs text-content-secondary">
+                      {u.regional_rel?.nombre || u.regional || "---"}
+                    </span>
+                  </TD>
+                  <TD>
+                    <Badge
+                      label={ROLE_LABELS[u.rol] ?? u.rol}
+                      color="#9B6DFF"
+                      bg="rgba(155, 109, 255, 0.1)"
+                    />
+                  </TD>
+                  <TD className="hidden sm:table-cell">
+                    {u.is_active ? (
+                      <div className="flex items-center gap-1 text-emerald-primary">
+                        <UserCheck size={12} />
+                        <span className="text-[9px] font-bold uppercase">
+                          Activo
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-danger">
+                        <UserX size={12} />
+                        <span className="text-[9px] font-bold uppercase">
+                          Inactivo
+                        </span>
+                      </div>
+                    )}
+                  </TD>
+                  <TD>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEdit(u); }}
+                        className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-emerald-primary transition-all shadow-neo border border-bg4"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openConfirm(u.id_usuario); }}
+                        className="p-2 rounded-lg bg-bg3 text-content-muted hover:text-danger transition-all shadow-neo border border-bg4"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </TD>
+                </TR>
+              ))
+            ) : (
+              <TR>
+                <TD
+                  colSpan={7}
+                  className="text-center py-20 text-content-muted italic text-xs md:text-sm"
+                >
+                  No hay usuarios registrados.
+                </TD>
+              </TR>
+            )}
+          </TBody>
+        </TableContainer>
+      </Card>
+
+      <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 bg-bg2 p-4 rounded-xl border border-bg4">
+        <div className="text-[10px] text-content-muted uppercase tracking-widest font-bold text-center sm:text-left">
+          Mostrando {users.length} de {totalUsers} registros
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="neo"
+            className="h-8 text-[10px] px-3"
+            disabled={totalUsers <= currentPage * pageSize}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingUser ? "Editar Usuario" : "Registrar Nuevo Usuario"}
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeModal}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit(onSubmit)}>
+              {editingUser ? "Actualizar Usuario" : "Crear Usuario"}
+            </Button>
+          </>
+        }
+      >
+        <form className="space-y-3 text-[11px] md:text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormGroup
+              label="Nombre Completo"
+              error={errors.nombre?.message as string}
+            >
+              <NeoInput
+                {...register("nombre", { required: "Obligatorio" })}
+                placeholder="Nombre"
+              />
+            </FormGroup>
+            <FormGroup
+              label="Correo Electrónico"
+              error={errors.email?.message as string}
+            >
+              <NeoInput
+                {...register("email", {
+                  required: "Obligatorio",
+                  pattern: {
+                    value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+                    message: "Formato de correo inválido",
+                  },
+                })}
+                type="email"
+                placeholder="correo@securitas.com"
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  if (e.target.value && !errors.email?.message)
+                    checkField("email", e.target.value);
+                }}
+              />
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <FormGroup label="Cédula" error={errors.cedula?.message as string}>
+              <NeoInput
+                {...register("cedula")}
+                placeholder="CC."
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  if (e.target.value) checkField("cedula", e.target.value);
+                }}
+              />
+            </FormGroup>
+            <FormGroup
+              label="Código Empleado"
+              error={errors.codigo_empleado?.message as string}
+            >
+              <NeoInput
+                {...register("codigo_empleado")}
+                placeholder="Código"
+                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                  if (e.target.value)
+                    checkField("codigo_empleado", e.target.value);
+                }}
+              />
+            </FormGroup>
+            <FormGroup label="Regional">
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 min-w-0">
+                  <SearchableSelect
+                    options={regionalesList.map((r) => ({
+                      value: String(r.id_regional),
+                      label: r.nombre,
+                    }))}
+                    value={watch("id_regional") || ""}
+                    onChange={(val) => setValue("id_regional", val)}
+                    placeholder="Buscar regional..."
+                  />
+                </div>
+                <Button
+                  variant="neo"
+                  type="button"
+                  className="h-10 px-2.5 shrink-0 text-[10px]"
+                  onClick={() => setRegionalModalOpen(true)}
+                  title="Crear nueva regional"
+                >
+                  <Plus size={14} />
+                </Button>
+              </div>
+            </FormGroup>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormGroup label="Rol de Sistema">
+              <NeoSelect {...register("rol")}>
+                <option value="ADMIN">Administrador</option>
+                <option value="TECNICO">Técnico</option>
+                <option value="TECNICO_LABORATORIO">
+                  Técnico de Laboratorio
+                </option>
+              </NeoSelect>
+            </FormGroup>
+            <FormGroup label="Estado">
+              <NeoSelect {...register("is_active")}>
+                <option value="true">Activo</option>
+                <option value="false">Inactivo</option>
+              </NeoSelect>
+            </FormGroup>
+          </div>
+
+          <div className="border-t border-bg3 pt-3 mt-3">
+            <p className="text-[9px] md:text-xs text-content-muted mb-3 uppercase tracking-wider font-bold">
+              {editingUser ? "Cambiar contraseña" : "Credenciales de Acceso"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="relative">
+                <FormGroup label="Contraseña">
+                  <NeoInput
+                    {...register("password")}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                  />
+                </FormGroup>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-content-muted hover:text-emerald-primary transition-colors"
+                >
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+              <div className="relative">
+                <FormGroup label="Confirmar Contraseña">
+                  <NeoInput
+                    {...register("confirmPassword")}
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                  />
+                </FormGroup>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-content-muted hover:text-emerald-primary transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={14} />
+                  ) : (
+                    <Eye size={14} />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </Modal>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Confirmar desactivación"
+        message={confirmMessage}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={performDelete}
+      />
+      <Modal
+        isOpen={regionalModalOpen}
+        onClose={() => setRegionalModalOpen(false)}
+        title="Crear Regional"
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setRegionalModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateRegional} disabled={creatingRegional}>
+              {creatingRegional ? "Creando..." : "Crear Regional"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-[11px] md:text-xs">
+          <FormGroup label="Nombre de la Regional">
+            <NeoInput
+              value={newRegionalNombre}
+              onChange={(e) => setNewRegionalNombre(e.target.value)}
+              placeholder="Ej: REGIONAL INDUSTRIAL"
+            />
+          </FormGroup>
+          <FormGroup label="Ciudad (opcional)">
+            <NeoInput
+              value={newRegionalCiudad}
+              onChange={(e) => setNewRegionalCiudad(e.target.value)}
+              placeholder="Ej: Barranquilla"
+            />
+          </FormGroup>
+        </div>
+      </Modal>
+    </DashboardLayout>
+  );
+};
+
+export default UsersPage;

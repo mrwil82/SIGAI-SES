@@ -1,0 +1,72 @@
+# =============================================================================
+# SIGAI-SES - PostgreSQL Local (reemplazo de Supabase para desarrollo/pruebas)
+# =============================================================================
+# USO:
+#   1) Levantar la BD local:
+#        docker-compose -f docker-compose.postgres.yml up -d
+#
+#   2) En Backend/.env descomenta las lineas "LOCAL (PostgreSQL Docker)":
+#        DATABASE_URL=postgresql+asyncpg://sigai:sigai_password@localhost:5432/sigai_ses
+#        DATABASE_URL_SYNC=postgresql+psycopg2://sigai:sigai_password@localhost:5432/sigai_ses
+#
+#   3) Crear las tablas (desde Backend/):
+#        .venv\Scripts\python -m alembic upgrade head
+#        .venv\Scripts\python scripts/seed_admin.py
+#
+#   4) RESTAURAR BACKUP DE SUPABASE (opcional, si descargaste el .dump):
+#        # Copia el backup dentro del contenedor y restáuralo dentro de sigai_ses:
+#        docker cp backup.dump sigai-pg:/tmp/backup.dump
+#        docker exec -i sigai-pg pg_restore -U sigai -d sigai_ses --clean --if-exists /tmp/backup.dump
+#      Nota: si el backup es formato texto (.sql), en su lugar:
+#        docker exec -i sigai-pg psql -U sigai -d sigai_ses < backup.sql
+#
+#   5) Ver consumo de consultas (memoria/llamadas):
+#        docker exec -i sigai-pg psql -U sigai -d sigai_ses -f /dev/stdin < Backend/scripts/reporte_consultas.sql
+#
+#   6) Frontend: en Frontend/.env usa VITE_API_BASE_URL=http://localhost:8000/api/v1
+#
+# DETENER (conserva datos): docker-compose -f docker-compose.postgres.yml down
+# BORRAR TODO:             docker-compose -f docker-compose.postgres.yml down -v
+# =============================================================================
+#
+# pg_stat_statements habilitado: registra cuantas veces se ejecuta cada
+# consulta, su tiempo promedio y los buffers (memoria) que consume.
+# =============================================================================
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sigai-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-sigai}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sigai_password}
+      POSTGRES_DB: ${DB_NAME:-sigai_ses}
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sigai} -d ${DB_NAME:-sigai_ses}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sigai-network
+
+volumes:
+  pg_data:
+
+networks:
+  sigai-network:
+    driver: bridge

@@ -3,6 +3,7 @@ import { Modal, Button, FormGroup, NeoInput } from "./Fusion";
 import { uploadAvatar, changeMyPassword } from "../services/users";
 import { useToast } from "../lib/toast";
 import { useAuth } from "../hooks/useAuth";
+import { extractErrorMessage } from "../lib/apiError";
 
 const UserSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   isOpen,
@@ -45,8 +46,8 @@ const UserSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       setConfirmPass("");
     } catch (err) {
       console.error(err);
-      const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
-      toast.error(detail || "Error cambiando contraseña");
+      const message = extractErrorMessage(err);
+      toast.error(message || "Error cambiando contraseña");
     }
   };
 
