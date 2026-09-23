@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import datetime, date
 from decimal import Decimal
@@ -6,9 +6,17 @@ from decimal import Decimal
 # Regionales
 
 
+def regional_nombre_obligatorio(v: str) -> str:
+    if not v or not v.strip():
+        raise ValueError("El nombre de la regional es obligatorio")
+    return v.strip()
+
+
 class RegionalBase(BaseModel):
-    nombre: str
+    nombre: str = Field(..., description="Nombre de la regional")
     ciudad: Optional[str] = None
+
+    _validate_nombre = field_validator("nombre", mode="before")(regional_nombre_obligatorio)
 
 
 class RegionalCreate(RegionalBase):
@@ -23,6 +31,12 @@ class Regional(RegionalBase):
 # Items
 
 
+def item_nombre_obligatorio(v: str) -> str:
+    if not v or not v.strip():
+        raise ValueError("El nombre del equipo es obligatorio")
+    return v.strip()
+
+
 class StockBulkRead(BaseModel):
     cantidad_actual: Decimal
     punto_recompra_alerta: bool
@@ -30,9 +44,9 @@ class StockBulkRead(BaseModel):
 
 
 class ItemBase(BaseModel):
-    categoria: str
+    categoria: str = Field(..., description="Categoría del item")
     sub_categoria: Optional[str] = None
-    nombre_equipo: str
+    nombre_equipo: str = Field(..., description="Nombre del equipo")
     marca: Optional[str] = None
     referencia: Optional[str] = None
     codigo_item_interno: Optional[str] = None
@@ -41,6 +55,8 @@ class ItemBase(BaseModel):
     compra_maxima: int = 20
     costo_unitario: Decimal = Decimal("0.00")
     moneda: str = "COP"
+
+    _validate_nombre = field_validator("nombre_equipo", mode="before")(item_nombre_obligatorio)
 
 
 class ItemCreate(ItemBase):
@@ -51,7 +67,7 @@ class ItemCreate(ItemBase):
 class ItemUpdate(BaseModel):
     categoria: Optional[str] = None
     sub_categoria: Optional[str] = None
-    nombre_equipo: Optional[str] = None
+    nombre_equipo: Optional[str] = Field(default=None, description="Nombre del equipo")
     marca: Optional[str] = None
     referencia: Optional[str] = None
     codigo_item_interno: Optional[str] = None
@@ -61,6 +77,8 @@ class ItemUpdate(BaseModel):
     moneda: Optional[str] = None
     unidad_medida: Optional[str] = None
     cantidad_inicial: Optional[Decimal] = None
+
+    _validate_nombre = field_validator("nombre_equipo", mode="before")(item_nombre_obligatorio)
 
 
 class Item(ItemBase):
@@ -74,9 +92,21 @@ class Item(ItemBase):
 # Activos
 
 
+def activo_serial_obligatorio(v: str) -> str:
+    if not v or not v.strip():
+        raise ValueError("El número de serie es obligatorio")
+    return v.strip()
+
+
+def activo_serial_obligatorio(v: str) -> str:
+    if not v or not v.strip():
+        raise ValueError("El número de serie es obligatorio")
+    return v.strip()
+
+
 class ActivoBase(BaseModel):
     id_item: int
-    serial: str
+    serial: str = Field(..., description="Número de serie")
     estado_actual: str = "DISPONIBLE"
     condicion_fisica: str = "NUEVO"
     area_asignada: Optional[str] = None
@@ -90,6 +120,8 @@ class ActivoBase(BaseModel):
     activo_fijo_securitas: Optional[str] = None
     credenciales_tecnicas: Optional[str] = None
     observaciones: Optional[str] = None
+
+    _validate_serial = field_validator("serial", mode="before")(activo_serial_obligatorio)
 
 
 class ActivoCreate(ActivoBase):
@@ -111,6 +143,9 @@ class ActivoUpdate(BaseModel):
     credenciales_tecnicas: Optional[str] = None
     observaciones: Optional[str] = None
     calificacion_tecnica: Optional[str] = None
+    serial: Optional[str] = Field(default=None, description="Número de serie")
+
+    _validate_serial = field_validator("serial", mode="before")(activo_serial_obligatorio)
 
 
 class Activo(ActivoBase):
