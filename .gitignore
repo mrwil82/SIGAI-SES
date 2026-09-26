@@ -168,3 +168,6 @@ Backend/run.py
 
 # Build backups
 *.build_backup
+*.zip
+*.exe
+*.EXE

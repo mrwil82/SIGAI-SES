@@ -1,0 +1,34 @@
+# =============================================================================
+# SIGAI-SES - Docker Compose para Supabase (PostgreSQL en la nube)
+# =============================================================================
+# Uso: docker compose -f docker-compose.yml -f docker-compose.supabase.yml up -d
+#
+# Este archivo DESHABILITA la BD local y configura el backend para usar Supabase.
+# Requiere: DATABASE_URL y DATABASE_URL_SYNC apuntando a Supabase.
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # DESHABILITAR base de datos local (no se crea el contenedor)
+  db:
+    deploy:
+      replicas: 0
+
+  backend:
+    environment:
+      # Sobrescribir para usar Supabase (PostgreSQL)
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_SYNC: ${DATABASE_URL_SYNC}
+      # Ajustar CORS para incluir dominios de Supabase/Render
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    # No depender de db local
+    depends_on: []
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Frontend y Nginx sin cambios

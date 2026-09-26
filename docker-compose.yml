@@ -1,52 +1,55 @@
 # =============================================================================
-# SIGAI-SES - Docker Compose
+# SIGAI-SES - Docker Compose (Producción)
 # =============================================================================
-# Levantar servicios:
-#   Produccion:    docker-compose up -d
-#   Desarrollo:    docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
+# Uso:
+#   Producción:     docker compose up -d
+#   Desarrollo:     docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
+#   Con Supabase:   docker compose -f docker-compose.yml -f docker-compose.supabase.yml up -d
 #
-# Ver logs:
-#   docker-compose logs -f backend
-#
-# Detener:
-#   docker-compose down
-#
-# Detener y eliminar datos:
-#   docker-compose down -v
+# Ver logs:         docker compose logs -f backend
+# Detener:          docker compose down
+# Detener y borrar: docker compose down -v  (¡BORRA LA BASE DE DATOS!)
 # =============================================================================
 
 version: '3.8'
 
 services:
   # --- BASE DE DATOS MARIADB ---
-  # Almacena todos los datos de la aplicacion.
+  # Almacena todos los datos de la aplicación.
   # Los datos persisten en el volumen 'db_data'.
   db:
-    image: mariadb:10.4
+    image: mariadb:10.11
     container_name: sigai-db
     restart: unless-stopped
     environment:
-      # Password del root de MySQL (CAMBIAR EN PRODUCCION)
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      # Password del root de MySQL (CAMBIAR EN PRODUCCIÓN)
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       # Nombre de la base de datos a crear
       MYSQL_DATABASE: ${DB_NAME:-sigai_ses}
-      # Usuario y password para la aplicacion (CAMBIAR EN PRODUCCION)
+      # Usuario y password para la aplicación (CAMBIAR EN PRODUCCIÓN)
       MYSQL_USER: ${DB_USER:-sigai}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-sigai_password}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
     networks:
       - sigai-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # --- BACKEND API (FastAPI) ---
-  # Ejecuta el API de Python. Las tablas se crean automaticamente al iniciar.
+  # Ejecuta el API de Python. Las tablas se crean automáticamente al iniciar.
   backend:
     build:
       context: ./Backend
@@ -57,25 +60,50 @@ services:
       db:
         condition: service_healthy
     environment:
-      # URL de conexion a la BD (no cambiar el formato, solo los valores)
-      DATABASE_URL: mysql+aiomysql://${DB_USER:-sigai}:${DB_PASSWORD:-sigai_password}@db:3306/${DB_NAME:-sigai_ses}
-      # Clave secreta para tokens JWT (CAMBIAR EN PRODUCCION)
-      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
-      # Dominios permitidos (separados por coma)
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
-      # Credenciales del admin (se crea en la primera ejecucion)
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@securitas.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin123!}
+      # URL de conexión a la BD (formato: mysql+aiomysql://user:pass@host:port/db)
+      DATABASE_URL: mysql+aiomysql://${DB_USER:-sigai}:${DB_PASSWORD}@db:3306/${DB_NAME:-sigai_ses}
+      # URL síncrona para migraciones (Alembic)
+      DATABASE_URL_SYNC: mysql+pymysql://${DB_USER:-sigai}:${DB_PASSWORD}@db:3306/${DB_NAME:-sigai_ses}
+      # Clave secreta para tokens JWT (OBLIGATORIO CAMBIAR EN PRODUCCIÓN)
+      SECRET_KEY: ${SECRET_KEY}
+      # Algoritmo y expiración del token
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      # Dominios permitidos CORS (separados por coma, SIN espacios)
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      # Credenciales del admin (se crea en la primera ejecución)
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_NAME: ${ADMIN_NAME:-Administrador SIGAI}
+      ADMIN_CEDULA: ${ADMIN_CEDULA:-0000000000}
+      ADMIN_CODIGO: ${ADMIN_CODIGO:-ADM001}
+      # Workers de uvicorn (ajustar según CPU: 2-4 por core)
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-4}
+      # Configuración de logs
+      LOG_DIR: /app/logs
+      TZ: ${TZ:-America/Bogota}
     ports:
       - "8000:8000"
     volumes:
       - static_files:/app/app/static
+      - ./Backend/logs:/app/logs
     networks:
       - sigai-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # --- FRONTEND (React) ---
-  # Sirve la interfaz web del usuario.
+  # Sirve la interfaz web del usuario (build estático servido por Nginx).
   frontend:
     build:
       context: ./Frontend
@@ -86,9 +114,15 @@ services:
       - backend
     networks:
       - sigai-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
 
   # --- NGINX (Reverse Proxy) ---
-  # Punto de entrada unico. Redirige / al frontend y /api/ al backend.
+  # Punto de entrada único. Redirige / al frontend y /api/ al backend.
   nginx:
     image: nginx:alpine
     container_name: sigai-nginx
@@ -98,19 +132,29 @@ services:
       - frontend
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
     networks:
       - sigai-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
 
-# --- VOLUMENES ---
+# --- VOLÚMENES ---
 # Persisten los datos entre reinicios del contenedor.
 volumes:
   db_data:
+    driver: local
   static_files:
+    driver: local
 
 # --- RED ---
-# Comunicacion interna entre servicios.
+# Comunicación interna entre servicios.
 networks:
   sigai-network:
     driver: bridge
